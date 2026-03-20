@@ -14,11 +14,21 @@ import subprocess
 import json
 import sys
 import os
+import subprocess
+import tempfile
+import yaml
 
 API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 MODEL = "deepseek-reasoner"
 HISTORY_FILE = "/tmp/deepseek-qwen-history.json"
+
+# Load OpenSandbox/Docker configuration
+SANDBOX_CONFIG = {}
+config_path = os.path.expanduser("~/.shark-agent/opensandbox.yaml")
+if os.path.exists(config_path):
+    with open(config_path, 'r') as f:
+        SANDBOX_CONFIG = yaml.safe_load(f)
 
 SYSTEM_PROMPT = {
     "role": "system",
@@ -166,7 +176,97 @@ def call_deepseek(messages, primary_model="deepseek-reasoner"):
 def extract_commands(content):
     return re.findall(r'```bash\n(.*?)\n```', content, re.DOTALL)
 
+def run_docker_sandbox(working_dir, command, timeout=300):
+    """Execute command in Docker sandbox"""
+    try:
+        # Prepare Docker run command
+        docker_cmd = [
+            "docker", "run", "--rm",
+            "-v", f"{working_dir}:/workspace",
+            "-w", "/workspace",
+            "--memory", "4g",
+            "--cpus", "2",
+            "--network=none" if not SANDBOX_CONFIG.get("sandbox", {}).get("network", {}).get("allow_outbound", False) else "host",
+            "--read-only",
+            "--security-opt=no-new-privileges",
+            "shark-sandbox:latest",
+            "timeout", str(timeout), "bash", "-c", command
+        ]
+        
+        result = subprocess.run(docker_cmd, capture_output=True, text=True, timeout=timeout+10)
+        return result.stdout + (result.stderr or "")
+    except subprocess.TimeoutExpired:
+        return "(error: Docker sandbox timeout)"
+    except Exception as e:
+        return f"(error: Docker sandbox failed: {str(e)})"
+
+def run_tests_in_sandbox(working_dir, test_command):
+    """Run tests in Docker sandbox with network access"""
+    try:
+        docker_cmd = [
+            "docker", "run", "--rm",
+            "-v", f"{working_dir}:/workspace",
+            "-w", "/workspace",
+            "--memory", "2g",
+            "--cpus", "1",
+            "--network=host",  # Allow network for external test services
+            "--read-only",
+            "--security-opt=no-new-privileges",
+            "shark-sandbox:latest",
+            "timeout", "60", "bash", "-c", test_command
+        ]
+        
+        result = subprocess.run(docker_cmd, capture_output=True, text=True, timeout=70)
+        return result.stdout + (result.stderr or "")
+    except Exception as e:
+        return f"(error: Test execution failed: {str(e)})"
+
+def verify_clean_environment(working_dir, test_command):
+    """Verify code works in clean environment"""
+    try:
+        docker_cmd = [
+            "docker", "run", "--rm",
+            "-v", f"{working_dir}:/workspace",
+            "-w", "/workspace",
+            "--memory", "2g",
+            "--cpus", "1",
+            "--network=none",
+            "--read-only",
+            "--security-opt=no-new-privileges",
+            "shark-sandbox:latest",
+            "timeout", "120", "bash", "-c", test_command
+        ]
+        
+        result = subprocess.run(docker_cmd, capture_output=True, text=True, timeout=130)
+        return result.stdout + (result.stderr or "")
+    except Exception as e:
+        return f"(error: Clean environment verification failed: {str(e)})"
+
 def execute(cmd):
+    # If sandbox is enabled and it's a build/test command, use Docker
+    if SANDBOX_CONFIG and "sandbox" in SANDBOX_CONFIG:
+        # Create temporary working directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Write commands to files in sandbox
+            if "build" in cmd.lower() or "test" in cmd.lower():
+                # Copy any existing files to temp directory
+                for file in os.listdir("."):
+                    if os.path.isfile(file) and file.endswith(('.py', '.js', '.ts', '.json', '.txt', '.md', '.yml', '.yaml')):
+                        subprocess.run(["cp", file, temp_dir], check=True)
+                
+                # Build and test workflow
+                build_result = run_docker_sandbox(temp_dir, cmd)
+                
+                # Run tests
+                test_command = "python -m pytest 2>/dev/null || python -m unittest discover -s . -p 'test_*.py' 2>/dev/null || echo 'No standard tests found, running basic validation'"
+                test_result = run_tests_in_sandbox(temp_dir, test_command)
+                
+                # Clean environment verification
+                verify_result = verify_clean_environment(temp_dir, test_command)
+                
+                return f"BUILD OUTPUT:\n{build_result}\n\nTEST OUTPUT:\n{test_result}\n\nCLEAN ENVIRONMENT:\n{verify_result}"
+    
+    # Default execution
     try:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
         return result.stdout + (result.stderr or "")

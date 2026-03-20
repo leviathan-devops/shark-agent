@@ -1,4 +1,6 @@
 requests>=2.28.0
-opensandbox-server>=0.1.7
 docker>=7.1.0
 uv>=0.1.0
+pyyaml>=6.0
+bandit>=1.7.0
+semgrep>=1.0.0

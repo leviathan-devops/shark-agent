@@ -1,10 +1,10 @@
 # OpenSandbox Configuration for Shark Agent
 # ==========================================
 
-# Sandbox Settings
+# Docker Sandbox Settings
 sandbox:
   # Base image with pre-installed development tools
-  image: "opensandbox/code-interpreter:v1.0.2"
+  image: "shark-sandbox:latest"
   
   # Resource limits
   timeout: 300  # 5 minutes per sandbox session
@@ -17,12 +17,17 @@ sandbox:
     allow_inbound: false  # Security: no external access to sandbox
   
   # Runtime security
-  runtime: "gvisor"  # Strong isolation, preferred over Kata
+  runtime: "docker"  # Docker runtime with security hardening
   
   # Filesystem settings
   workdir: "/workspace"
   max_files: 1000
   max_file_size: "100MB"
+  
+  # Security hardening
+  read_only: true
+  no_new_privileges: true
+  user_namespace: true
 
 # Build-Test-Verify Workflow Configuration
 workflow:
