@@ -211,7 +211,7 @@ echo ""
 if [ -d "$SHARK_SKILL_DIR" ]; then
     print_color "${YELLOW}Backing up existing skill...${NC}"
     BACKUP_NAME="$SHARK_SKILL_DIR.backup.$(date +%s)"
-    cp -r "$SHARK_SKILL_DIR" "$BACKUP_NAME"
+    mv "$SHARK_SKILL_DIR" "$BACKUP_NAME"
     print_color "${GREEN}✓${NC} Backup: $BACKUP_NAME"
 fi
 
@@ -232,13 +232,12 @@ if [ ! -f "$TEMP_DIR/shark/skills/shark/run.py" ]; then
     exit 1
 fi
 
-# Install skill
+# Install skill - clean copy
 mkdir -p "$(dirname "$SHARK_SKILL_DIR")"
 cp -r "$TEMP_DIR/shark/skills/shark" "$SHARK_SKILL_DIR"
 
-# Set secure permissions on Python files
-chmod 755 "$SHARK_SKILL_DIR"/*.py 2>/dev/null || true
-chmod 755 "$SHARK_SKILL_DIR"/shark 2>/dev/null || true
+# Set secure permissions on Python files only
+find "$SHARK_SKILL_DIR" -name "*.py" -exec chmod 755 {} \; 2>/dev/null || true
 
 print_color "${GREEN}✓${NC} Shark skill installed"
 
