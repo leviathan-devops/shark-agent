@@ -21,15 +21,24 @@ import json
 import sys
 import os
 import hashlib
+import time
 
 API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 API_KEY = "sk-e8e93e31b582423e9fdaa4ab8e9347e2"
 MODEL_R1 = "deepseek-reasoner"      # Complex reasoning, coding, problem-solving
 MODEL_CHAT = "deepseek-chat"        # Simple questions, facts, chat
 
-# Gemini API (fallback/secondary brain)
+# Gemini API (fallback - may have quota issues from Europe)
+# NOTE: Gemini free tier blocked in Europe - works from Southeast Asia
 GEMINI_API_KEY = "AIzaSyBIIzyQA032RD0tmoFSW4cRW8WVyb50jAE"
-GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
+
+# OpenRouter API (reliable fallback - multiple models)
+OPENROUTER_API_KEY = "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"
+OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_MODEL_R1 = "deepseek/deepseek-r1"           # Same as DeepSeek R1
+OPENROUTER_MODEL_FAST = "meta-llama/llama-3-70b-instruct"  # Fast fallback
+OPENROUTER_MODEL_HEALER = "openrouter/healer-alpha"    # Xiaomi MiMo-V2-Omni (free, 262K context)
 
 HISTORY_FILE = "/tmp/shark-history.json"
 ERROR_TRACKER_FILE = "/tmp/shark-error-tracker.json"
@@ -84,6 +93,7 @@ def route_query(message):
     - deepseek-chat: Simple questions (fast, cheap)
     - deepseek-reasoner: Complex reasoning/coding (slow, expensive)
     - gemini: Manual trigger only ("ask gemini", "use gemini brain")
+    - openrouter: Manual trigger ("use openrouter", "use healer")
     
     Criteria for R1 (complex):
     - Contains trigger phrases (user frustrated)
@@ -100,6 +110,12 @@ def route_query(message):
     for trigger in gemini_triggers:
         if trigger in msg_lower:
             return "gemini", f"trigger:{trigger}"
+    
+    # Check for OpenRouter triggers (manual override)
+    openrouter_triggers = ["use openrouter", "use healer", "healer alpha", "openrouter"]
+    for trigger in openrouter_triggers:
+        if trigger in msg_lower:
+            return "openrouter", f"trigger:{trigger}"
     
     # Always use R1 for DeepSeek trigger phrases (user explicitly wants DeepSeek)
     triggered, _ = check_deepseek_triggers(message)
@@ -139,36 +155,53 @@ def route_query(message):
     # Default to Chat for simple questions
     return MODEL_CHAT, "simple"
 
-def call_deepseek(messages, model=MODEL_R1):
-    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
-    payload = {"model": model, "messages": messages, "stream": False, "max_tokens": 8192}
-    response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=300)
-    response.raise_for_status()
-    data = response.json()
-    content = data["choices"][0]["message"].get("content", "")
-    reasoning = data["choices"][0]["message"].get("reasoning_content", "")
-    # Combine reasoning + content for command extraction
-    return reasoning + "\n" + content if reasoning else content
+def call_deepseek(messages, model=MODEL_R1, max_retries=3):
+    """Call DeepSeek API with automatic retry and multi-tier fallback"""
+    last_error = None
+    
+    for attempt in range(max_retries):
+        try:
+            headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+            payload = {"model": model, "messages": messages, "stream": False, "max_tokens": 8192}
+            response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=60)
+            response.raise_for_status()
+            data = response.json()
+            content = data["choices"][0]["message"].get("content", "")
+            reasoning = data["choices"][0]["message"].get("reasoning_content", "")
+            return reasoning + "\n" + content if reasoning else content
+        except requests.exceptions.Timeout as e:
+            last_error = f"Timeout (attempt {attempt + 1}/{max_retries})"
+            print(f"⚠️  DeepSeek {last_error}, retrying...")
+            time.sleep(2 ** attempt)  # Exponential backoff
+        except requests.exceptions.RequestException as e:
+            last_error = str(e)
+            print(f"⚠️  DeepSeek error: {last_error}")
+            break
+    
+    # DeepSeek failed - try Gemini (may fail from Europe)
+    print(f"💎 DeepSeek failed, trying Gemini fallback...")
+    try:
+        return call_gemini(messages)
+    except Exception as gemini_error:
+        print(f"⚠️  Gemini also failed: {gemini_error}")
+        print(f"🔓 Falling back to OpenRouter...")
+        return call_openrouter(messages, OPENROUTER_MODEL_R1)
 
 def call_gemini(messages):
-    """Call Gemini API as fallback/secondary brain"""
-    # Convert messages to Gemini format
+    """Call Gemini API as fallback (blocked in Europe, works from Southeast Asia)"""
     gemini_content = "\n".join([m["content"] for m in messages if m["role"] == "user"])
     
     headers = {"Content-Type": "application/json"}
     payload = {
         "contents": [{"parts": [{"text": gemini_content}]}],
-        "generationConfig": {
-            "maxOutputTokens": 8192,
-            "temperature": 0.7
-        }
+        "generationConfig": {"maxOutputTokens": 8192, "temperature": 0.7}
     }
     
     response = requests.post(
         f"{GEMINI_ENDPOINT}?key={GEMINI_API_KEY}",
         headers=headers,
         json=payload,
-        timeout=300
+        timeout=60
     )
     response.raise_for_status()
     data = response.json()
@@ -176,6 +209,28 @@ def call_gemini(messages):
     if "candidates" in data and len(data["candidates"]) > 0:
         return data["candidates"][0]["content"]["parts"][0]["text"]
     return "(Gemini returned no response)"
+
+def call_openrouter(messages, model=OPENROUTER_MODEL_R1):
+    """Call OpenRouter API as tertiary fallback (reliable, multiple models)"""
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/leviathan-devops/shark-agent"
+    }
+    
+    payload = {
+        "model": model,
+        "messages": messages,
+        "max_tokens": 8192
+    }
+    
+    response = requests.post(OPENROUTER_ENDPOINT, headers=headers, json=payload, timeout=60)
+    response.raise_for_status()
+    data = response.json()
+    
+    if "choices" in data and len(data["choices"]) > 0:
+        return data["choices"][0]["message"]["content"]
+    return "(OpenRouter returned no response)"
 
 SYSTEM_PROMPT = {
     "role": "system",
@@ -275,6 +330,8 @@ def run(user_message, max_loops=10):
         print(f"[📤 Using DeepSeek Chat (simple query)]")
     elif model == "gemini":
         print(f"[💎 Using Gemini (manual trigger)]")
+    elif model == "openrouter":
+        print(f"[🔓 Using OpenRouter (fallback)]")
     else:
         print(f"[🧠 Using DeepSeek R1 (complex: {reason})]")
 
@@ -284,7 +341,10 @@ def run(user_message, max_loops=10):
         # Call appropriate API based on model
         if model == "gemini":
             response = call_gemini(history)
+        elif model == "openrouter":
+            response = call_openrouter(history, OPENROUTER_MODEL_FAST)
         else:
+            # DeepSeek with automatic fallback chain
             response = call_deepseek(history, model=model)
         history.append({"role": "assistant", "content": response})
 

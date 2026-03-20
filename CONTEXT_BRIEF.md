@@ -163,7 +163,7 @@ These ALWAYS trigger DeepSeek R1:
 
 ## Fallback Architecture
 
-**NO LOCAL FALLBACK. DEEPSEEK API MUST WORK.**
+**THREE-TIER FALLBACK - AUTOMATIC CHAIN**
 
 ```
                 User Query
@@ -174,48 +174,56 @@ These ALWAYS trigger DeepSeek R1:
          └──────────────────┘
                     ↓
          ┌──────────────────┐
-         │  API Fails?      │
-         │  (timeout/503)   │
+         │  Timeout/Error?  │
          └──────────────────┘
                     ↓
-              ┌─────┴─────┐
-              ↓           ↓
-    ┌─────────────────┐ ┌─────────────────┐
-    │  Retry (3x)     │ │  Gemini Fallback│
-    │  300s each      │ │  (Manual Only)  │
-    └─────────────────┘ └─────────────────┘
-              ↓
-    ┌──────────────────┐
-    │  ERROR TO USER   │
-    │  (No local)      │
-    └──────────────────┘
+         ┌──────────┴──────────┐
+         ↓                     ↓
+   ┌──────────┐         ┌──────────────┐
+   │ Retry    │         │ All retries  │
+   │ (3x 60s) │         │ exhausted    │
+   └──────────┘         └──────────────┘
+                              ↓
+                    ┌──────────────────┐
+                    │  Gemini API      │
+                    │  (Blocked in EU) │
+                    │  Works from SEA  │
+                    └──────────────────┘
+                              ↓
+                    ┌──────────────────┐
+                    │  OpenRouter      │
+                    │  (RELIABLE)      │
+                    │  - DeepSeek R1   │
+                    │  - Healer Alpha  │
+                    │  - Llama-3-70B   │
+                    └──────────────────┘
+                              ↓
+                    ┌──────────────────┐
+                    │  ERROR TO USER   │
+                    └──────────────────┘
 ```
 
-**Fallback Hierarchy (STRICT):**
+**Fallback Hierarchy (AUTOMATIC):**
 1. **DeepSeek R1** (primary - ALWAYS first)
-2. **Retry 3 times** (300s each attempt)
-3. **Gemini 2.0 Flash Lite** (ONLY if DeepSeek completely fails)
-4. **ERROR** (no local fallback - system fails loudly)
+2. **Retry 3 times** (60s each, exponential backoff)
+3. **Gemini 2.0 Flash** (may fail from Europe - blocked in EU)
+4. **OpenRouter** (RELIABLE - multiple models available)
+5. **ERROR** (system fails loudly)
 
-**Gemini Configuration:**
-```json
-{
-  "fallback": {
-    "enabled": true,
-    "provider": "gemini",
-    "api_key": "AIzaSyBIIzyQA032RD0tmoFSW4cRW8WVyb50jAE",
-    "model": "gemini-2.0-flash-lite",
-    "rate_limit": "500 RPD"
-  }
-}
-```
+**⚠️ GEMINI GEOBLOCK:**
+Gemini free tier is BLOCKED in Europe. Works from Southeast Asia.
+If you're in Europe, Gemini will return 429 quota errors.
+The fallback chain automatically continues to OpenRouter.
 
-**Manual Gemini Triggers:**
-User says any of these → Use Gemini instead of DeepSeek:
-- "ask gemini"
-- "use gemini brain"
-- "gemini"
-- "switch to gemini"
+**✅ OPENROUTER - RELIABLE FALLBACK:**
+- `deepseek/deepseek-r1` - Same as DeepSeek API
+- `openrouter/healer-alpha` - Xiaomi MiMo-V2-Omni (FREE, 262K context)
+- `meta-llama/llama-3-70b-instruct` - Fast fallback
+
+**Manual Triggers:**
+- "ask gemini" → Use Gemini directly
+- "use openrouter" → Use OpenRouter directly
+- "use healer" → Use Healer Alpha via OpenRouter
 
 **NO LOCAL vLLM. EVER.**
 
