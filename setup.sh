@@ -281,23 +281,33 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
     print_color "${YELLOW}File permissions: 600 (only you can read)${NC}"
     echo ""
 
-    if $INTERACTIVE; then
+    # Try to get API key from environment first
+    if [ -n "$DEEPSEEK_API_KEY" ]; then
+        API_KEY="$DEEPSEEK_API_KEY"
+        print_color "${GREEN}✓${NC} Using API key from environment"
+    elif $INTERACTIVE; then
         # Interactive mode - silent input
-        read -sp "Enter your DeepSeek API key: " API_KEY
-        echo  # Newline after silent input
-    else
-        # Non-interactive mode - use environment variable or prompt
-        if [ -n "$DEEPSEEK_API_KEY" ]; then
-            API_KEY="$DEEPSEEK_API_KEY"
-            print_color "${GREEN}✓${NC} Using API key from environment"
+        print_color "${YELLOW}Enter your DeepSeek API key:${NC}"
+        if read -sp "Key: " API_KEY 2>/dev/null; then
+            echo  # Newline after silent input
         else
-            print_color "${YELLOW}Enter your DeepSeek API key:${NC}"
+            # Fallback for systems where -p doesn't work
             read API_KEY
         fi
+    else
+        # Non-interactive mode - prompt for input
+        print_color "${YELLOW}Enter your DeepSeek API key:${NC}"
+        read API_KEY
     fi
 
     if [ -z "$API_KEY" ]; then
         print_color "${RED}✗ API key required${NC}"
+        echo ""
+        print_color "${YELLOW}Get your key at: https://platform.deepseek.com${NC}"
+        echo ""
+        echo "Or set environment variable and re-run:"
+        echo "  export DEEPSEEK_API_KEY=sk-xxx"
+        echo "  bash setup.sh"
         exit 1
     fi
 
