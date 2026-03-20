@@ -285,7 +285,7 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
     echo ""
 
     # Get API key from environment if set
-    if [ -n "$DEEPSEEK_API_KEY" ]; then
+    if [ -n "${DEEPSEEK_API_KEY:-}" ]; then
         API_KEY="$DEEPSEEK_API_KEY"
         echo "✓ Using API key from environment"
     else
