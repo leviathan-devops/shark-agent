@@ -11,8 +11,9 @@ echo "This will set up your Shark Agent with:"
 echo "🧠 DeepSeek R1 for reasoning"
 echo "🛠️  GLM for mechanical execution (YOLO mode)"
 echo "🎯 Automatic skill loading"
+echo "🧪 OpenSandbox for production-grade code execution and testing"
 echo ""
-echo "Let's get you started! This will take 5-10 minutes."
+echo "Let's get you started! This will take 10-15 minutes."
 echo ""
 
 # Color codes for output

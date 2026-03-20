@@ -26,6 +26,11 @@ echo ""
 echo "🚀 Starting setup wizard..."
 ./setup-wizard.sh
 
+# Install OpenSandbox
+echo ""
+echo "🧪 Installing OpenSandbox for production-grade code execution..."
+./scripts/install-opensandbox.sh
+
 # Test the installation
 echo ""
 echo "🧪 Testing installation..."

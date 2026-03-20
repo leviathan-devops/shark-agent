@@ -49,6 +49,51 @@ test_environment() {
     print_success "All environment variables set"
 }
 
+# Test OpenSandbox installation
+test_opensandbox() {
+    print_test "OpenSandbox Installation"
+    
+    # Check if OpenSandbox configuration exists
+    if [[ ! -f "$HOME/.shark-agent/opensandbox.yaml" ]]; then
+        print_error "OpenSandbox configuration not found"
+        return 1
+    fi
+    print_success "OpenSandbox configuration exists"
+    
+    # Check if OpenSandbox Python module can be imported
+    if python3 -c "import opensandbox; print('OpenSandbox available')" 2>/dev/null; then
+        print_success "OpenSandbox Python SDK imported"
+    else
+        print_error "OpenSandbox Python SDK import failed"
+        return 1
+    fi
+    
+    # Check if Docker is running (required for OpenSandbox)
+    if docker info &> /dev/null; then
+        print_success "Docker is running (required for OpenSandbox)"
+    else
+        print_error "Docker is not running"
+        return 1
+    fi
+    
+    # Test basic OpenSandbox functionality
+    if python3 -c "
+import opensandbox
+try:
+    # Test basic OpenSandbox class
+    from opensandbox import Sandbox
+    print('OpenSandbox classes available')
+except ImportError as e:
+    print(f'Import error: {e}')
+    exit(1)
+" 2>/dev/null; then
+        print_success "OpenSandbox functionality test passed"
+    else
+        print_error "OpenSandbox functionality test failed"
+        return 1
+    fi
+}
+
 # Test command availability
 test_commands() {
     print_test "Command Availability"
@@ -282,6 +327,7 @@ main() {
         "test_dual_brain"
         "test_security"
         "test_sandbox"
+        "test_opensandbox"
         "test_production_readiness"
         "test_performance"
     )

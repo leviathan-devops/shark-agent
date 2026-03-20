@@ -1,0 +1,152 @@
+# OpenSandbox Configuration for Shark Agent
+# ==========================================
+
+# Sandbox Settings
+sandbox:
+  # Base image with pre-installed development tools
+  image: "opensandbox/code-interpreter:v1.0.2"
+  
+  # Resource limits
+  timeout: 300  # 5 minutes per sandbox session
+  cpu_limit: "2"
+  memory_limit: "4g"
+  
+  # Network policies
+  network:
+    allow_outbound: true  # Required for package downloads and API calls
+    allow_inbound: false  # Security: no external access to sandbox
+  
+  # Runtime security
+  runtime: "gvisor"  # Strong isolation, preferred over Kata
+  
+  # Filesystem settings
+  workdir: "/workspace"
+  max_files: 1000
+  max_file_size: "100MB"
+
+# Build-Test-Verify Workflow Configuration
+workflow:
+  # Retry settings
+  max_retries: 3
+  retry_delay: 10  # seconds between retries
+  
+  # Test configuration
+  test_timeout: 60  # seconds per test
+  comprehensive_testing: true
+  
+  # Clean environment verification
+  clean_verification: true
+  clean_timeout: 120  # 2 minutes for clean environment test
+  
+  # Dependency management
+  auto_install_dependencies: true
+  dependency_timeout: 180  # 3 minutes for dependency installation
+  
+  # Package configuration
+  package_artifacts: true
+  include_readme: true
+  include_requirements: true
+  include_install_script: true
+
+# Rate Limit Handling Configuration
+rate_limit:
+  # GLM Rate Limit Detection
+  glm:
+    minor_throttle_delay: 30  # seconds to wait for minor throttles
+    major_threshold_hours: 2  # switch to DeepSeek if unusable for >2 hours
+    check_interval: 60  # seconds between rate limit checks
+    
+  # DeepSeek Fallback Configuration
+  deepseek:
+    api_timeout: 900  # 15 minutes (matches user's timeout fix)
+    coder_model: "deepseek-coder"  # Use DeepSeek Coder for coding tasks
+    fallback_on_rate_limit: true
+
+# Logging and Debugging
+logging:
+  level: "INFO"
+  file: "/tmp/shark-agent-opensandbox.log"
+  max_size: "10MB"
+  backup_count: 3
+  
+  # Debug mode (set to true for development)
+  debug: false
+  sandbox_logs: true
+  test_output: true
+  
+# Security Settings
+security:
+  # Sandbox isolation
+  read_only_root: false
+  no_privileges: true
+  
+  # Network security
+  allowed_ports: []
+  blocked_hosts: []
+  
+  # Filesystem security
+  allowed_paths: ["/workspace"]
+  blocked_paths: ["/etc", "/usr/local", "/opt"]
+  
+# Testing Configuration
+testing:
+  # Test categories to run
+  categories:
+    - "basic"      # Basic functionality tests
+    - "integration" # Integration tests (if multiple components)
+    - "security"    # Security vulnerability tests
+    - "edge_cases" # Edge case handling tests
+    - "performance" # Performance and resource usage tests
+    - "compatibility" # Cross-platform compatibility tests
+  
+  # Test frameworks by language
+  frameworks:
+    python: ["pytest", "unittest"]
+    javascript: ["jest", "mocha"]
+    nodejs: ["npm test"]
+    go: ["go test"]
+    java: ["mvn test"]
+    ruby: ["rspec"]
+  
+  # Security test commands
+  security_tests:
+    - "npm audit"        # Node.js security audit
+    - "pip-audit"        # Python security audit (if installed)
+    - "bandit -r ."      # Python security scanning
+    - "semgrep --config auto ."  # Multi-language security scanning
+  
+# Packaging Configuration
+packaging:
+  # Output directory for final artifacts
+  output_dir: "/tmp/shark-artifacts"
+  
+  # Include files in final package
+  include_files:
+    - "**/*.py"
+    - "**/*.js"
+    - "**/*.ts"
+    - "**/*.json"
+    - "**/*.yml"
+    - "**/*.yaml"
+    - "**/*.md"
+    - "**/*.txt"
+    - "**/requirements.txt"
+    - "**/package.json"
+    - "**/package-lock.json"
+    - "**/README.md"
+    - "**/Dockerfile"
+    - "**/docker-compose.yml"
+  
+  # Exclude files from final package
+  exclude_files:
+    - "**/__pycache__/**"
+    - "**/node_modules/**"
+    - "**/.git/**"
+    - "**/venv/**"
+    - "**/env/**"
+    - "**/.DS_Store"
+    - "**/Thumbs.db"
+  
+  # Package format
+  format: "tar.gz"
+  compression_level: 6
