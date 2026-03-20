@@ -1,8 +1,11 @@
 #!/bin/bash
-# Shark Agent - One-Line Installer
+# Shark Skill - Standalone Installer (HARDENED)
+# For users who already have Qwen Code and just want the Shark Skill
 # Usage: curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/scripts/install.sh | bash
+#
+# SECURITY: Download and verify checksum for maximum security
 
-set -e
+set -euo pipefail
 
 # Colors
 RED='\033[0;31m'
@@ -11,67 +14,84 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Configuration
-REPO_URL="https://github.com/leviathan-devops/shark-agent.git"
-SKILL_DIR="$HOME/.qwen/skills/shark"
-BACKUP_DIR="$HOME/.qwen/skills/shark.backup.$(date +%s)"
+SHARK_SKILL_DIR="$HOME/.qwen/skills/shark"
 CONFIG_DIR="$HOME/.shark-agent"
+REPO_URL="https://github.com/leviathan-devops/shark-agent.git"
+BRANCH="main"
 
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║           Shark Agent - Installer                        ║${NC}"
-echo -e "${BLUE}║     Transform your coding agent into Dual-Brain          ║${NC}"
+echo -e "${BLUE}║           Shark Skill - Installer                        ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
+# Security notice
+echo -e "${YELLOW}SECURITY NOTICE:${NC}"
+echo "This script will clone a GitHub repository and install Python scripts."
+echo ""
+read -p "Continue? [Y/n] " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${YELLOW}Installation cancelled.${NC}"
+    exit 0
+fi
+
 # Check for Python
 if ! command -v python3 &> /dev/null; then
-    echo -e "${RED}✗ Python 3 is required but not installed.${NC}"
+    echo -e "${RED}✗ Python 3 required${NC}"
     exit 1
 fi
 echo -e "${GREEN}✓${NC} Python 3 found"
 
-# Check for requests library
+# Check for requests
 if ! python3 -c "import requests" &> /dev/null; then
-    echo -e "${YELLOW}! Installing 'requests' library...${NC}"
-    pip install requests --break-system-packages -q 2>/dev/null || pip install requests -q 2>/dev/null || true
+    echo -e "${YELLOW}Installing requests...${NC}"
+    pip install requests --break-system-packages -q 2>/dev/null || \
+    pip install requests -q 2>/dev/null || \
+    pip3 install requests -q 2>/dev/null || {
+        echo -e "${RED}Install manually: pip install requests${NC}"
+        exit 1
+    }
 fi
 echo -e "${GREEN}✓${NC} Requests library ready"
 
-# Backup existing installation
-if [ -d "$SKILL_DIR" ]; then
-    echo -e "${YELLOW}! Backing up existing installation...${NC}"
-    mv "$SKILL_DIR" "$BACKUP_DIR"
-    echo -e "${GREEN}✓${NC} Backup saved to: $BACKUP_DIR"
+# Backup existing
+if [ -d "$SHARK_SKILL_DIR" ]; then
+    BACKUP_NAME="$SHARK_SKILL_DIR.backup.$(date +%s)"
+    echo -e "${YELLOW}Backing up existing skill to: $BACKUP_NAME${NC}"
+    mv "$SHARK_SKILL_DIR" "$BACKUP_NAME"
 fi
 
-# Clone or copy skill files
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+# Use secure temp directory
+TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMP_DIR"' EXIT ERR INT TERM
 
-if [ -d "$REPO_ROOT/skills/shark" ]; then
-    echo -e "${GREEN}✓${NC} Installing from local repository..."
-    mkdir -p "$(dirname "$SKILL_DIR")"
-    cp -r "$REPO_ROOT/skills/shark" "$SKILL_DIR"
-elif command -v git &> /dev/null && [ ! -z "$REPO_URL" ]; then
-    echo -e "${YELLOW}! Cloning repository...${NC}"
-    mkdir -p "$(dirname "$SKILL_DIR")"
-    git clone "$REPO_URL" /tmp/shark-temp 2>/dev/null || {
-        echo -e "${YELLOW}! Installing from local files instead...${NC}"
-        cp -r "$SCRIPT_DIR/../skills/shark" "$SKILL_DIR"
-    }
-    if [ -d "/tmp/shark-temp/skills/shark" ]; then
-        cp -r /tmp/shark-temp/skills/shark "$SKILL_DIR"
-        rm -rf /tmp/shark-temp
-    fi
-else
-    echo -e "${YELLOW}! Installing from local files...${NC}"
-    mkdir -p "$(dirname "$SKILL_DIR")"
-    cp -r "$SCRIPT_DIR/../skills/shark" "$SKILL_DIR"
+# Clone repo
+echo -e "${YELLOW}Cloning Shark Agent...${NC}"
+if ! git clone --depth 1 -b "$BRANCH" "$REPO_URL" "$TEMP_DIR/shark" 2>/dev/null; then
+    echo -e "${RED}✗ Failed to clone repository${NC}"
+    exit 1
 fi
-echo -e "${GREEN}✓${NC} Skill files installed to: $SKILL_DIR"
 
-# Create config directory
+# Verify expected files
+if [ ! -f "$TEMP_DIR/shark/skills/shark/run.py" ]; then
+    echo -e "${RED}✗ Expected skill files not found${NC}"
+    exit 1
+fi
+
+# Install skill
+mkdir -p "$(dirname "$SHARK_SKILL_DIR")"
+cp -r "$TEMP_DIR/shark/skills/shark" "$SHARK_SKILL_DIR"
+
+# Set permissions
+chmod 755 "$SHARK_SKILL_DIR"/*.py 2>/dev/null || true
+chmod 755 "$SHARK_SKILL_DIR"/shark 2>/dev/null || true
+
+echo -e "${GREEN}✓${NC} Shark skill installed"
+
+# Config
 mkdir -p "$CONFIG_DIR"
+chmod 700 "$CONFIG_DIR"
+
 if [ ! -f "$CONFIG_DIR/config.json" ]; then
     cat > "$CONFIG_DIR/config.json" << 'EOF'
 {
@@ -79,61 +99,40 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
   "model": "deepseek-reasoner",
   "timeout": 120,
   "max_loops": 10,
-  "yolo_mode": true,
-  "verbose": false
+  "yolo_mode": true
 }
 EOF
-    echo -e "${YELLOW}!${NC} Config created: $CONFIG_DIR/config.json"
-    echo -e "${YELLOW}  Edit this file to add your DeepSeek API key${NC}"
+    chmod 600 "$CONFIG_DIR/config.json"
+    echo -e "${YELLOW}!${NC} Edit ~/.shark-agent/config.json with your API key"
+    echo -e "${YELLOW}  File permissions set to 600 (only you can read)${NC}"
+else
+    echo -e "${GREEN}✓${NC} Config exists"
 fi
 
-# Add aliases to bash_aliases
-ALIASES_FILE="$HOME/.bash_aliases"
-if ! grep -q "shark" "$ALIASES_FILE" 2>/dev/null; then
-    cat >> "$ALIASES_FILE" << 'EOF'
+# Aliases
+if [ ! -f "$HOME/.bash_aliases" ]; then
+    touch "$HOME/.bash_aliases"
+fi
 
-# Shark Agent - Dual Brain Architecture
+if ! grep -q "alias shark=" "$HOME/.bash_aliases" 2>/dev/null; then
+    cat >> "$HOME/.bash_aliases" << 'EOF'
+
+# Shark Skill
 alias shark='python3 ~/.qwen/skills/shark/run.py'
 alias shark-brain='python3 ~/.qwen/skills/shark/shark-brain.py'
 EOF
-    echo -e "${GREEN}✓${NC} Aliases added to ~/.bash_aliases"
-else
-    echo -e "${GREEN}✓${NC} Aliases already exist"
-fi
-
-# Make scripts executable
-chmod +x "$SKILL_DIR"/*.py 2>/dev/null || true
-chmod +x "$SKILL_DIR"/shark 2>/dev/null || true
-echo -e "${GREEN}✓${NC} Scripts made executable"
-
-# Source bash_aliases if in interactive shell
-if [ -f "$ALIASES_FILE" ] && [ -n "$PS1" ]; then
-    source "$ALIASES_FILE" 2>/dev/null || true
+    if [ -n "$PS1" ]; then
+        source "$HOME/.bash_aliases" 2>/dev/null || true
+    fi
 fi
 
 echo ""
-echo -e "${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║  Installation Complete! 🦈                               ║${NC}"
-echo -e "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
+echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
-echo -e "${BLUE}Next steps:${NC}"
+echo "Usage in Qwen Code:"
+echo '  "plug in to deepseek brain"'
 echo ""
-echo -e "  1. ${YELLOW}Add your DeepSeek API key:${NC}"
-echo -e "     Get key: https://platform.deepseek.com"
-echo -e "     Edit: $CONFIG_DIR/config.json"
-echo ""
-echo -e "  2. ${YELLOW}Test the installation:${NC}"
-echo -e "     shark \"say hello and run: echo test\""
-echo ""
-echo -e "  3. ${YELLOW}In your coding agent, say:${NC}"
-echo -e "     \"plug in to deepseek brain\""
-echo ""
-echo -e "${BLUE}Available commands:${NC}"
-echo "  shark \"task\"          - Run a task"
-echo "  shark-brain           - Interactive mode"
-echo ""
-echo -e "${BLUE}Compatible Agents:${NC}"
-echo "  ✓ Qwen Code    ✓ Claude Code    ✓ Hermes    ✓ OpenFang"
-echo ""
-echo -e "${YELLOW}Need help?${NC} See: https://github.com/leviathan-devops/shark-agent"
+echo -e "${YELLOW}Security:${NC}"
+echo "  Config: $CONFIG_DIR/config.json (permissions 600)"
+echo "  Skill: $SHARK_SKILL_DIR"
 echo ""
