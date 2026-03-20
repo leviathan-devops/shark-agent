@@ -30,15 +30,14 @@ MODEL_CHAT = "deepseek-chat"        # Simple questions, facts, chat
 
 # Gemini API (fallback - may have quota issues from Europe)
 # NOTE: Gemini free tier blocked in Europe - works from Southeast Asia
+# Using gemini-3.1-flash which has 500 RPD limit
 GEMINI_API_KEY = "AIzaSyBIIzyQA032RD0tmoFSW4cRW8WVyb50jAE"
-GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
+GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash:generateContent"
 
-# OpenRouter API (reliable fallback - multiple models)
+# OpenRouter API (tertiary fallback - healer-alpha ONLY)
 OPENROUTER_API_KEY = "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"
 OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_MODEL_R1 = "deepseek/deepseek-r1"           # Same as DeepSeek R1
-OPENROUTER_MODEL_FAST = "meta-llama/llama-3-70b-instruct"  # Fast fallback
-OPENROUTER_MODEL_HEALER = "openrouter/healer-alpha"    # Xiaomi MiMo-V2-Omni (free, 262K context)
+OPENROUTER_MODEL_HEALER = "openrouter/healer-alpha"    # Xiaomi MiMo-V2-Omni (free, 262K context) - ONLY MODEL
 
 HISTORY_FILE = "/tmp/shark-history.json"
 ERROR_TRACKER_FILE = "/tmp/shark-error-tracker.json"
@@ -92,8 +91,8 @@ def route_query(message):
     Route query to appropriate model:
     - deepseek-chat: Simple questions (fast, cheap)
     - deepseek-reasoner: Complex reasoning/coding (slow, expensive)
-    - gemini: Manual trigger only ("ask gemini", "use gemini brain")
-    - openrouter: Manual trigger ("use openrouter", "use healer")
+    - gemini: Manual trigger only ("ask gemini")
+    - healer: Manual trigger only ("use healer")
     
     Criteria for R1 (complex):
     - Contains trigger phrases (user frustrated)
@@ -111,11 +110,9 @@ def route_query(message):
         if trigger in msg_lower:
             return "gemini", f"trigger:{trigger}"
     
-    # Check for OpenRouter triggers (manual override)
-    openrouter_triggers = ["use openrouter", "use healer", "healer alpha", "openrouter"]
-    for trigger in openrouter_triggers:
-        if trigger in msg_lower:
-            return "openrouter", f"trigger:{trigger}"
+    # Check for Healer trigger (manual override - healer-alpha ONLY)
+    if "use healer" in msg_lower or "healer alpha" in msg_lower:
+        return "healer", "trigger:healer"
     
     # Always use R1 for DeepSeek trigger phrases (user explicitly wants DeepSeek)
     triggered, _ = check_deepseek_triggers(message)
@@ -156,14 +153,18 @@ def route_query(message):
     return MODEL_CHAT, "simple"
 
 def call_deepseek(messages, model=MODEL_R1, max_retries=3):
-    """Call DeepSeek API with automatic retry and multi-tier fallback"""
+    """Call DeepSeek API with automatic retry and multi-tier fallback
+    
+    ROOT CAUSE OF TIMEOUTS: R1 reasoning can take 60-120s for complex tasks.
+    Previous 60s timeout was too short. Now using 120s per attempt.
+    """
     last_error = None
     
     for attempt in range(max_retries):
         try:
             headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
             payload = {"model": model, "messages": messages, "stream": False, "max_tokens": 8192}
-            response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=60)
+            response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=120)  # Increased from 60s to 120s
             response.raise_for_status()
             data = response.json()
             content = data["choices"][0]["message"].get("content", "")
@@ -184,8 +185,8 @@ def call_deepseek(messages, model=MODEL_R1, max_retries=3):
         return call_gemini(messages)
     except Exception as gemini_error:
         print(f"⚠️  Gemini also failed: {gemini_error}")
-        print(f"🔓 Falling back to OpenRouter...")
-        return call_openrouter(messages, OPENROUTER_MODEL_R1)
+        print(f"🔓 Falling back to OpenRouter Healer Alpha...")
+        return call_openrouter(messages)
 
 def call_gemini(messages):
     """Call Gemini API as fallback (blocked in Europe, works from Southeast Asia)"""
@@ -210,21 +211,22 @@ def call_gemini(messages):
         return data["candidates"][0]["content"]["parts"][0]["text"]
     return "(Gemini returned no response)"
 
-def call_openrouter(messages, model=OPENROUTER_MODEL_R1):
-    """Call OpenRouter API as tertiary fallback (reliable, multiple models)"""
+def call_openrouter(messages):
+    """Call OpenRouter API - healer-alpha ONLY (tertiary fallback)"""
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/leviathan-devops/shark-agent"
+        "HTTP-Referer": "https://github.com/leviathan-devops/shark-agent",
+        "X-Title": "Shark Agent"
     }
     
     payload = {
-        "model": model,
+        "model": OPENROUTER_MODEL_HEALER,
         "messages": messages,
         "max_tokens": 8192
     }
     
-    response = requests.post(OPENROUTER_ENDPOINT, headers=headers, json=payload, timeout=60)
+    response = requests.post(OPENROUTER_ENDPOINT, headers=headers, json=payload, timeout=120)
     response.raise_for_status()
     data = response.json()
     
@@ -330,8 +332,8 @@ def run(user_message, max_loops=10):
         print(f"[📤 Using DeepSeek Chat (simple query)]")
     elif model == "gemini":
         print(f"[💎 Using Gemini (manual trigger)]")
-    elif model == "openrouter":
-        print(f"[🔓 Using OpenRouter (fallback)]")
+    elif model == "healer":
+        print(f"[🔓 Using Healer Alpha (manual trigger)]")
     else:
         print(f"[🧠 Using DeepSeek R1 (complex: {reason})]")
 
@@ -341,8 +343,8 @@ def run(user_message, max_loops=10):
         # Call appropriate API based on model
         if model == "gemini":
             response = call_gemini(history)
-        elif model == "openrouter":
-            response = call_openrouter(history, OPENROUTER_MODEL_FAST)
+        elif model == "healer":
+            response = call_openrouter(history)
         else:
             # DeepSeek with automatic fallback chain
             response = call_deepseek(history, model=model)

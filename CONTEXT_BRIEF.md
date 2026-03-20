@@ -181,21 +181,19 @@ These ALWAYS trigger DeepSeek R1:
          ↓                     ↓
    ┌──────────┐         ┌──────────────┐
    │ Retry    │         │ All retries  │
-   │ (3x 60s) │         │ exhausted    │
+   │ (3x 120s)│         │ exhausted    │
    └──────────┘         └──────────────┘
                               ↓
                     ┌──────────────────┐
-                    │  Gemini API      │
+                    │  Gemini 3.1      │
+                    │  (500 RPD)       │
                     │  (Blocked in EU) │
-                    │  Works from SEA  │
                     └──────────────────┘
                               ↓
                     ┌──────────────────┐
-                    │  OpenRouter      │
+                    │  Healer Alpha    │
+                    │  (262K context)  │
                     │  (RELIABLE)      │
-                    │  - DeepSeek R1   │
-                    │  - Healer Alpha  │
-                    │  - Llama-3-70B   │
                     └──────────────────┘
                               ↓
                     ┌──────────────────┐
@@ -205,25 +203,26 @@ These ALWAYS trigger DeepSeek R1:
 
 **Fallback Hierarchy (AUTOMATIC):**
 1. **DeepSeek R1** (primary - ALWAYS first)
-2. **Retry 3 times** (60s each, exponential backoff)
-3. **Gemini 2.0 Flash** (may fail from Europe - blocked in EU)
-4. **OpenRouter** (RELIABLE - multiple models available)
+2. **Retry 3 times** (120s each, exponential backoff)
+3. **Gemini 3.1 Flash** (500 RPD, blocked in EU)
+4. **Healer Alpha** (OpenRouter - 262K context, RELIABLE)
 5. **ERROR** (system fails loudly)
 
 **⚠️ GEMINI GEOBLOCK:**
 Gemini free tier is BLOCKED in Europe. Works from Southeast Asia.
 If you're in Europe, Gemini will return 429 quota errors.
-The fallback chain automatically continues to OpenRouter.
+The fallback chain automatically continues to Healer Alpha.
 
-**✅ OPENROUTER - RELIABLE FALLBACK:**
-- `deepseek/deepseek-r1` - Same as DeepSeek API
-- `openrouter/healer-alpha` - Xiaomi MiMo-V2-Omni (FREE, 262K context)
-- `meta-llama/llama-3-70b-instruct` - Fast fallback
+**✅ HEALER ALPHA - RELIABLE FALLBACK:**
+- Model: `openrouter/healer-alpha`
+- Provider: Xiaomi MiMo-V2-Omni
+- Context: 262,144 tokens
+- Price: FREE
+- Throughput: ~90 tokens/sec
 
 **Manual Triggers:**
 - "ask gemini" → Use Gemini directly
-- "use openrouter" → Use OpenRouter directly
-- "use healer" → Use Healer Alpha via OpenRouter
+- "use healer" → Use Healer Alpha directly
 
 **NO LOCAL vLLM. EVER.**
 
