@@ -50,7 +50,7 @@ DEEPSEEK_TRIGGERS = [
     # Frustration expressions
     "wtf", "what the fuck", "what the hell", "why are you",
     "why isnt", "why is this", "this is stupid", "this is dumb",
-    "not working", "broken", "fix this", "fix it",
+    "stupid", "dumb", "not working", "broken", "fix this", "fix it",
     
     # Reasoning requests
     "think harder", "think about", "reason through", "analyze this",
