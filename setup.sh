@@ -63,6 +63,12 @@ else
 fi
 echo ""
 
+# Check if running interactively
+INTERACTIVE=false
+if [ -t 0 ]; then
+    INTERACTIVE=true
+fi
+
 # Security notice
 print_color "${YELLOW}SECURITY NOTICE:${NC}"
 echo "This script will:"
@@ -75,11 +81,16 @@ echo "  curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agen
 echo "  sha256sum setup.sh  # Compare with published checksum"
 echo "  bash setup.sh"
 echo ""
-read -p "Continue with installation? [Y/n] " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    print_color "${YELLOW}Installation cancelled.${NC}"
-    exit 0
+
+if $INTERACTIVE; then
+    read -p "Continue with installation? [Y/n] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_color "${YELLOW}Installation cancelled.${NC}"
+        exit 0
+    fi
+else
+    print_color "${YELLOW}Non-interactive mode: continuing automatically${NC}"
 fi
 
 echo ""
@@ -146,18 +157,24 @@ print_color "${BLUE}Step 2/7: Installing Qwen Code...${NC}"
 print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
-# Check npm registry config
-NPM_REGISTRY=$(npm config get registry 2>/dev/null || echo "https://registry.npmjs.org")
+# Check npm registry config (normalize trailing slashes)
+NPM_REGISTRY=$(npm config get registry 2>/dev/null | sed 's:/*$::' || echo "https://registry.npmjs.org")
 if [[ "$NPM_REGISTRY" != "https://registry.npmjs.org" ]]; then
     print_color "${YELLOW}WARNING: Custom npm registry detected: $NPM_REGISTRY${NC}"
     print_color "${YELLOW}Using official registry is recommended for security${NC}"
-    read -p "Continue anyway? [y/N] " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_color "${RED}Please configure npm to use official registry:${NC}"
-        echo "  npm config set registry https://registry.npmjs.org"
-        exit 1
+    if $INTERACTIVE; then
+        read -p "Continue anyway? [y/N] " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_color "${RED}Please configure npm to use official registry:${NC}"
+            echo "  npm config set registry https://registry.npmjs.org"
+            exit 1
+        fi
+    else
+        print_color "${YELLOW}Non-interactive: continuing with custom registry${NC}"
     fi
+else
+    print_color "${GREEN}✓${NC} npm registry: official"
 fi
 
 print_color "${YELLOW}Installing Qwen Code globally...${NC}"
@@ -263,23 +280,34 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
     print_color "${YELLOW}Your key will be stored in: $CONFIG_DIR/config.json${NC}"
     print_color "${YELLOW}File permissions: 600 (only you can read)${NC}"
     echo ""
-    
-    # Silent input to hide API key
-    read -sp "Enter your DeepSeek API key: " API_KEY
-    echo  # Newline after silent input
-    
+
+    if $INTERACTIVE; then
+        # Interactive mode - silent input
+        read -sp "Enter your DeepSeek API key: " API_KEY
+        echo  # Newline after silent input
+    else
+        # Non-interactive mode - use environment variable or prompt
+        if [ -n "$DEEPSEEK_API_KEY" ]; then
+            API_KEY="$DEEPSEEK_API_KEY"
+            print_color "${GREEN}✓${NC} Using API key from environment"
+        else
+            print_color "${YELLOW}Enter your DeepSeek API key:${NC}"
+            read API_KEY
+        fi
+    fi
+
     if [ -z "$API_KEY" ]; then
         print_color "${RED}✗ API key required${NC}"
         exit 1
     fi
-    
+
     # Validate API key format (should start with sk-)
     if [[ ! "$API_KEY" =~ ^sk-[a-zA-Z0-9]+$ ]]; then
         print_color "${RED}✗ Invalid API key format${NC}"
         echo "Expected format: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         exit 1
     fi
-    
+
     # Create config with secure permissions
     cat > "$CONFIG_DIR/config.json" << EOF
 {
@@ -291,10 +319,10 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
   "verbose": false
 }
 EOF
-    
+
     # Secure file permissions (owner read/write only)
     chmod 600 "$CONFIG_DIR/config.json"
-    
+
     print_color "${GREEN}✓${NC} Config saved with secure permissions (600)"
 else
     print_color "${GREEN}✓${NC} Config exists"
