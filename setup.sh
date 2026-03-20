@@ -39,15 +39,15 @@ print_color() {
 }
 
 echo ""
-print_color "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
-print_color "${CYAN}║                                                          ║${NC}"
-print_color "${CYAN}║           🦈 SHARK AGENT - SETUP WIZARD 🦈                ║${NC}"
-print_color "${CYAN}║                                                          ║${NC}"
-print_color "${CYAN}║     Complete Dual-Brain AI Coding Agent Setup            ║${NC}"
-print_color "${CYAN}║                                                          ║${NC}"
-print_color "${CYAN}║     Qwen Code + DeepSeek R1 = Autonomous Coding          ║${NC}"
-print_color "${CYAN}║                                                          ║${NC}"
-print_color "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+echo "╔══════════════════════════════════════════════════════════╗"
+echo "║                                                          ║"
+echo "║           🦈 SHARK AGENT - SETUP WIZARD 🦈                ║"
+echo "║                                                          ║"
+echo "║     Complete Dual-Brain AI Coding Agent Setup            ║"
+echo "║                                                          ║"
+echo "║     Qwen Code + DeepSeek R1 = Autonomous Coding          ║"
+echo "║                                                          ║"
+echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
 # Detect OS
