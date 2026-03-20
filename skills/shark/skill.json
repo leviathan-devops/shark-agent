@@ -20,7 +20,7 @@
     "loop": "shark-loop.py"
   },
   "config": {
-    "api_key": "sk-e8e93e31b582423e9fdaa4ab8e9347e2",
+    "api_key": "sk-YOUR_API_KEY_HERE",
     "history_file": "/tmp/shark-history.json",
     "model": "deepseek-reasoner"
   },

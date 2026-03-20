@@ -69,7 +69,7 @@ pip install flask -q
 
 ## Configuration
 
-- **API Key:** `sk-e8e93e31b582423e9fdaa4ab8e9347e2`
+- **API Key:** `sk-YOUR_API_KEY_HERE`
 - **History:** `/tmp/shark-history.json`
 - **Model:** `deepseek-reasoner`
 - **Timeout:** 120s API, 300s commands
