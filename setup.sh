@@ -284,19 +284,12 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
     if [ -n "$DEEPSEEK_API_KEY" ]; then
         API_KEY="$DEEPSEEK_API_KEY"
         print_color "${GREEN}✓${NC} Using API key from environment"
-    elif $INTERACTIVE; then
-        # Interactive mode - silent input
-        print_color "${YELLOW}Enter your DeepSeek API key:${NC}"
-        if read -sp "Key: " API_KEY 2>/dev/null; then
-            echo  # Newline after silent input
-        else
-            # Fallback for systems where -p doesn't work
-            read API_KEY
-        fi
     else
-        # Non-interactive mode - prompt for input
+        # Interactive prompt - works on all systems
         print_color "${YELLOW}Enter your DeepSeek API key:${NC}"
+        echo -n "Key: "
         read API_KEY
+        echo ""
     fi
 
     if [ -z "$API_KEY" ]; then
