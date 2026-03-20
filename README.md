@@ -15,13 +15,13 @@ DeepSeek R1 provides the reasoning. Qwen Code provides the execution. Together, 
 ### One-Line Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leviathan-devops/dual-brain-shark/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/scripts/install.sh | bash
 ```
 
 ### Manual Install
 
 ```bash
-git clone https://github.com/leviathan-devops/dual-brain-shark.git
+git clone https://github.com/leviathan-devops/shark-agent.git
 cd dual-brain-shark
 ./scripts/install.sh
 ```
@@ -164,7 +164,7 @@ Create `~/.dual-brain-shark/config.json`:
 ### Building from Source
 
 ```bash
-git clone https://github.com/leviathan-devops/dual-brain-shark.git
+git clone https://github.com/leviathan-devops/shark-agent.git
 cd dual-brain-shark
 pip install -r requirements.txt
 ./scripts/install.sh --dev
@@ -202,7 +202,7 @@ curl -H "Authorization: Bearer $DEEPSEEK_API_KEY" \
 ### Getting Help
 
 - 📖 Read the [documentation](docs/)
-- 🐛 Open an [issue](https://github.com/leviathan-devops/dual-brain-shark/issues)
+- 🐛 Open an [issue](https://github.com/leviathan-devops/shark-agent/issues)
 
 ---
 
@@ -210,5 +210,5 @@ curl -H "Authorization: Bearer $DEEPSEEK_API_KEY" \
 
 ```bash
 # Ready to start?
-curl -fsSL https://raw.githubusercontent.com/leviathan-devops/dual-brain-shark/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/scripts/install.sh | bash
 ```
