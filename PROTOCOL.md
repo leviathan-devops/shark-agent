@@ -6,6 +6,32 @@ This document defines the protocol for using Shark Agent with proper dual-brain 
 
 ---
 
+## 🚀 Quick Start
+
+### Auto-Load on Qwen Code Launch
+
+Shark Agent is **automatically loaded** when you start Qwen Code. No manual skill loading required.
+
+**Config location:** `~/.qwen/settings.json`
+
+```json
+{
+  "skills": {
+    "autoLoad": ["shark"],
+    "defaultSkill": "shark"
+  }
+}
+```
+
+### Manual Activation
+
+If auto-load fails, use these trigger phrases:
+- "plug in to deepseek brain"
+- "use deepseek"
+- "shark mode"
+
+---
+
 ## 🧠 Protocol Rules
 
 ### Rule 1: DeepSeek Handles ALL Reasoning

@@ -353,7 +353,45 @@ fi
 
 echo ""
 print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-print_color "${BLUE}Step 6/7: Setting up aliases...${NC}"
+print_color "${BLUE}Step 6/7: Configuring Qwen Code auto-load...${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+echo ""
+
+# Configure Qwen Code to auto-load shark skill
+QWEN_SETTINGS="$HOME/.qwen/settings.json"
+if [ -f "$QWEN_SETTINGS" ]; then
+    # Add shark to autoLoad if not already present
+    if ! grep -q '"shark"' "$QWEN_SETTINGS" 2>/dev/null; then
+        # Backup and modify settings
+        cp "$QWEN_SETTINGS" "$QWEN_SETTINGS.backup.$(date +%s)"
+        
+        # Use Python to safely modify JSON
+        python3 << PYEOF
+import json
+with open('$QWEN_SETTINGS', 'r') as f:
+    config = json.load(f)
+if 'skills' not in config:
+    config['skills'] = {}
+if 'autoLoad' not in config['skills']:
+    config['skills']['autoLoad'] = []
+if 'shark' not in config['skills']['autoLoad']:
+    config['skills']['autoLoad'].append('shark')
+config['skills']['defaultSkill'] = 'shark'
+with open('$QWEN_SETTINGS', 'w') as f:
+    json.dump(config, f, indent=2)
+print("Shark skill added to auto-load")
+PYEOF
+        print_color "${GREEN}✓${NC} Shark skill configured for auto-load"
+    else
+        print_color "${GREEN}✓${NC} Shark skill already configured for auto-load"
+    fi
+else
+    print_color "${YELLOW}!${NC} Qwen Code settings not found, skipping auto-load config"
+fi
+
+echo ""
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}Step 7/7: Setting up aliases...${NC}"
 print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
