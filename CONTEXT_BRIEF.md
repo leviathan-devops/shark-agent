@@ -1,5 +1,10 @@
 # Shark Agent - Context Brief for Local Setup
 
+**Last Updated:** 2026-03-20
+**Version:** 1.0
+
+---
+
 ## Architecture Overview
 
 **Shark Agent = Dual-Brain AI Coding System**
@@ -40,18 +45,40 @@
 
 **DeepSeek R1 does ALL reasoning. Local model ONLY executes.**
 
-The local model must NOT:
+### Recommended Local Model
+
+**Qwen2.5-Coder-14B (FP8) via vLLM**
+
+Why this model:
+- No built-in "thinking" tokens
+- Faithfully executes commands without injecting reasoning
+- Runs on 6-8GB VRAM (RTX 4080 comfortable)
+- FP8 quantization prevents offloading
+
+**DO NOT USE:** Qwen3.5 models - they have mandatory reasoning tokens that violate Rule 1.
+
+### The local model must NOT:
 - Calculate or derive answers independently
 - Make recommendations without DeepSeek
 - Analyze problems on its own
 - Give opinions or suggestions
 - Solve problems itself
 
-The local model IS allowed to:
+### The local model IS allowed to:
 - Execute bash commands from DeepSeek
 - Display output from DeepSeek
 - Forward user requests to DeepSeek
 - Show routing decisions
+
+### YOLO Mode Clarification
+
+**YOLO Mode = Automatic command execution without confirmation**
+
+When `shark` launches Qwen Code with `--yolo` flag:
+- Commands execute immediately (no "are you sure?" prompts)
+- Local model does NOT reason about commands
+- Local model just passes commands to terminal
+- This is intentional - local model is "hands only"
 
 ---
 
@@ -90,6 +117,51 @@ These ALWAYS trigger DeepSeek R1:
 
 ---
 
+## Fallback Architecture
+
+**What happens when DeepSeek API fails:**
+
+```
+                DeepSeek API Call
+                      ↓
+              ┌───────────────┐
+              │   API Fails   │
+              │ (timeout/503) │
+              └───────────────┘
+                      ↓
+         ┌────────────┴────────────┐
+         ↓                         ↓
+┌─────────────────┐       ┌─────────────────┐
+│  Retry (3x)     │       │  Show Error     │
+│  300s each      │       │  to User        │
+└─────────────────┘       └─────────────────┘
+         ↓
+┌─────────────────┐
+│  Local vLLM     │
+│  Fallback       │
+│  (Qwen2.5-Coder)│
+└─────────────────┘
+```
+
+**Fallback Hierarchy:**
+1. DeepSeek API (primary)
+2. Retry up to 3 times (300s each)
+3. Local vLLM server (if configured)
+4. Error to user (no fallback available)
+
+**Configure Local Fallback:**
+```json
+{
+  "fallback": {
+    "enabled": true,
+    "local_model": "Qwen2.5-Coder-14B-FP8",
+    "vllm_endpoint": "http://localhost:8000"
+  }
+}
+```
+
+---
+
 ## File Structure
 
 ```
@@ -99,7 +171,39 @@ These ALWAYS trigger DeepSeek R1:
 ├── shark-loop.py       # Auto-execute loop
 ├── shark-client.py     # DeepSeek API client
 ├── SKILL.md            # Skill definition
-└── skill.json          # Manifest
+└── skill.json          # Manifest (autoLoad config)
+```
+
+### skill.json Registration
+
+For auto-load to work, `skill.json` must contain:
+
+```json
+{
+  "name": "shark",
+  "triggers": ["plug in to deepseek brain", "use deepseek"],
+  "execution": {
+    "type": "shell",
+    "command": "python3",
+    "args": ["~/.qwen/skills/shark/run.py", "${input}"]
+  },
+  "config": {
+    "api_key": "sk-YOUR_KEY",
+    "model": "deepseek-reasoner",
+    "timeout": 300
+  }
+}
+```
+
+And `~/.qwen/settings.json` must have:
+
+```json
+{
+  "skills": {
+    "autoLoad": ["shark"],
+    "defaultSkill": "shark"
+  }
+}
 ```
 
 ---
@@ -222,6 +326,34 @@ Main entry point. Handles routing, escalation, execution.
 
 **Problem:** Local model reasoning independently
 **Fix:** Remind local model: "You are the hands, DeepSeek is the brain"
+
+---
+
+## Known Issues
+
+### Qwen3.5 Model Conflict
+
+**Problem:** Qwen3.5 models include mandatory reasoning tokens (`<think>` blocks).
+
+**Impact:** Cannot be used as execution layer - violates Rule 1 (local model must not reason).
+
+**Solution:** Use Qwen2.5-Coder-14B instead.
+
+### API Timeout on Complex Tasks
+
+**Problem:** DeepSeek R1 may timeout on very complex reasoning tasks.
+
+**Impact:** 300s timeout may not be enough for multi-file refactoring.
+
+**Solution:** Increase timeout in `run.py` or break tasks into smaller chunks.
+
+### Auto-Load Race Condition
+
+**Problem:** Qwen Code may load before skill is fully registered.
+
+**Impact:** Shark skill not auto-activated on first launch.
+
+**Solution:** Restart Qwen Code or manually trigger: "plug in to deepseek brain"
 
 ---
 
