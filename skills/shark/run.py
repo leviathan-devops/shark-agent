@@ -23,14 +23,18 @@ import os
 import hashlib
 
 API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
-API_KEY = "sk-YOUR_API_KEY_HERE"
-MODEL = "deepseek-reasoner"
+API_KEY = "sk-e8e93e31b582423e9fdaa4ab8e9347e2"
+MODEL_R1 = "deepseek-reasoner"      # Complex reasoning, coding, problem-solving
+MODEL_CHAT = "deepseek-chat"        # Simple questions, facts, chat
 HISTORY_FILE = "/tmp/shark-history.json"
 ERROR_TRACKER_FILE = "/tmp/shark-error-tracker.json"
 
 # CRITICAL: Error tracking for automatic DeepSeek escalation
 # If same error occurs 2+ times, DeepSeek MUST handle it
 RECURRING_ERROR_THRESHOLD = 2
+
+# Query routing thresholds
+SIMPLE_QUERY_MAX_LENGTH = 100  # Short queries likely simple
 
 # HARDCODED TRIGGER PHRASES - Force DeepSeek usage
 # These phrases mean user is frustrated with Qwen's reasoning
@@ -64,6 +68,71 @@ def check_deepseek_triggers(message):
         if trigger in message_lower:
             return True, trigger
     return False, None
+
+def route_query(message):
+    """
+    Route query to appropriate model:
+    - deepseek-chat: Simple questions, facts, chat (fast, cheap)
+    - deepseek-reasoner: Complex reasoning, coding, problem-solving (slow, expensive)
+    
+    Criteria for R1 (complex):
+    - Contains trigger phrases (user frustrated)
+    - Contains coding/technical keywords
+    - Contains reasoning keywords
+    - Long query (>100 chars)
+    - Multiple sentences
+    - Contains code blocks or file paths
+    """
+    msg_lower = message.lower()
+    
+    # Always use R1 for trigger phrases (user explicitly wants DeepSeek)
+    triggered, _ = check_deepseek_triggers(message)
+    if triggered:
+        return MODEL_R1, "trigger"
+    
+    # Keywords indicating complex reasoning/coding
+    complex_keywords = [
+        # Coding
+        "code", "program", "script", "function", "class", "debug", "error", "fix",
+        "build", "compile", "run", "execute", "deploy", "install", "configure",
+        "api", "database", "server", "file", "directory", "path", "import",
+        # Reasoning
+        "analyze", "reason", "solve", "calculate", "derive", "prove", "explain",
+        "compare", "contrast", "evaluate", "optimize", "refactor", "design",
+        "architecture", "algorithm", "complex", "how to", "why", "steps",
+        # File operations
+        "create", "write", "read", "delete", "move", "copy", "edit", "modify",
+        # Problem indicators
+        "broken", "not working", "crash", "fail", "issue", "problem", "bug"
+    ]
+    
+    # Check for complex keywords
+    for keyword in complex_keywords:
+        if keyword in msg_lower:
+            return MODEL_R1, f"keyword:{keyword}"
+    
+    # Check for code blocks or file paths
+    if "```" in message or "/" in message or "." in message:
+        return MODEL_R1, "code_detected"
+    
+    # Check length and sentence count
+    sentences = [s.strip() for s in message.split('.') if s.strip()]
+    if len(message) > SIMPLE_QUERY_MAX_LENGTH or len(sentences) > 1:
+        return MODEL_R1, "complex_structure"
+    
+    # Default to Chat for simple questions
+    return MODEL_CHAT, "simple"
+
+def call_deepseek(messages, model=MODEL_R1):
+    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+    payload = {"model": model, "messages": messages, "stream": False, "max_tokens": 8192}
+    response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=300)
+    response.raise_for_status()
+    data = response.json()
+    content = data["choices"][0]["message"].get("content", "")
+    reasoning = data["choices"][0]["message"].get("reasoning_content", "")
+    # Combine reasoning + content for command extraction
+    return reasoning + "\n" + content if reasoning else content
 
 SYSTEM_PROMPT = {
     "role": "system",
@@ -147,10 +216,14 @@ def run(user_message, max_loops=10):
     """
     Main entry - called by Qwen Code
     
-    CRITICAL: Triggers and recurring problems auto-escalate to DeepSeek.
-    Qwen Code is NOT allowed to solve these - DeepSeek MUST handle them.
+    AUTO-ROUTING: Queries are routed to appropriate model:
+    - deepseek-chat: Simple questions (fast, cheap)
+    - deepseek-reasoner: Complex reasoning/coding (slow, expensive)
     """
     history = load_history()
+    
+    # Auto-route query to appropriate model
+    model, reason = route_query(user_message)
     
     # Check for hardcoded trigger phrases (frustration, reasoning requests)
     triggered, trigger_word = check_deepseek_triggers(user_message)
@@ -161,13 +234,20 @@ def run(user_message, max_loops=10):
     elif track_error(user_message):
         print("\n[⚠️ RECURRING PROBLEM DETECTED - DeepSeek R1 handling this]\n")
         history.append({"role": "user", "content": f"[ESCALATED - Same problem occurred 2+ times]\n{user_message}"})
+        model = MODEL_R1  # Force R1 for escalated issues
     else:
         history.append({"role": "user", "content": user_message})
+    
+    # Show routing decision for debugging
+    if model == MODEL_CHAT:
+        print(f"[📤 Using DeepSeek Chat (simple query)]")
+    else:
+        print(f"[🧠 Using DeepSeek R1 (complex: {reason})]")
 
     output = []
 
     for loop in range(max_loops):
-        response = call_deepseek(history)
+        response = call_deepseek(history, model=model)
         history.append({"role": "assistant", "content": response})
 
         commands = extract_commands(response)
