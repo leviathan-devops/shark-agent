@@ -366,19 +366,13 @@ MIT License - Use it, modify it, sell it, whatever.
 
 You know how OpenClaw has a lobster as their mascot?
 
-**That's the point.** A lobster manages your codebase.
+**Why is a lobster managing your codebase?**
 
-Lobsters:
-- Scuttle around at the bottom
-- Grab randomly with their claws
-- Look confused in every direction
-- Get eaten by predators
-
-**Sharks eat lobsters.**
+**Lobsters are dinner.**
 
 Your codebase should be managed by a shark, not a lobster.
 
-Two brains. One predator. No lobsters.
+Cut through the noise and just get shit done.
 
 ---
 
