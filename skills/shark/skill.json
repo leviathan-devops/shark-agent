@@ -1,0 +1,30 @@
+{
+  "name": "shark",
+  "version": "1.0.0",
+  "description": "Shark Agent - Transform any coding agent into Dual-Brain with DeepSeek R1",
+  "triggers": [
+    "plug in to deepseek brain",
+    "use deepseek",
+    "shark mode",
+    "dual brain shark"
+  ],
+  "execution": {
+    "type": "shell",
+    "command": "python3",
+    "args": ["~/.qwen/skills/shark/run.py", "${input}"],
+    "mode": "yolo"
+  },
+  "files": {
+    "main": "run.py",
+    "interactive": "shark-brain.py",
+    "loop": "shark-loop.py"
+  },
+  "config": {
+    "api_key": "sk-e8e93e31b582423e9fdaa4ab8e9347e2",
+    "history_file": "/tmp/shark-history.json",
+    "model": "deepseek-reasoner"
+  },
+  "compatibility": {
+    "agents": ["qwen-code", "claude-code", "hermes", "openfang", "any-skill-support"]
+  }
+}
