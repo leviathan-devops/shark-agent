@@ -19,45 +19,45 @@ CONFIG_DIR="$HOME/.shark-agent"
 REPO_URL="https://github.com/leviathan-devops/shark-agent.git"
 BRANCH="main"
 
-echo -e "${BLUE}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║           Shark Skill - Installer                        ║${NC}"
-echo -e "${BLUE}╚══════════════════════════════════════════════════════════╝${NC}"
+echo "${BLUE}╔══════════════════════════════════════════════════════════╗${NC}"
+echo "${BLUE}║           Shark Skill - Installer                        ║${NC}"
+echo "${BLUE}╚══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
 # Security notice
-echo -e "${YELLOW}SECURITY NOTICE:${NC}"
+echo "${YELLOW}SECURITY NOTICE:${NC}"
 echo "This script will clone a GitHub repository and install Python scripts."
 echo ""
 read -p "Continue? [Y/n] " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Installation cancelled.${NC}"
+    echo "${YELLOW}Installation cancelled.${NC}"
     exit 0
 fi
 
 # Check for Python
 if ! command -v python3 &> /dev/null; then
-    echo -e "${RED}✗ Python 3 required${NC}"
+    echo "${RED}✗ Python 3 required${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓${NC} Python 3 found"
+echo "${GREEN}✓${NC} Python 3 found"
 
 # Check for requests
 if ! python3 -c "import requests" &> /dev/null; then
-    echo -e "${YELLOW}Installing requests...${NC}"
+    echo "${YELLOW}Installing requests...${NC}"
     pip install requests --break-system-packages -q 2>/dev/null || \
     pip install requests -q 2>/dev/null || \
     pip3 install requests -q 2>/dev/null || {
-        echo -e "${RED}Install manually: pip install requests${NC}"
+        echo "${RED}Install manually: pip install requests${NC}"
         exit 1
     }
 fi
-echo -e "${GREEN}✓${NC} Requests library ready"
+echo "${GREEN}✓${NC} Requests library ready"
 
 # Backup existing
 if [ -d "$SHARK_SKILL_DIR" ]; then
     BACKUP_NAME="$SHARK_SKILL_DIR.backup.$(date +%s)"
-    echo -e "${YELLOW}Backing up existing skill to: $BACKUP_NAME${NC}"
+    echo "${YELLOW}Backing up existing skill to: $BACKUP_NAME${NC}"
     mv "$SHARK_SKILL_DIR" "$BACKUP_NAME"
 fi
 
@@ -66,15 +66,15 @@ TEMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TEMP_DIR"' EXIT ERR INT TERM
 
 # Clone repo
-echo -e "${YELLOW}Cloning Shark Agent...${NC}"
+echo "${YELLOW}Cloning Shark Agent...${NC}"
 if ! git clone --depth 1 -b "$BRANCH" "$REPO_URL" "$TEMP_DIR/shark" 2>/dev/null; then
-    echo -e "${RED}✗ Failed to clone repository${NC}"
+    echo "${RED}✗ Failed to clone repository${NC}"
     exit 1
 fi
 
 # Verify expected files
 if [ ! -f "$TEMP_DIR/shark/skills/shark/run.py" ]; then
-    echo -e "${RED}✗ Expected skill files not found${NC}"
+    echo "${RED}✗ Expected skill files not found${NC}"
     exit 1
 fi
 
@@ -86,7 +86,7 @@ cp -r "$TEMP_DIR/shark/skills/shark" "$SHARK_SKILL_DIR"
 chmod 755 "$SHARK_SKILL_DIR"/*.py 2>/dev/null || true
 chmod 755 "$SHARK_SKILL_DIR"/shark 2>/dev/null || true
 
-echo -e "${GREEN}✓${NC} Shark skill installed"
+echo "${GREEN}✓${NC} Shark skill installed"
 
 # Config
 mkdir -p "$CONFIG_DIR"
@@ -103,10 +103,10 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
 }
 EOF
     chmod 600 "$CONFIG_DIR/config.json"
-    echo -e "${YELLOW}!${NC} Edit ~/.shark-agent/config.json with your API key"
-    echo -e "${YELLOW}  File permissions set to 600 (only you can read)${NC}"
+    echo "${YELLOW}!${NC} Edit ~/.shark-agent/config.json with your API key"
+    echo "${YELLOW}  File permissions set to 600 (only you can read)${NC}"
 else
-    echo -e "${GREEN}✓${NC} Config exists"
+    echo "${GREEN}✓${NC} Config exists"
 fi
 
 # Aliases
@@ -127,12 +127,12 @@ EOF
 fi
 
 echo ""
-echo -e "${GREEN}✓ Installation complete!${NC}"
+echo "${GREEN}✓ Installation complete!${NC}"
 echo ""
 echo "Usage in Qwen Code:"
 echo '  "plug in to deepseek brain"'
 echo ""
-echo -e "${YELLOW}Security:${NC}"
+echo "${YELLOW}Security:${NC}"
 echo "  Config: $CONFIG_DIR/config.json (permissions 600)"
 echo "  Skill: $SHARK_SKILL_DIR"
 echo ""

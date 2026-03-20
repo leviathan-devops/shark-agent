@@ -1,20 +1,30 @@
 #!/bin/bash
-# Shark Agent - Complete Setup Wizard (HARDENED)
+# Shark Agent - Complete Setup Wizard (macOS + Linux Compatible)
 # Installs Qwen Code + Shark Skill + DeepSeek Brain Integration
 # Usage: curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/setup.sh | bash
-#
-# SECURITY: This script has been audited. For maximum security, download and verify checksum first.
 
 set -euo pipefail
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Colors - work on both macOS and Linux
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    MAGENTA='\033[0;35m'
+    CYAN='\033[0;36m'
+    NC='\033[0m'
+else
+    # Linux
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    MAGENTA='\033[0;35m'
+    CYAN='\033[0;36m'
+    NC='\033[0m'
+fi
 
 # Configuration
 SHARK_SKILL_DIR="$HOME/.qwen/skills/shark"
@@ -23,24 +33,38 @@ BASH_ALIASES="$HOME/.bash_aliases"
 REPO_URL="https://github.com/leviathan-devops/shark-agent.git"
 BRANCH="main"
 
-# Expected SHA256 checksum of this script (for verification)
-# Update this when script changes
-EXPECTED_SHA256=""
+# Helper function for colored output (works on macOS + Linux)
+print_color() {
+    printf "%b\n" "$1"
+}
 
 echo ""
-echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║                                                          ║${NC}"
-echo -e "${CYAN}║           🦈 SHARK AGENT - SETUP WIZARD 🦈                ║${NC}"
-echo -e "${CYAN}║                                                          ║${NC}"
-echo -e "${CYAN}║     Complete Dual-Brain AI Coding Agent Setup            ║${NC}"
-echo -e "${CYAN}║                                                          ║${NC}"
-echo -e "${CYAN}║     Qwen Code + DeepSeek R1 = Autonomous Coding          ║${NC}"
-echo -e "${CYAN}║                                                          ║${NC}"
-echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+print_color "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+print_color "${CYAN}║                                                          ║${NC}"
+print_color "${CYAN}║           🦈 SHARK AGENT - SETUP WIZARD 🦈                ║${NC}"
+print_color "${CYAN}║                                                          ║${NC}"
+print_color "${CYAN}║     Complete Dual-Brain AI Coding Agent Setup            ║${NC}"
+print_color "${CYAN}║                                                          ║${NC}"
+print_color "${CYAN}║     Qwen Code + DeepSeek R1 = Autonomous Coding          ║${NC}"
+print_color "${CYAN}║                                                          ║${NC}"
+print_color "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+echo ""
+
+# Detect OS
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    print_color "${BLUE}Detected: macOS${NC}"
+    OS_NAME="macOS"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    print_color "${BLUE}Detected: Linux${NC}"
+    OS_NAME="Linux"
+else
+    print_color "${YELLOW}Unknown OS: $OSTYPE (will try generic install)${NC}"
+    OS_NAME="Unknown"
+fi
 echo ""
 
 # Security notice
-echo -e "${YELLOW}SECURITY NOTICE:${NC}"
+print_color "${YELLOW}SECURITY NOTICE:${NC}"
 echo "This script will:"
 echo "  • Install Node.js packages (Qwen Code)"
 echo "  • Clone GitHub repositories"
@@ -54,20 +78,27 @@ echo ""
 read -p "Continue with installation? [Y/n] " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Installation cancelled.${NC}"
+    print_color "${YELLOW}Installation cancelled.${NC}"
     exit 0
 fi
 
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}Step 1/7: Checking requirements...${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}Step 1/7: Checking requirements...${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
 # Node.js
 if ! command -v node &> /dev/null; then
-    echo -e "${YELLOW}Installing Node.js...${NC}"
-    if command -v apt &> /dev/null; then
+    print_color "${YELLOW}Installing Node.js...${NC}"
+    if [[ "$OS_NAME" == "macOS" ]]; then
+        if command -v brew &> /dev/null; then
+            brew install node
+        else
+            print_color "${RED}Homebrew not found. Please install from https://brew.sh${NC}"
+            exit 1
+        fi
+    elif command -v apt &> /dev/null; then
         curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
         sudo apt-get install -y nodejs
     elif command -v yum &> /dev/null; then
@@ -76,68 +107,70 @@ if ! command -v node &> /dev/null; then
     elif command -v pacman &> /dev/null; then
         sudo pacman -S nodejs npm --noconfirm
     else
-        echo -e "${RED}Please install Node.js from https://nodejs.org${NC}"
+        print_color "${RED}Please install Node.js from https://nodejs.org${NC}"
         exit 1
     fi
 fi
-echo -e "${GREEN}✓${NC} Node.js: $(node -v)"
+print_color "${GREEN}✓${NC} Node.js: $(node -v)"
 
 # npm
 if ! command -v npm &> /dev/null; then
-    echo -e "${RED}✗ npm required${NC}"
+    print_color "${RED}✗ npm required${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓${NC} npm: $(npm -v)"
+print_color "${GREEN}✓${NC} npm: $(npm -v)"
 
 # Python
 if ! command -v python3 &> /dev/null; then
-    echo -e "${RED}✗ Python 3 required${NC}"
+    print_color "${RED}✗ Python 3 required${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓${NC} Python 3: $(python3 --version)"
+print_color "${GREEN}✓${NC} Python 3: $(python3 --version)"
 
 # git
 if ! command -v git &> /dev/null; then
-    echo -e "${YELLOW}Installing git...${NC}"
-    if command -v apt &> /dev/null; then
+    print_color "${YELLOW}Installing git...${NC}"
+    if [[ "$OS_NAME" == "macOS" ]]; then
+        brew install git
+    elif command -v apt &> /dev/null; then
         sudo apt-get update && sudo apt-get install -y git
     elif command -v yum &> /dev/null; then
         sudo yum install -y git
     fi
 fi
-echo -e "${GREEN}✓${NC} git installed"
+print_color "${GREEN}✓${NC} git installed"
 
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}Step 2/7: Installing Qwen Code...${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}Step 2/7: Installing Qwen Code...${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
 # Check npm registry config
 NPM_REGISTRY=$(npm config get registry 2>/dev/null || echo "https://registry.npmjs.org")
 if [[ "$NPM_REGISTRY" != "https://registry.npmjs.org" ]]; then
-    echo -e "${YELLOW}WARNING: Custom npm registry detected: $NPM_REGISTRY${NC}"
-    echo -e "${YELLOW}Using official registry is recommended for security${NC}"
+    print_color "${YELLOW}WARNING: Custom npm registry detected: $NPM_REGISTRY${NC}"
+    print_color "${YELLOW}Using official registry is recommended for security${NC}"
     read -p "Continue anyway? [y/N] " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${RED}Please configure npm to use official registry:${NC}"
+        print_color "${RED}Please configure npm to use official registry:${NC}"
         echo "  npm config set registry https://registry.npmjs.org"
         exit 1
     fi
 fi
 
-echo -e "${YELLOW}Installing Qwen Code globally...${NC}"
+print_color "${YELLOW}Installing Qwen Code globally...${NC}"
 
 # Try official package only - no fallbacks to arbitrary repos
 if sudo npm install -g @anthropics/qwen-code 2>/dev/null; then
-    echo -e "${GREEN}✓${NC} Qwen Code installed from official package"
+    print_color "${GREEN}✓${NC} Qwen Code installed from official package"
 elif sudo npm install -g qwen-code 2>/dev/null; then
-    echo -e "${GREEN}✓${NC} Qwen Code installed (alternative package)"
+    print_color "${GREEN}✓${NC} Qwen Code installed (alternative package)"
 else
-    echo -e "${RED}✗ Qwen Code installation failed${NC}"
+    print_color "${RED}✗ Qwen Code installation failed${NC}"
     echo ""
-    echo "Please install manually:"
+    print_color "${YELLOW}Please install manually:${NC}"
     echo "  sudo npm install -g @anthropics/qwen-code"
     echo ""
     echo "Or check: https://github.com/QwenLM/qwen-code"
@@ -145,40 +178,40 @@ else
 fi
 
 if command -v qwen &> /dev/null; then
-    echo -e "${GREEN}✓${NC} Qwen Code: $(qwen --version 2>/dev/null || echo installed)"
+    print_color "${GREEN}✓${NC} Qwen Code: $(qwen --version 2>/dev/null || echo installed)"
 else
-    echo -e "${RED}✗ qwen command not found after install${NC}"
+    print_color "${RED}✗ qwen command not found after install${NC}"
     exit 1
 fi
 
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}Step 3/7: Installing Shark Skill...${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}Step 3/7: Installing Shark Skill...${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
 # Backup existing
 if [ -d "$SHARK_SKILL_DIR" ]; then
-    echo -e "${YELLOW}Backing up existing skill...${NC}"
+    print_color "${YELLOW}Backing up existing skill...${NC}"
     BACKUP_NAME="$SHARK_SKILL_DIR.backup.$(date +%s)"
     cp -r "$SHARK_SKILL_DIR" "$BACKUP_NAME"
-    echo -e "${GREEN}✓${NC} Backup: $BACKUP_NAME"
+    print_color "${GREEN}✓${NC} Backup: $BACKUP_NAME"
 fi
 
 # Use secure temp directory
 TEMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TEMP_DIR"' EXIT ERR INT TERM
 
-echo -e "${YELLOW}Cloning Shark Agent repository...${NC}"
+print_color "${YELLOW}Cloning Shark Agent repository...${NC}"
 if ! git clone --depth 1 -b "$BRANCH" "$REPO_URL" "$TEMP_DIR/shark" 2>/dev/null; then
-    echo -e "${RED}✗ Failed to clone repository${NC}"
+    print_color "${RED}✗ Failed to clone repository${NC}"
     exit 1
 fi
 
 # Verify expected files exist before copying
 if [ ! -f "$TEMP_DIR/shark/skills/shark/run.py" ]; then
-    echo -e "${RED}✗ Expected skill files not found${NC}"
-    echo -e "${YELLOW}Repository structure may have changed${NC}"
+    print_color "${RED}✗ Expected skill files not found${NC}"
+    print_color "${YELLOW}Repository structure may have changed${NC}"
     exit 1
 fi
 
@@ -190,32 +223,32 @@ cp -r "$TEMP_DIR/shark/skills/shark" "$SHARK_SKILL_DIR"
 chmod 755 "$SHARK_SKILL_DIR"/*.py 2>/dev/null || true
 chmod 755 "$SHARK_SKILL_DIR"/shark 2>/dev/null || true
 
-echo -e "${GREEN}✓${NC} Shark skill installed"
+print_color "${GREEN}✓${NC} Shark skill installed"
 
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}Step 4/7: Python dependencies...${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}Step 4/7: Python dependencies...${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
 if ! python3 -c "import requests" &> /dev/null; then
-    echo -e "${YELLOW}Installing requests...${NC}"
+    print_color "${YELLOW}Installing requests...${NC}"
     if pip install requests --break-system-packages -q 2>/dev/null; then
-        echo -e "${GREEN}✓${NC} Installed via pip"
+        print_color "${GREEN}✓${NC} Installed via pip"
     elif pip3 install requests -q 2>/dev/null; then
-        echo -e "${GREEN}✓${NC} Installed via pip3"
+        print_color "${GREEN}✓${NC} Installed via pip3"
     elif sudo pip install requests -q 2>/dev/null; then
-        echo -e "${GREEN}✓${NC} Installed via sudo pip"
+        print_color "${GREEN}✓${NC} Installed via sudo pip"
     else
-        echo -e "${YELLOW}Install manually: pip install requests${NC}"
+        print_color "${YELLOW}Install manually: pip install requests${NC}"
     fi
 fi
-echo -e "${GREEN}✓${NC} Dependencies ready"
+print_color "${GREEN}✓${NC} Dependencies ready"
 
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}Step 5/7: DeepSeek API configuration...${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}Step 5/7: DeepSeek API configuration...${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
 mkdir -p "$CONFIG_DIR"
@@ -224,11 +257,11 @@ mkdir -p "$CONFIG_DIR"
 chmod 700 "$CONFIG_DIR"
 
 if [ ! -f "$CONFIG_DIR/config.json" ]; then
-    echo -e "${CYAN}DeepSeek API Key Required${NC}"
+    print_color "${CYAN}DeepSeek API Key Required${NC}"
     echo ""
     echo "Get your key: https://platform.deepseek.com"
-    echo -e "${YELLOW}Your key will be stored in: $CONFIG_DIR/config.json${NC}"
-    echo -e "${YELLOW}File permissions: 600 (only you can read)${NC}"
+    print_color "${YELLOW}Your key will be stored in: $CONFIG_DIR/config.json${NC}"
+    print_color "${YELLOW}File permissions: 600 (only you can read)${NC}"
     echo ""
     
     # Silent input to hide API key
@@ -236,13 +269,13 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
     echo  # Newline after silent input
     
     if [ -z "$API_KEY" ]; then
-        echo -e "${RED}✗ API key required${NC}"
+        print_color "${RED}✗ API key required${NC}"
         exit 1
     fi
     
     # Validate API key format (should start with sk-)
     if [[ ! "$API_KEY" =~ ^sk-[a-zA-Z0-9]+$ ]]; then
-        echo -e "${RED}✗ Invalid API key format${NC}"
+        print_color "${RED}✗ Invalid API key format${NC}"
         echo "Expected format: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
         exit 1
     fi
@@ -262,118 +295,138 @@ EOF
     # Secure file permissions (owner read/write only)
     chmod 600 "$CONFIG_DIR/config.json"
     
-    echo -e "${GREEN}✓${NC} Config saved with secure permissions (600)"
+    print_color "${GREEN}✓${NC} Config saved with secure permissions (600)"
 else
-    echo -e "${GREEN}✓${NC} Config exists"
-    echo -e "${YELLOW}To update API key, edit: $CONFIG_DIR/config.json${NC}"
+    print_color "${GREEN}✓${NC} Config exists"
+    print_color "${YELLOW}To update API key, edit: $CONFIG_DIR/config.json${NC}"
 fi
 
-# Verify config permissions
-CONFIG_PERMS=$(stat -c %a "$CONFIG_DIR/config.json" 2>/dev/null || stat -f %A "$CONFIG_DIR/config.json" 2>/dev/null || echo "unknown")
-if [[ "$CONFIG_PERMS" != "600" ]]; then
-    echo -e "${YELLOW}WARNING: Config file permissions are $CONFIG_PERMS (should be 600)${NC}"
-    chmod 600 "$CONFIG_DIR/config.json"
-    echo -e "${GREEN}✓${NC} Fixed permissions to 600"
+# Verify config permissions (works on macOS + Linux)
+if command -v stat &> /dev/null; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS stat
+        CONFIG_PERMS=$(stat -f %A "$CONFIG_DIR/config.json" 2>/dev/null || echo "unknown")
+    else
+        # Linux stat
+        CONFIG_PERMS=$(stat -c %a "$CONFIG_DIR/config.json" 2>/dev/null || echo "unknown")
+    fi
+    if [[ "$CONFIG_PERMS" != "600" ]]; then
+        print_color "${YELLOW}WARNING: Config file permissions are $CONFIG_PERMS (should be 600)${NC}"
+        chmod 600 "$CONFIG_DIR/config.json"
+        print_color "${GREEN}✓${NC} Fixed permissions to 600"
+    fi
 fi
 
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}Step 6/7: Setting up aliases...${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}Step 6/7: Setting up aliases...${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
-touch "$BASH_ALIASES"
+# Detect shell config file
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS - check for zsh (default) or bash
+    if [[ -n "$ZSH_VERSION" ]] || [[ "$SHELL" == *"zsh"* ]]; then
+        SHELL_CONFIG="$HOME/.zshrc"
+    else
+        SHELL_CONFIG="$BASH_ALIASES"
+    fi
+else
+    # Linux
+    SHELL_CONFIG="$BASH_ALIASES"
+fi
 
-if ! grep -q "alias shark=" "$BASH_ALIASES" 2>/dev/null; then
-    cat >> "$BASH_ALIASES" << 'EOF'
+touch "$SHELL_CONFIG"
+
+if ! grep -q "alias shark=" "$SHELL_CONFIG" 2>/dev/null; then
+    cat >> "$SHELL_CONFIG" << 'EOF'
 
 # Shark Agent - Dual Brain Qwen Code
 alias shark='qwen --yolo'
 alias shark-test='python3 ~/.qwen/skills/shark/run.py "say hello and run: echo shark works"'
 EOF
-    echo -e "${GREEN}✓${NC} Added 'shark' alias"
+    print_color "${GREEN}✓${NC} Added 'shark' alias to $SHELL_CONFIG"
 else
-    echo -e "${GREEN}✓${NC} 'shark' alias exists"
+    print_color "${GREEN}✓${NC} 'shark' alias exists"
 fi
 
-if ! grep -q "alias qwen=" "$BASH_ALIASES" 2>/dev/null; then
-    echo "alias qwen='qwen --yolo'" >> "$BASH_ALIASES"
-    echo -e "${GREEN}✓${NC} Default YOLO mode for qwen"
+if ! grep -q "alias qwen=" "$SHELL_CONFIG" 2>/dev/null; then
+    echo "alias qwen='qwen --yolo'" >> "$SHELL_CONFIG"
+    print_color "${GREEN}✓${NC} Default YOLO mode for qwen"
 fi
 
 echo ""
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}Step 7/7: Security verification...${NC}"
-echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
+print_color "${BLUE}Step 7/7: Security verification...${NC}"
+print_color "${BLUE}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
 # Verify installations
 ERRORS=0
 
 if ! command -v qwen &> /dev/null; then
-    echo -e "${RED}✗ qwen command not found${NC}"
+    print_color "${RED}✗ qwen command not found${NC}"
     ERRORS=$((ERRORS + 1))
 fi
 
 if [ ! -d "$SHARK_SKILL_DIR" ]; then
-    echo -e "${RED}✗ Shark skill directory not found${NC}"
+    print_color "${RED}✗ Shark skill directory not found${NC}"
     ERRORS=$((ERRORS + 1))
 fi
 
 if [ ! -f "$CONFIG_DIR/config.json" ]; then
-    echo -e "${RED}✗ Config file not found${NC}"
+    print_color "${RED}✗ Config file not found${NC}"
     ERRORS=$((ERRORS + 1))
 fi
 
 if [ $ERRORS -gt 0 ]; then
     echo ""
-    echo -e "${RED}Installation completed with $ERRORS error(s)${NC}"
-    echo -e "${YELLOW}Please review the errors above${NC}"
+    print_color "${RED}Installation completed with $ERRORS error(s)${NC}"
+    print_color "${YELLOW}Please review the errors above${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}✓${NC} All components verified"
+print_color "${GREEN}✓${NC} All components verified"
 
 echo ""
-echo -e "${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║                                                          ║${NC}"
-echo -e "${GREEN}║        🎉 SHARK AGENT SETUP COMPLETE! 🎉                 ║${NC}"
-echo -e "${GREEN}║                                                          ║${NC}"
-echo -e "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
+print_color "${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
+print_color "${GREEN}║                                                          ║${NC}"
+print_color "${GREEN}║        🎉 SHARK AGENT SETUP COMPLETE! 🎉                 ║${NC}"
+print_color "${GREEN}║                                                          ║${NC}"
+print_color "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo -e "${CYAN}Installed:${NC}"
+print_color "${CYAN}Installed:${NC}"
 echo "  ✓ Qwen Code"
 echo "  ✓ Shark Skill (DeepSeek Brain)"
 echo "  ✓ Dual-Brain architecture"
 echo "  ✓ One-command launch"
 echo ""
-echo -e "${CYAN}Usage:${NC}"
+print_color "${CYAN}Usage:${NC}"
 echo ""
-echo -e "  ${GREEN}shark${NC}              → Launch Dual-Brain Qwen Code"
-echo -e "  ${GREEN}qwen${NC}               → Launch Qwen Code (YOLO)"
-echo -e "  ${GREEN}shark-test${NC}         → Test installation"
+print_color "  ${GREEN}shark${NC}              → Launch Dual-Brain Qwen Code"
+print_color "  ${GREEN}qwen${NC}               → Launch Qwen Code (YOLO)"
+print_color "  ${GREEN}shark-test${NC}         → Test installation"
 echo ""
-echo -e "${CYAN}In your first session:${NC}"
+print_color "${CYAN}In your first session:${NC}"
 echo '  "plug in to deepseek brain"'
 echo ""
-echo -e "${YELLOW}Security notes:${NC}"
-echo "  • API key stored in: $CONFIG_DIR/config.json"
-echo "  • Permissions: 600 (only you can read)"
-echo "  • To change key: nano $CONFIG_DIR/config.json"
-echo ""
-echo -e "${YELLOW}Quick test:${NC}"
+print_color "${YELLOW}Quick test:${NC}"
 echo "  Run: shark-test"
 echo ""
-echo -e "${BLUE}Docs: https://github.com/leviathan-devops/shark-agent${NC}"
+print_color "${BLUE}Docs: https://github.com/leviathan-devops/shark-agent${NC}"
 echo ""
-echo -e "${MAGENTA}═══════════════════════════════════════════════════════════${NC}"
-echo -e "${MAGENTA}Ready? Type: ${GREEN}shark${MAGENTA}${NC}"
-echo -e "${MAGENTA}═══════════════════════════════════════════════════════════${NC}"
+print_color "${MAGENTA}═══════════════════════════════════════════════════════════${NC}"
+print_color "${MAGENTA}Ready? Type: ${GREEN}shark${MAGENTA}${NC}"
+print_color "${MAGENTA}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 
 # Don't source automatically - let user do it
-echo -e "${YELLOW}To activate aliases, run:${NC}"
-echo "  source ~/.bash_aliases"
+print_color "${YELLOW}To activate aliases, run:${NC}"
+if [[ "$OSTYPE" == "darwin"* ]] && [[ -n "$ZSH_VERSION" ]]; then
+    echo "  source ~/.zshrc"
+else
+    echo "  source ~/.bash_aliases"
+fi
 echo ""
-echo -e "${YELLOW}Or restart your terminal${NC}"
+print_color "${YELLOW}Or restart your terminal${NC}"
 echo ""
