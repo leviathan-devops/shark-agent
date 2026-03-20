@@ -47,8 +47,8 @@ class DeepSeekBrain:
     
     def call_api(self, messages):
         headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
-        payload = {"model": MODEL, "messages": messages, "stream": False, "max_tokens": 4096}
-        response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=120)
+        payload = {"model": MODEL, "messages": messages, "stream": False, "max_tokens": 8192}
+        response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=300)
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
     

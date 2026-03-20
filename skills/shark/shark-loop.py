@@ -61,9 +61,9 @@ def call_deepseek(messages):
         "model": MODEL,
         "messages": messages,
         "stream": False,
-        "max_tokens": 4096
+        "max_tokens": 8192
     }
-    response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=120)
+    response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=300)
     response.raise_for_status()
     data = response.json()
     return data["choices"][0]["message"]["content"]

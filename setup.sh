@@ -314,7 +314,7 @@ if [ ! -f "$CONFIG_DIR/config.json" ]; then
 {
   "api_key": "$API_KEY",
   "model": "deepseek-reasoner",
-  "timeout": 120,
+  "timeout": 300,
   "max_loops": 10,
   "yolo_mode": true,
   "verbose": false

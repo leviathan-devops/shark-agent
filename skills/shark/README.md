@@ -55,7 +55,7 @@ python3 ~/.qwen/skills/deepseek-brain/deepseek-brain.py
 - **API Key:** `sk-YOUR_API_KEY_HERE`
 - **History:** `/tmp/deepseek-history.json`
 - **Model:** `deepseek-reasoner`
-- **Timeout:** 120s API, 300s commands
+- **Timeout:** 300s API, 300s commands
 
 ---
 

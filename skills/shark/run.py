@@ -89,8 +89,8 @@ def reset_error_tracker():
 
 def call_deepseek(messages):
     headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
-    payload = {"model": MODEL, "messages": messages, "stream": False, "max_tokens": 4096}
-    response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=120)
+    payload = {"model": MODEL, "messages": messages, "stream": False, "max_tokens": 8192}
+    response = requests.post(API_ENDPOINT, headers=headers, json=payload, timeout=300)
     response.raise_for_status()
     data = response.json()
     content = data["choices"][0]["message"].get("content", "")

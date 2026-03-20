@@ -67,7 +67,7 @@ def call_deepseek(messages):
         "model": MODEL,
         "messages": messages,
         "stream": False,
-        "max_tokens": 4096
+        "max_tokens": 8192
     }
     
     response = requests.post(API_ENDPOINT, headers=headers, json=payload)
