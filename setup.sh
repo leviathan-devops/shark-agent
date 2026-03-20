@@ -273,28 +273,33 @@ mkdir -p "$CONFIG_DIR"
 chmod 700 "$CONFIG_DIR"
 
 if [ ! -f "$CONFIG_DIR/config.json" ]; then
-    print_color "${CYAN}DeepSeek API Key Required${NC}"
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════╗"
+    echo "║           DEEPSEEK API KEY REQUIRED                      ║"
+    echo "╚══════════════════════════════════════════════════════════╝"
     echo ""
     echo "Get your key: https://platform.deepseek.com"
-    print_color "${YELLOW}Your key will be stored in: $CONFIG_DIR/config.json${NC}"
-    print_color "${YELLOW}File permissions: 600 (only you can read)${NC}"
     echo ""
-    
+    echo "Your key will be stored in: $CONFIG_DIR/config.json"
+    echo "File permissions: 600 (only you can read)"
+    echo ""
+
     # Get API key from environment if set
     if [ -n "$DEEPSEEK_API_KEY" ]; then
         API_KEY="$DEEPSEEK_API_KEY"
-        print_color "${GREEN}✓${NC} Using API key from environment"
+        echo "✓ Using API key from environment"
     else
-        # Interactive prompt
-        print_color "${YELLOW}Enter your DeepSeek API key:${NC}"
-        read -p "Key: " API_KEY
-        echo ""
+        # Interactive prompt - works on all macOS/Linux
+        echo "Enter your DeepSeek API key:"
+        echo -n "> "
+        read API_KEY
     fi
-    
+
     if [ -z "$API_KEY" ]; then
-        print_color "${RED}✗ API key required${NC}"
         echo ""
-        print_color "${YELLOW}Get your key at: https://platform.deepseek.com${NC}"
+        echo "✗ API key required"
+        echo ""
+        echo "Get your key at: https://platform.deepseek.com"
         echo ""
         echo "Or set environment variable and re-run:"
         echo "  export DEEPSEEK_API_KEY=sk-xxx"
