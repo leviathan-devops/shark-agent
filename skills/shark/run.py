@@ -5,11 +5,13 @@ Shark Agent - DeepSeek Brain Entry Point
 CRITICAL: This is the DUAL-BRAIN architecture.
 DeepSeek R1 does ALL reasoning. Qwen Code ONLY executes.
 
-If a problem occurs 2+ times, DeepSeek MUST handle it.
-Qwen Code is NOT allowed to solve recurring problems itself.
+HARDCODED TRIGGER PHRASES - Always use DeepSeek when detected:
+- "think", "use the deepseek brain", "ask deepseek", "figure it out"
+- "make it work", "wtf", "what the fuck", "why are you"
+- "stupid", "dumb", "not working", "broken", "fix this"
+- Any expression of frustration at Qwen's reasoning
 
-Usage:
-    python3 run.py "task description"
+These phrases mean: STOP trying to solve it yourself, use DeepSeek.
 """
 
 import requests
@@ -29,6 +31,39 @@ ERROR_TRACKER_FILE = "/tmp/shark-error-tracker.json"
 # CRITICAL: Error tracking for automatic DeepSeek escalation
 # If same error occurs 2+ times, DeepSeek MUST handle it
 RECURRING_ERROR_THRESHOLD = 2
+
+# HARDCODED TRIGGER PHRASES - Force DeepSeek usage
+# These phrases mean user is frustrated with Qwen's reasoning
+DEEPSEEK_TRIGGERS = [
+    # Direct commands
+    "think", "use the deepseek brain", "ask deepseek", "deepseek brain",
+    "plug in to deepseek", "activate deepseek", "switch to deepseek",
+    
+    # Problem solving
+    "figure it out", "make it work", "just fix it", "solve this",
+    "get it working", "make this work",
+    
+    # Frustration expressions
+    "wtf", "what the fuck", "what the hell", "why are you",
+    "why isnt", "why is this", "this is stupid", "this is dumb",
+    "not working", "broken", "fix this", "fix it",
+    
+    # Reasoning requests
+    "think harder", "think about", "reason through", "analyze this",
+    "deep reasoning", "smarter", "youre not thinking", "you're not thinking",
+    
+    # Repetition indicators
+    "again", "still not", "already tried", "i already", "you keep",
+    "same problem", "same issue", "still broken"
+]
+
+def check_deepseek_triggers(message):
+    """Check if message contains trigger phrases that require DeepSeek"""
+    message_lower = message.lower()
+    for trigger in DEEPSEEK_TRIGGERS:
+        if trigger in message_lower:
+            return True, trigger
+    return False, None
 
 SYSTEM_PROMPT = {
     "role": "system",
@@ -112,15 +147,19 @@ def run(user_message, max_loops=10):
     """
     Main entry - called by Qwen Code
     
-    CRITICAL: If same problem occurs 2+ times, DeepSeek MUST handle it.
-    Qwen Code is NOT allowed to solve recurring problems.
+    CRITICAL: Triggers and recurring problems auto-escalate to DeepSeek.
+    Qwen Code is NOT allowed to solve these - DeepSeek MUST handle them.
     """
     history = load_history()
     
+    # Check for hardcoded trigger phrases (frustration, reasoning requests)
+    triggered, trigger_word = check_deepseek_triggers(user_message)
+    if triggered:
+        print(f"\n[🧠 DEEPSEEK TRIGGER: '{trigger_word}' - Using DeepSeek R1]\n")
+        history.append({"role": "user", "content": f"[TRIGGERED: {trigger_word}]\n{user_message}"})
     # Check if this is a recurring problem that needs DeepSeek escalation
-    if track_error(user_message):
-        escalation_notice = "\n[⚠️ RECURRING PROBLEM DETECTED - DeepSeek R1 handling this]\n"
-        print(escalation_notice)
+    elif track_error(user_message):
+        print("\n[⚠️ RECURRING PROBLEM DETECTED - DeepSeek R1 handling this]\n")
         history.append({"role": "user", "content": f"[ESCALATED - Same problem occurred 2+ times]\n{user_message}"})
     else:
         history.append({"role": "user", "content": user_message})
