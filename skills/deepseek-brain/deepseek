@@ -1,0 +1,5 @@
+#!/bin/bash
+# DeepSeek Brain - Quick Launch
+# Usage: deepseek "your message"
+
+python3 ~/.qwen/skills/deepseek-brain/run.py "$*"

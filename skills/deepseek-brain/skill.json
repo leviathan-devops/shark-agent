@@ -1,0 +1,30 @@
+{
+  "name": "deepseek-brain",
+  "version": "1.0.0",
+  "description": "DeepSeek R1 reasoning with Qwen Code execution. Double-brain architecture.",
+  "triggers": [
+    "plug in to deepseek brain",
+    "use deepseek",
+    "deepseek reasoning",
+    "deepseek brain"
+  ],
+  "execution": {
+    "type": "shell",
+    "command": "python3",
+    "args": ["~/.qwen/skills/deepseek-brain/run.py", "${input}"],
+    "mode": "yolo",
+    "env": {
+      "DEEPSEEK_API_KEY": "${env:DEEPSEEK_API_KEY}"
+    }
+  },
+  "files": {
+    "main": "run.py",
+    "interactive": "deepseek-brain.py",
+    "loop": "deepseek-loop.py"
+  },
+  "config": {
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "history_file": "/tmp/deepseek-qwen-history.json",
+    "model": "deepseek-reasoner"
+  }
+}
