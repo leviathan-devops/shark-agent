@@ -212,6 +212,27 @@ You only pay for what you use. No subscription.
 
 ---
 
+## ❓ Is This Compatible With Claude Code?
+
+**No.** And that's intentional.
+
+Shark Agent was created because we got tired of AI coding agents that:
+- Refuse legitimate commands due to overzealous safety filters
+- Get distracted and lose track of the task
+- Struggle with complex, multi-step reasoning
+- Feel like using a flintlock pistol in 2026
+
+**Shark Agent is the assault rifle.**
+
+- DeepSeek R1 reasoning (actually smart)
+- YOLO mode (just executes, no lectures)
+- Stays on task (remembers what you're building)
+- No creative interpretations (does exactly what you asked)
+
+**Try Shark for a day. You'll understand why we built it.**
+
+---
+
 ## 🎯 Who Is This For?
 
 ### ✅ Good Fit
@@ -343,15 +364,21 @@ MIT License - Use it, modify it, sell it, whatever.
 
 ## 🦈 Why "Shark"?
 
-Sharks have two brains:
-1. **Forebrain** - Reasoning, planning, hunting
-2. **Hindbrain** - Execution, movement, instincts
+You know how OpenClaw has a lobster as their mascot?
 
-Just like this agent:
-1. **DeepSeek R1** - The forebrain (reasoning)
-2. **Qwen Code** - The hindbrain (execution)
+**That's the point.** A lobster manages your codebase.
 
-Two brains. One predator.
+Lobsters:
+- Scuttle around at the bottom
+- Grab randomly with their claws
+- Look confused in every direction
+- Get eaten by predators
+
+**Sharks eat lobsters.**
+
+Your codebase should be managed by a shark, not a lobster.
+
+Two brains. One predator. No lobsters.
 
 ---
 
