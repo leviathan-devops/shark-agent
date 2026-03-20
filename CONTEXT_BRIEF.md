@@ -5,16 +5,34 @@
 **Shark Agent = Dual-Brain AI Coding System**
 
 ```
-┌─────────────────┐     ┌──────────────────┐
-│  REASONING      │ ──→ │  EXECUTION       │
-│  DeepSeek R1    │     │  Local LLM       │
-│  (Cloud API)    │     │  (Local Model)   │
-└─────────────────┘     └──────────────────┘
-        ↓                       ↓
-   Thinks, plans,          Executes commands
-   reasons, solves         File operations
-   problems                Terminal access
+                    USER QUERY
+                        ↓
+              ┌─────────────────┐
+              │  AUTO-ROUTER    │
+              │  (route_query)  │
+              └─────────────────┘
+                        ↓
+         ┌──────────────┴──────────────┐
+         ↓                             ↓
+┌─────────────────┐           ┌──────────────────┐
+│  DeepSeek Chat  │           │  DeepSeek R1     │
+│  (Simple Q&A)   │           │  (Complex Code)  │
+│  Fast, Cheap    │           │  Slow, Expensive │
+└─────────────────┘           └──────────────────┘
+         ↓                             ↓
+         └──────────────┬──────────────┘
+                        ↓
+              ┌──────────────────┐
+              │  Local LLM       │
+              │  (Execution)     │
+              │  NO REASONING    │
+              └──────────────────┘
 ```
+
+**The Auto-Router decides:**
+- Simple questions → DeepSeek Chat (fast, cheap)
+- Complex reasoning → DeepSeek R1 (slow, expensive)
+- Local model NEVER reasons, only executes
 
 ---
 
@@ -144,19 +162,40 @@ These ALWAYS trigger DeepSeek R1:
 
 ## Critical Functions
 
-### route_query(message)
-Routes to appropriate model based on:
-- Trigger phrases → R1
-- Coding keywords → R1
-- Simple questions → Chat
+### route_query(message) → (model, reason)
+
+**Auto-routes queries to appropriate DeepSeek model:**
+
+```python
+# Returns: (model_name, routing_reason)
+
+# Simple questions → Chat
+route_query("What is 2+2?")  
+→ ('deepseek-chat', 'simple')
+
+# Complex → R1
+route_query("create a flask app")
+→ ('deepseek-reasoner', 'keyword:create')
+
+# Trigger phrases → R1
+route_query("wtf broken")
+→ ('deepseek-reasoner', 'trigger:wtf')
+```
+
+**Routing criteria:**
+- **Chat:** <100 chars, single sentence, no code keywords
+- **R1:** Trigger phrases, code keywords, file ops, long queries
 
 ### check_deepseek_triggers(message)
+
 Detects frustration/reasoning phrases that force R1 usage.
 
 ### call_deepseek(messages, model)
-Makes API call with 300s timeout.
+
+Makes API call with 300s timeout to specified model.
 
 ### run(user_message, max_loops)
+
 Main entry point. Handles routing, escalation, execution.
 
 ---
