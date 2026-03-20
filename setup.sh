@@ -41,7 +41,7 @@ print_color() {
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║                                                          ║"
-echo "║           🦈 SHARK AGENT - SETUP WIZARD 🦈                ║"
+echo "║         🦈 SHARK AGENT - SETUP WIZARD 🦈                ║"
 echo "║                                                          ║"
 echo "║     Complete Dual-Brain AI Coding Agent Setup            ║"
 echo "║                                                          ║"
