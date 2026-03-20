@@ -8,6 +8,19 @@ This document defines the protocol for using Shark Agent with proper dual-brain 
 
 ## 🚀 Quick Start
 
+### One-Command Launch
+
+```bash
+shark
+```
+
+That's it! This automatically:
+1. Launches Qwen Code in YOLO mode
+2. Activates DeepSeek Brain skill
+3. Shows the DeepSeek Brain welcome message
+
+**No manual skill loading. No trigger phrases. Just `shark`.**
+
 ### Auto-Load on Qwen Code Launch
 
 Shark Agent is **automatically loaded** when you start Qwen Code. No manual skill loading required.

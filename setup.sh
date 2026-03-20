@@ -410,21 +410,22 @@ fi
 
 touch "$SHELL_CONFIG"
 
+# Add shark alias that auto-activates DeepSeek Brain
 if ! grep -q "alias shark=" "$SHELL_CONFIG" 2>/dev/null; then
     cat >> "$SHELL_CONFIG" << 'EOF'
 
-# Shark Agent - Dual Brain Qwen Code
-alias shark='qwen --yolo'
-alias shark-test='python3 ~/.qwen/skills/shark/run.py "say hello and run: echo shark works"'
+# Shark Agent - Dual Brain Qwen Code (auto-activates DeepSeek Brain)
+shark() {
+    echo "🦈 Shark Agent - Launching Qwen Code with DeepSeek Brain..."
+    echo ""
+    # Launch qwen in yolo mode and auto-activate DeepSeek Brain
+    qwen --yolo -e "plug in to deepseek brain"
+}
+alias shark-brain='python3 ~/.qwen/skills/shark/shark-brain.py'
 EOF
-    print_color "${GREEN}✓${NC} Added 'shark' alias to $SHELL_CONFIG"
+    print_color "${GREEN}✓${NC} Added 'shark' command with auto-activation"
 else
-    print_color "${GREEN}✓${NC} 'shark' alias exists"
-fi
-
-if ! grep -q "alias qwen=" "$SHELL_CONFIG" 2>/dev/null; then
-    echo "alias qwen='qwen --yolo'" >> "$SHELL_CONFIG"
-    print_color "${GREEN}✓${NC} Default YOLO mode for qwen"
+    print_color "${GREEN}✓${NC} 'shark' command already configured"
 fi
 
 echo ""
