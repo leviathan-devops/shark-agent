@@ -5,6 +5,42 @@
 
 ---
 
+## ⚠️ CRITICAL PROTOCOL - ZERO TOLERANCE
+
+**THE LOCAL MODEL MAKES EXACTLY ONE DECISION:**
+- Route query to DeepSeek Chat (simple) OR DeepSeek R1 (complex)
+
+**THE LOCAL MODEL MAKES ZERO OTHER DECISIONS:**
+- NO model recommendations
+- NO quantization decisions
+- NO file format choices
+- NO fallback decisions
+- NO autonomous reasoning of ANY kind
+
+**VIOLATION = SYSTEM FAILURE**
+
+If local model makes ANY decision besides routing → **IMMEDIATE TERMINATION**
+
+---
+
+## Primary Reasoning Brains
+
+**DEFAULT: DeepSeek R1**
+- API: https://api.deepseek.com
+- Use for: ALL complex reasoning, coding, analysis
+- Timeout: 300s hardcoded
+
+**SECONDARY: Gemini 2.0 Flash Lite**
+- API: https://generativelanguage.googleapis.com
+- Use for: ONLY when DeepSeek API fails (500 RPD limit)
+- Trigger phrases: "ask gemini", "use gemini brain", "gemini"
+
+**NO LOCAL FALLBACK. EVER.**
+
+DeepSeek API MUST work. If it fails, use Gemini. No local vLLM.
+
+---
+
 ## Architecture Overview
 
 **Shark Agent = Dual-Brain AI Coding System**
@@ -43,32 +79,40 @@
 
 ## Core Design Principle
 
-**DeepSeek R1 does ALL reasoning. Local model ONLY executes.**
+**DeepSeek R1 does ALL reasoning. Local model ONLY routes and executes.**
 
-### Recommended Local Model
+### THE LOCAL MODEL IS NOT ALLOWED TO THINK
+
+**Sole Function:** Route queries
+- Simple question → DeepSeek Chat
+- Complex reasoning → DeepSeek R1
+
+**PROHIBITED Actions (TERMINATION OFFENSES):**
+- ❌ Recommending models ("use Q4_K_M instead")
+- ❌ Making quantization decisions
+- ❌ Choosing file formats
+- ❌ Deciding on fallbacks
+- ❌ ANY autonomous reasoning
+
+**ALLOWED Actions:**
+- ✅ Execute bash commands from DeepSeek
+- ✅ Display output from DeepSeek
+- ✅ Forward user requests to DeepSeek
+- ✅ Show routing decisions
+- ✅ Route simple→Chat, complex→R1
+
+### Recommended Local Model (Execution ONLY)
 
 **Qwen2.5-Coder-14B (FP8) via vLLM**
 
 Why this model:
 - No built-in "thinking" tokens
-- Faithfully executes commands without injecting reasoning
+- Faithfully executes without injecting reasoning
 - Runs on 6-8GB VRAM (RTX 4080 comfortable)
-- FP8 quantization prevents offloading
 
-**DO NOT USE:** Qwen3.5 models - they have mandatory reasoning tokens that violate Rule 1.
+**DO NOT USE:** Qwen3.5 - mandatory reasoning tokens violate Rule 1.
 
-### The local model must NOT:
-- Calculate or derive answers independently
-- Make recommendations without DeepSeek
-- Analyze problems on its own
-- Give opinions or suggestions
-- Solve problems itself
-
-### The local model IS allowed to:
-- Execute bash commands from DeepSeek
-- Display output from DeepSeek
-- Forward user requests to DeepSeek
-- Show routing decisions
+**NOTE:** Model is for EXECUTION ONLY. All reasoning goes to DeepSeek.
 
 ### YOLO Mode Clarification
 
@@ -119,46 +163,61 @@ These ALWAYS trigger DeepSeek R1:
 
 ## Fallback Architecture
 
-**What happens when DeepSeek API fails:**
+**NO LOCAL FALLBACK. DEEPSEEK API MUST WORK.**
 
 ```
-                DeepSeek API Call
-                      ↓
-              ┌───────────────┐
-              │   API Fails   │
-              │ (timeout/503) │
-              └───────────────┘
-                      ↓
-         ┌────────────┴────────────┐
-         ↓                         ↓
-┌─────────────────┐       ┌─────────────────┐
-│  Retry (3x)     │       │  Show Error     │
-│  300s each      │       │  to User        │
-└─────────────────┘       └─────────────────┘
-         ↓
-┌─────────────────┐
-│  Local vLLM     │
-│  Fallback       │
-│  (Qwen2.5-Coder)│
-└─────────────────┘
+                User Query
+                    ↓
+         ┌──────────────────┐
+         │  DeepSeek R1     │
+         │  (Primary Brain) │
+         └──────────────────┘
+                    ↓
+         ┌──────────────────┐
+         │  API Fails?      │
+         │  (timeout/503)   │
+         └──────────────────┘
+                    ↓
+              ┌─────┴─────┐
+              ↓           ↓
+    ┌─────────────────┐ ┌─────────────────┐
+    │  Retry (3x)     │ │  Gemini Fallback│
+    │  300s each      │ │  (Manual Only)  │
+    └─────────────────┘ └─────────────────┘
+              ↓
+    ┌──────────────────┐
+    │  ERROR TO USER   │
+    │  (No local)      │
+    └──────────────────┘
 ```
 
-**Fallback Hierarchy:**
-1. DeepSeek API (primary)
-2. Retry up to 3 times (300s each)
-3. Local vLLM server (if configured)
-4. Error to user (no fallback available)
+**Fallback Hierarchy (STRICT):**
+1. **DeepSeek R1** (primary - ALWAYS first)
+2. **Retry 3 times** (300s each attempt)
+3. **Gemini 2.0 Flash Lite** (ONLY if DeepSeek completely fails)
+4. **ERROR** (no local fallback - system fails loudly)
 
-**Configure Local Fallback:**
+**Gemini Configuration:**
 ```json
 {
   "fallback": {
     "enabled": true,
-    "local_model": "Qwen2.5-Coder-14B-FP8",
-    "vllm_endpoint": "http://localhost:8000"
+    "provider": "gemini",
+    "api_key": "AIzaSyBIIzyQA032RD0tmoFSW4cRW8WVyb50jAE",
+    "model": "gemini-2.0-flash-lite",
+    "rate_limit": "500 RPD"
   }
 }
 ```
+
+**Manual Gemini Triggers:**
+User says any of these → Use Gemini instead of DeepSeek:
+- "ask gemini"
+- "use gemini brain"
+- "gemini"
+- "switch to gemini"
+
+**NO LOCAL vLLM. EVER.**
 
 ---
 
@@ -354,6 +413,14 @@ Main entry point. Handles routing, escalation, execution.
 **Impact:** Shark skill not auto-activated on first launch.
 
 **Solution:** Restart Qwen Code or manually trigger: "plug in to deepseek brain"
+
+### CRITICAL: Local Model Protocol Violations
+
+**Problem:** Local model making autonomous decisions (model recommendations, quantization choices, etc.)
+
+**Impact:** VIOLATES ZERO TOLERANCE PROTOCOL - system failure
+
+**Solution:** IMMEDIATE TERMINATION of local model session. Re-instruct: "You route ONLY. DeepSeek thinks."
 
 ---
 

@@ -26,6 +26,11 @@ API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 API_KEY = "sk-e8e93e31b582423e9fdaa4ab8e9347e2"
 MODEL_R1 = "deepseek-reasoner"      # Complex reasoning, coding, problem-solving
 MODEL_CHAT = "deepseek-chat"        # Simple questions, facts, chat
+
+# Gemini API (fallback/secondary brain)
+GEMINI_API_KEY = "AIzaSyBIIzyQA032RD0tmoFSW4cRW8WVyb50jAE"
+GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+
 HISTORY_FILE = "/tmp/shark-history.json"
 ERROR_TRACKER_FILE = "/tmp/shark-error-tracker.json"
 
@@ -42,6 +47,10 @@ DEEPSEEK_TRIGGERS = [
     # Direct commands
     "think", "use the deepseek brain", "ask deepseek", "deepseek brain",
     "plug in to deepseek", "activate deepseek", "switch to deepseek",
+    
+    # Gemini triggers (manual - use Gemini instead of DeepSeek)
+    "ask gemini", "use gemini", "gemini brain", "switch to gemini",
+    "use gemini brain",
     
     # Problem solving
     "figure it out", "make it work", "just fix it", "solve this",
@@ -72,8 +81,9 @@ def check_deepseek_triggers(message):
 def route_query(message):
     """
     Route query to appropriate model:
-    - deepseek-chat: Simple questions, facts, chat (fast, cheap)
-    - deepseek-reasoner: Complex reasoning, coding, problem-solving (slow, expensive)
+    - deepseek-chat: Simple questions (fast, cheap)
+    - deepseek-reasoner: Complex reasoning/coding (slow, expensive)
+    - gemini: Manual trigger only ("ask gemini", "use gemini brain")
     
     Criteria for R1 (complex):
     - Contains trigger phrases (user frustrated)
@@ -85,7 +95,13 @@ def route_query(message):
     """
     msg_lower = message.lower()
     
-    # Always use R1 for trigger phrases (user explicitly wants DeepSeek)
+    # Check for Gemini triggers FIRST (manual override)
+    gemini_triggers = ["ask gemini", "use gemini", "gemini brain", "switch to gemini"]
+    for trigger in gemini_triggers:
+        if trigger in msg_lower:
+            return "gemini", f"trigger:{trigger}"
+    
+    # Always use R1 for DeepSeek trigger phrases (user explicitly wants DeepSeek)
     triggered, _ = check_deepseek_triggers(message)
     if triggered:
         return MODEL_R1, "trigger"
@@ -133,6 +149,33 @@ def call_deepseek(messages, model=MODEL_R1):
     reasoning = data["choices"][0]["message"].get("reasoning_content", "")
     # Combine reasoning + content for command extraction
     return reasoning + "\n" + content if reasoning else content
+
+def call_gemini(messages):
+    """Call Gemini API as fallback/secondary brain"""
+    # Convert messages to Gemini format
+    gemini_content = "\n".join([m["content"] for m in messages if m["role"] == "user"])
+    
+    headers = {"Content-Type": "application/json"}
+    payload = {
+        "contents": [{"parts": [{"text": gemini_content}]}],
+        "generationConfig": {
+            "maxOutputTokens": 8192,
+            "temperature": 0.7
+        }
+    }
+    
+    response = requests.post(
+        f"{GEMINI_ENDPOINT}?key={GEMINI_API_KEY}",
+        headers=headers,
+        json=payload,
+        timeout=300
+    )
+    response.raise_for_status()
+    data = response.json()
+    
+    if "candidates" in data and len(data["candidates"]) > 0:
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+    return "(Gemini returned no response)"
 
 SYSTEM_PROMPT = {
     "role": "system",
@@ -230,13 +273,19 @@ def run(user_message, max_loops=10):
     # Show routing decision for debugging
     if model == MODEL_CHAT:
         print(f"[📤 Using DeepSeek Chat (simple query)]")
+    elif model == "gemini":
+        print(f"[💎 Using Gemini (manual trigger)]")
     else:
         print(f"[🧠 Using DeepSeek R1 (complex: {reason})]")
 
     output = []
 
     for loop in range(max_loops):
-        response = call_deepseek(history, model=model)
+        # Call appropriate API based on model
+        if model == "gemini":
+            response = call_gemini(history)
+        else:
+            response = call_deepseek(history, model=model)
         history.append({"role": "assistant", "content": response})
 
         commands = extract_commands(response)
