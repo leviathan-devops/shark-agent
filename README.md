@@ -1,214 +1,206 @@
-# Dual Brain Shark 🦈
+# Shark Agent 🦈
 
-**Qwen Code + DeepSeek R1 = Dual Brain Architecture**
+**The Complete Dual-Brain AI Coding Agent**
 
-DeepSeek R1 provides the reasoning. Qwen Code provides the execution. Together, they form a powerful AI agent with full device access.
+One command installs everything: Qwen Code + DeepSeek R1 + autonomous coding.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Python](https://img.shields.io/badge/python-3.8+-blue)
+```bash
+curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/setup.sh | bash
+```
+
+Then run:
+```bash
+shark
+```
+
+That's it. You now have a fully autonomous dual-brained AI coding agent.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 What You Get
 
-### One-Line Install
+| Component | What It Does |
+|-----------|--------------|
+| **Qwen Code** | Full AI coding agent (files, terminal, git) |
+| **DeepSeek R1** | Superior reasoning (via Shark Skill) |
+| **YOLO Mode** | No confirmations, just execution |
+| **Dual-Brain** | DeepSeek thinks, Qwen executes |
+
+---
+
+## 📦 Install
+
+### One-Command Setup
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/setup.sh | bash
 ```
+
+The wizard installs:
+- ✓ Qwen Code (AI coding agent)
+- ✓ Shark Skill (DeepSeek Brain integration)
+- ✓ Dual-Brain architecture
+- ✓ `shark` command
 
 ### Manual Install
 
 ```bash
-git clone https://github.com/leviathan-devops/shark-agent.git
-cd dual-brain-shark
-./scripts/install.sh
-```
+# 1. Install Qwen Code
+sudo npm install -g qwen-code
 
-### Usage
+# 2. Install Shark Skill
+git clone https://github.com/leviathan-devops/shark-agent.git /tmp/shark
+cp -r /tmp/shark/skills/shark ~/.qwen/skills/
+rm -rf /tmp/shark
 
-```bash
-# In Qwen Code chat, say:
-"plug in to deepseek brain"
+# 3. Install Python deps
+pip install requests
 
-# Or run directly:
-shark "create a flask API"
-shark-brain  # interactive mode
-```
+# 4. Add alias
+echo "alias shark='qwen --yolo'" >> ~/.bash_aliases
+source ~/.bash_aliases
 
----
+# 5. Configure API key
+mkdir -p ~/.shark-agent
+cat > ~/.shark-agent/config.json << 'EOF'
+{
+  "api_key": "sk-your-key-here",
+  "model": "deepseek-reasoner"
+}
+EOF
 
-## 🦈 What Is This?
-
-This is the **deliverable** for the Dual Brain Shark agent system - a dual-brain architecture for AI-powered task execution.
-
-### The Architecture
-
-- **DeepSeek R1** = The BRAIN (reasoning, planning, complex tasks)
-- **Qwen Code** = The HANDS (execution, file access, command execution)
-
-### How It Works
-
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   You       │ ──→ │  Qwen Code   │ ──→ │ DeepSeek R1 │
-│  (input)    │     │  (executor)  │     │  (brain)    │
-└─────────────┘     └──────────────┘     └─────────────┘
-                           ↓
-                    ┌──────────────┐
-                    │   bash cmd   │
-                    │   execution  │
-                    └──────────────┘
+# 6. Run
+shark
 ```
 
 ---
 
-## 📦 What's Included
+## 💻 Usage
 
-```
-dual-brain-shark/
-├── skills/shark/           # The skill files
-│   ├── SKILL.md            # Skill definition
-│   ├── skill.json          # Manifest
-│   ├── run.py              # Main entry point
-│   ├── shark-brain.py      # Interactive mode
-│   ├── shark-loop.py       # Full auto-execute loop
-│   └── shark-client.py     # API client
-├── scripts/
-│   ├── install.sh          # One-line installer
-│   └── uninstall.sh        # Clean removal
-├── docs/
-│   ├── ARCHITECTURE.md     # Technical deep dive
-│   └── CONFIGURATION.md    # Settings reference
-├── examples/
-│   └── 01-basic-usage.md   # Usage examples
-├── README.md
-├── LICENSE
-└── .env.example
-```
+### Launch
 
----
-
-## 🎯 Use Cases
-
-### Web Development
 ```bash
-shark "create a Next.js app with Tailwind CSS and user authentication"
+shark
 ```
 
-### Data Processing
-```bash
-shark "analyze this CSV and create visualizations for the top 10 trends"
+### First Session
+
+```
+> plug in to deepseek brain
+
+> create a Flask API with user authentication
+
+> add a React frontend
+
+> deploy to production
 ```
 
-### System Administration
-```bash
-shark "set up nginx with SSL, configure firewall, and deploy my app"
-```
+### Commands
 
-### Code Refactoring
-```bash
-shark "refactor this Python codebase to use async/await and add type hints"
-```
-
-### Debugging
-```bash
-shark "find why my Flask app is crashing and fix it"
-```
+| Command | Description |
+|---------|-------------|
+| `shark` | Launch Dual-Brain Qwen Code |
+| `qwen` | Launch Qwen Code (YOLO mode) |
+| `shark-test` | Test installation |
 
 ---
 
 ## ⚙️ Configuration
 
-### Environment Variables
+### API Key
 
-```bash
-# Required: Your DeepSeek API key
-export DEEPSEEK_API_KEY="sk-your-key-here"
+Get DeepSeek API key: https://platform.deepseek.com
 
-# Optional: Custom settings
-export DEEPSEEK_HISTORY_FILE="/tmp/shark-history.json"
-export DEEPSEEK_MODEL="deepseek-reasoner"
-export DEEPSEEK_TIMEOUT="120"
-```
-
-### Configuration File
-
-Create `~/.dual-brain-shark/config.json`:
+Config file: `~/.shark-agent/config.json`
 
 ```json
 {
   "api_key": "sk-your-key-here",
   "model": "deepseek-reasoner",
   "timeout": 120,
-  "max_loops": 10,
   "yolo_mode": true
 }
 ```
 
 ---
 
-## 📚 Documentation
+## 🎯 Use Cases
 
-| Document | Description |
-|----------|-------------|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Technical deep dive |
-| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Advanced settings |
-| [examples/](examples/) | Usage examples |
+### Full Stack Development
+```
+shark
+> plug in to deepseek brain
+> create a Next.js app with auth, database, and API
+```
+
+### System Admin
+```
+shark
+> plug in to deepseek brain
+> set up nginx with SSL and deploy my app
+```
+
+### Data Analysis
+```
+shark
+> plug in to deepseek brain
+> analyze this CSV and create visualizations
+```
 
 ---
 
-## 🔧 Development
+## 🔧 Requirements
 
-### Building from Source
+The setup wizard installs everything:
+- Node.js 18+ (for Qwen Code)
+- Python 3.8+ (for Shark Skill)
+- npm
+- git
 
+**OS:** Linux, macOS, Windows (WSL2)
+
+---
+
+## 🐛 Troubleshooting
+
+### `shark` not found
 ```bash
-git clone https://github.com/leviathan-devops/shark-agent.git
-cd dual-brain-shark
-pip install -r requirements.txt
-./scripts/install.sh --dev
+source ~/.bash_aliases
+# Or restart terminal
 ```
 
-### Running Tests
-
+### API errors
 ```bash
-./scripts/test.sh
+nano ~/.shark-agent/config.json
+# Update API key
+```
+
+### Skill not loading
+```bash
+curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/scripts/install-skill.sh | bash
 ```
 
 ---
 
 ## 📄 License
 
-MIT License - See [LICENSE](LICENSE) for details.
+MIT License
 
 ---
 
-## 🙋 Support
+## 🙌 Support
 
-### Common Issues
-
-**Skill not loading:**
-```bash
-./scripts/uninstall.sh && ./scripts/install.sh
-```
-
-**API errors:**
-```bash
-curl -H "Authorization: Bearer $DEEPSEEK_API_KEY" \
-  https://api.deepseek.com/v1/models
-```
-
-### Getting Help
-
-- 📖 Read the [documentation](docs/)
-- 🐛 Open an [issue](https://github.com/leviathan-devops/shark-agent/issues)
+- 📖 [Docs](https://github.com/leviathan-devops/shark-agent)
+- 🐛 [Issues](https://github.com/leviathan-devops/shark-agent/issues)
 
 ---
 
 **Built with ❤️ by Leviathan DevOps**
 
 ```bash
-# Ready to start?
-curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/scripts/install.sh | bash
+# Install
+curl -fsSL https://raw.githubusercontent.com/leviathan-devops/shark-agent/main/setup.sh | bash
+
+# Run
+shark
 ```
