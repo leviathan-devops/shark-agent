@@ -39,15 +39,15 @@ print_color() {
 }
 
 echo ""
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║                                                          ║"
-echo "║         🦈 SHARK AGENT - SETUP WIZARD 🦈                ║"
-echo "║                                                          ║"
-echo "║     Complete Dual-Brain AI Coding Agent Setup            ║"
-echo "║                                                          ║"
-echo "║     Qwen Code + DeepSeek R1 = Autonomous Coding          ║"
-echo "║                                                          ║"
-echo "╚══════════════════════════════════════════════════════════╝"
+echo "+==========================================================+"
+echo "|                                                          |"
+echo "|         SHARK AGENT - SETUP WIZARD                       |"
+echo "|                                                          |"
+echo "|     Complete Dual-Brain AI Coding Agent Setup            |"
+echo "|                                                          |"
+echo "|     Qwen Code + DeepSeek R1 = Autonomous Coding          |"
+echo "|                                                          |"
+echo "+==========================================================+"
 echo ""
 
 # Detect OS
