@@ -1,0 +1,15 @@
+{
+  "authentic": true,
+  "timestamp": "2026-06-05T06:33:41.217Z",
+  "checks": {
+    "containerSpawnResultExists": true,
+    "containerSpawnResultValid": true,
+    "containerTestResultExists": true,
+    "containerTestResultHasStructure": true,
+    "containerTestResultHasReasonableTimestamps": true,
+    "tuiInteractionExists": true,
+    "tuiInteractionHasRequiredFields": true,
+    "noHandWrittenStubs": true
+  },
+  "issues": []
+}

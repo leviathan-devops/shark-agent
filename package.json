@@ -1,0 +1,44 @@
+{
+  "name": "shark-agent-v4.9.8",
+  "version": "4.9.8",
+  "description": "SHARK Agent v4.9.8 - Triple-Brain Parallel Architecture, Compaction Survival, Container Testing. Plan with Trident. Execute the plan. Never yield.",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target bun --format esm --bundle --external @opencode-ai/plugin",
+    "build:standalone": "bun build src/index.ts --outdir dist --target bun --format esm --bundle",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": "^1.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "typescript": "^5.3.0",
+    "zod": "^4.1.8"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "package.json",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "opencode",
+    "agent",
+    "shark",
+    "triple-brain",
+    "gate-enforcement",
+    "execution-brain"
+  ],
+  "author": "Shark Agent",
+  "license": "MIT"
+}

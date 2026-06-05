@@ -1,0 +1,12 @@
+{
+  "aligned": true,
+  "timestamp": "2026-06-05T06:33:41.217Z",
+  "checks": {
+    "specExists": true,
+    "buildMatchesSpec": true,
+    "verifyEvidencePresent": true,
+    "testEvidencePresent": true,
+    "gateChainCorrect": true
+  },
+  "issues": []
+}
