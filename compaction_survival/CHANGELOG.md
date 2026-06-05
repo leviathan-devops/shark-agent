@@ -1,8 +1,8 @@
 # CHANGELOG — Shark v4.9.8
 
-## 2026-06-05 — MandatoryWorkflowWarhead Integration (FINAL)
+## 2026-06-05 — RuntimeGradeWarhead Integration (FINAL)
 - Created identity/shark/WORKFLOW.md: T2 source for 18-step engineering pipeline
-- Added MandatoryWorkflowWarhead to T1Warheads (6 warheads total, ~1.8KB)
+- Added RuntimeGradeWarhead to T1Warheads (6 warheads total, ~1.8KB)
 - Injected at priority position 2: enforcementContext → buildContext → **WORKFLOW** → identity → ...
 - Added D9 directive: "FOLLOW THE WORKFLOW. Container test NOT optional. Nothing less than 100%"
 - Added workflow to T2Section, SECTION_MAP, SECTION_FILES

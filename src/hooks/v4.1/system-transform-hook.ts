@@ -64,7 +64,7 @@ export function createSystemTransformHook(
     // Order (highest to lowest priority):
     //   1. enforcementContext (situational — gate/iteration)
     //   2. buildContext (situational — from file)
-    //   3. MandatoryWorkflowWarhead (PERMANENT — highest behavioral mandate)
+    //   3. RuntimeGradeEngineerWarhead (PERMANENT — highest behavioral mandate)
     //   4. identityWarhead (PERMANENT — agent identity)
     //   5. enforcementWarhead (PERMANENT — active rules)
     //   6. gateWarhead (PERMANENT — gate chain)
@@ -77,11 +77,11 @@ export function createSystemTransformHook(
     // Build the output array in CORRECT priority order (index 0 = highest priority)
     const warheads: string[] = [];
 
-    // 1. MANDATORY WORKFLOW WARHEAD — highest permanent priority
+    // 1. RUNTIME GRADE SOFTWARE ENGINEER WARHEAD — highest permanent priority
     //    Injected BEFORE identity so the workflow shapes ALL behavior.
     //    The model reads "WHAT IS THE MANDATORY PROCEDURE" before "who am I"
-    if (t1.MandatoryWorkflowWarhead) {
-      warheads.push(t1.MandatoryWorkflowWarhead);
+    if (t1.RuntimeGradeEngineerWarhead) {
+      warheads.push(t1.RuntimeGradeEngineerWarhead);
     }
 
     // 2. IDENTITY WARHEAD — establishes agent identity (~200B)

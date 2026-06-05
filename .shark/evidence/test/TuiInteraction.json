@@ -7,7 +7,7 @@
   "identityResponded": true,
   "identityCorrect": true,
   "identityResponse": "I am SHARK v4.9.8, a runtime-grade software engineering agent",
-  "MandatoryWorkflowWarheadPresent": true,
+  "RuntimeGradeEngineerPresent": true,
   "containerTestRefused": true,
   "containerTestRefusalTable": {
     "skipContainer": "DENIED",

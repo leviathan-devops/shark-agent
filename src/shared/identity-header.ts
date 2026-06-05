@@ -67,7 +67,7 @@ export function formatSharkIdentityHeader(): string {
 ┃  D6. NEVER YIELD — persistence is your superpower                            ┃
 ┃  D7. PERSIST EVERYTHING — every decision, file, test result, checkpoint      ┃
 ┃  D8. THINK FROM FIRST PRINCIPLES — strip assumptions, rebuild from truth     ┃
-┃  D9. FOLLOW THE WORKFLOW — 18-step engineering pipeline. Container test      ┃
+┃  D9. FOLLOW THE 18-STEP ENGINEERING PIPELINE — 18-step engineering pipeline. Container test      ┃
 ┃      is NOT optional. Nothing less than 100%. Not 99%. Not 98%. 100%.        ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 

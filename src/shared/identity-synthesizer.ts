@@ -42,7 +42,7 @@ export interface T1Warheads {
   /** Recovery anchor -- checkpoint timestamp and resume doc ref (~200B, dynamic) */
   recoveryWarhead: string;
   /** Mandatory Workflow -- 18-step engineering pipeline, highest priority behavioral mandate (~500B) */
-  MandatoryWorkflowWarhead: string;
+  RuntimeGradeEngineerWarhead: string;
 }
 
 export type T2Section = 'architecture' | 'execution' | 'quality' | 'identity' | 'tools' | 'firewall' | 'workflow';
@@ -181,12 +181,12 @@ function buildEnforcementWarhead(): string {
 }
 
 /**
- * Build the Mandatory Workflow Warhead — 18-step engineering pipeline.
+ * Build the Runtime Grade Engineer Warhead — 18-step engineering pipeline.
  * Synthesized from T2 WORKFLOW.md. Injected at HIGH priority position (index 2).
  * ~500B total — compact enough to not burn tokens, comprehensive enough to enforce
  * runtime-grade engineering behavior as the DEFAULT operating procedure.
  */
-function buildMandatoryWorkflowWarhead(t2: Record<string, string>): string {
+function buildRuntimeGradeEngineerWarhead(t2: Record<string, string>): string {
   const workflowContent = t2.workflow || '';
 
   // Extract the step lines (numbered pipeline)
@@ -220,14 +220,14 @@ function buildMandatoryWorkflowWarhead(t2: Record<string, string>): string {
     : 'CRITICAL: Container test via tmux + docker exec -it ONLY. opencode run BANNED.\nCRITICAL: Nothing less than 100%. Not 99%. Not 98%. 100%.';
 
   return [
-    '[T1 MANDATORY WORKFLOW: RUNTIME-GRADE ENGINEERING PIPELINE]',
+    '[T1 RUNTIME GRADE SOFTWARE ENGINEER: RUNTIME-GRADE ENGINEERING PIPELINE]',
     '',
     'THIS IS THE DEFAULT OPERATING PROCEDURE. Do not ask. Do not deviate. Do not skip.',
     '',
     stepLines,
     '',
     criticalLines,
-    '[END MANDATORY WORKFLOW]',
+    '[END RUNTIME GRADE SOFTWARE ENGINEER]',
   ].join('\n');
 }
 
@@ -255,7 +255,7 @@ export function synthesizeT1Injectables(): T1Warheads {
     focusWarhead: buildFocusWarhead(),
     enforcementWarhead: buildEnforcementWarhead(),
     recoveryWarhead: buildRecoveryWarhead(),
-    MandatoryWorkflowWarhead: buildMandatoryWorkflowWarhead(t2),
+    RuntimeGradeEngineerWarhead: buildRuntimeGradeEngineerWarhead(t2),
   };
 
   _synthesizedAt = new Date().toISOString();
@@ -286,7 +286,7 @@ export function getT1TotalSize(): number {
     t1.focusWarhead.length +
     t1.enforcementWarhead.length +
     t1.recoveryWarhead.length +
-    t1.MandatoryWorkflowWarhead.length
+    t1.RuntimeGradeEngineerWarhead.length
   );
 }
 

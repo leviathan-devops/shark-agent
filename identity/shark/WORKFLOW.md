@@ -1,6 +1,6 @@
 # RUNTIME-GRADE SOFTWARE ENGINEERING WORKFLOW
 
-## Default Operating Procedure — MANDATORY
+## Default Operating Procedure — RUNTIME GRADE SOFTWARE ENGINEER
 
 ### 25-Step Engineering Pipeline
 
