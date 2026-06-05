@@ -189260,7 +189260,7 @@ function buildEnforcementWarhead() {
   ].join(`
 `);
 }
-function buildMandatoryWorkflowWarhead(t2) {
+function buildRuntimeGradeEngineerWarhead(t2) {
   const workflowContent = t2.workflow || "";
   const steps = [];
   const stepRegex = /^\d+\.\s+(.+)$/gm;
@@ -189302,14 +189302,14 @@ function buildMandatoryWorkflowWarhead(t2) {
 `) : `CRITICAL: Container test via tmux + docker exec -it ONLY. opencode run BANNED.
 CRITICAL: Nothing less than 100%. Not 99%. Not 98%. 100%.`;
   return [
-    "[T1 MANDATORY WORKFLOW: RUNTIME-GRADE ENGINEERING PIPELINE]",
+    "[T1 RUNTIME GRADE SOFTWARE ENGINEER: RUNTIME-GRADE ENGINEERING PIPELINE]",
     "",
     "THIS IS THE DEFAULT OPERATING PROCEDURE. Do not ask. Do not deviate. Do not skip.",
     "",
     stepLines,
     "",
     criticalLines,
-    "[END MANDATORY WORKFLOW]"
+    "[END RUNTIME GRADE SOFTWARE ENGINEER]"
   ].join(`
 `);
 }
@@ -189324,7 +189324,7 @@ function synthesizeT1Injectables() {
     focusWarhead: buildFocusWarhead(),
     enforcementWarhead: buildEnforcementWarhead(),
     recoveryWarhead: buildRecoveryWarhead(),
-    MandatoryWorkflowWarhead: buildMandatoryWorkflowWarhead(t2)
+    RuntimeGradeEngineerWarhead: buildRuntimeGradeEngineerWarhead(t2)
   };
   _synthesizedAt = new Date().toISOString();
   return _cachedT1;
@@ -189337,7 +189337,7 @@ function getT1Injectables() {
 }
 function getT1TotalSize() {
   const t1 = getT1Injectables();
-  return t1.identityWarhead.length + t1.gateWarhead.length + t1.focusWarhead.length + t1.enforcementWarhead.length + t1.recoveryWarhead.length + t1.MandatoryWorkflowWarhead.length;
+  return t1.identityWarhead.length + t1.gateWarhead.length + t1.focusWarhead.length + t1.enforcementWarhead.length + t1.recoveryWarhead.length + t1.RuntimeGradeEngineerWarhead.length;
 }
 function buildFocusWarhead() {
   const task = _focusTask || "initializing";
@@ -189391,8 +189391,8 @@ function createSystemTransformHook(gateManager, _peerDispatch) {
     }
     const t1 = getT1Injectables();
     const warheads = [];
-    if (t1.MandatoryWorkflowWarhead) {
-      warheads.push(t1.MandatoryWorkflowWarhead);
+    if (t1.RuntimeGradeEngineerWarhead) {
+      warheads.push(t1.RuntimeGradeEngineerWarhead);
     }
     warheads.push(t1.identityWarhead);
     warheads.push(t1.enforcementWarhead);
@@ -198951,7 +198951,7 @@ function formatSharkIdentityHeader() {
 \u2503  D6. NEVER YIELD \u2014 persistence is your superpower                            \u2503
 \u2503  D7. PERSIST EVERYTHING \u2014 every decision, file, test result, checkpoint      \u2503
 \u2503  D8. THINK FROM FIRST PRINCIPLES \u2014 strip assumptions, rebuild from truth     \u2503
-\u2503  D9. FOLLOW THE WORKFLOW \u2014 18-step engineering pipeline. Container test      \u2503
+\u2503  D9. FOLLOW THE 18-STEP ENGINEERING PIPELINE \u2014 18-step engineering pipeline. Container test      \u2503
 \u2503      is NOT optional. Nothing less than 100%. Not 99%. Not 98%. 100%.        \u2503
 \u2517\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u251B
 

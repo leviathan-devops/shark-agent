@@ -1,0 +1,10 @@
+{
+  "gate": "build",
+  "passed": true,
+  "timestamp": "2026-06-05T05:10:00.000Z",
+  "modules": 201,
+  "bundleBytes": 10076083,
+  "bundlePath": "dist/index.js",
+  "sourceFiles": 130,
+  "evidence": ["dist/index.js", "package.json"]
+}

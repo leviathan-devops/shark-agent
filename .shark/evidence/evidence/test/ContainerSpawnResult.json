@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "containerName": "shark-v498-tui-test-2026-06-05",
+  "image": "opencode-test:1.14.34",
+  "testMethod": "tmux + docker exec -it",
+  "agent": "shark (--agent shark flag)",
+  "model": "big-pickle",
+  "distSize": 10058353,
+  "distModules": 201,
+  "timestamp": "2026-06-05T06:32:54.000Z",
+  "testsRun": 11,
+  "testsPassed": 11
+}

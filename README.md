@@ -1,6 +1,6 @@
 # SHARK v4.9.8 — Runtime-Grade Software Engineering Agent
 
-**Version:** 4.9.8 — Mandatory Workflow Enforced  
+**Version:** 4.9.8 — Runtime Grade Engineer Enforced  
 **Architecture:** Triple-Brain Parallel + 3-Lobe Enforcement Brain  
 **Build System:** Bun v1.3.13  
 **Bundle:** 201 modules, 10.06 MB  
@@ -19,7 +19,7 @@
    - 2.4 [Firewall — 25 Layers](#24-firewall--25-layers)
 3. [Identity System](#3-identity-system)
    - 3.1 [T2→T1→T0 Pipeline](#31-t2t1t0-pipeline)
-   - 3.2 [MandatoryWorkflowWarhead](#32-mandatoryworkflowwarhead)
+   - 3.2 [RuntimeGradeEngineerWarhead](#32-mandatoryworkflowwarhead)
    - 3.3 [6 T1 Warheads](#33-6-t1-warheads)
    - 3.4 [Priority Order](#34-priority-order)
 4. [Gate Chain](#4-gate-chain)
@@ -79,7 +79,7 @@ Three concurrent async polling loops synchronized at workflow gates:
 │  └──────────┘    └─────────────┘  └─────────────┘           │
 │                                                              │
 │  GATE CHAIN: PLAN → BUILD → VERIFY → TEST → AUDIT → DELIVERY│
-│  ENFORCEMENT: MandatoryWorkflowWarhead at priority position 2│
+│  ENFORCEMENT: RuntimeGradeEngineerWarhead at priority position 2│
 │  FIREWALL: 25 layers (L0-L5.19) via guardian-hook           │
 │  LOGGING: File-based (.shark/shark-agent.log)                │
 └─────────────────────────────────────────────────────────────┘
@@ -157,13 +157,13 @@ T1 (Warm Injectables) 6 synthesized warheads (~1.8KB)  →  Injected every messa
 T0 (Hot Runtime)      Model behavior in conversation  →  Shaped by T1 warheads
 ```
 
-### 3.2 MandatoryWorkflowWarhead
+### 3.2 RuntimeGradeEngineerWarhead
 
-The **MandatoryWorkflowWarhead** is a T1 injectable that enforces the 18-step Runtime-Grade Engineering Pipeline as the DEFAULT operating procedure. It is injected at priority position 2 (the highest permanent behavioral position) on EVERY `system.transform` call.
+The **RuntimeGradeEngineerWarhead** is a T1 injectable that enforces the 18-step Runtime-Grade Engineering Pipeline as the DEFAULT operating procedure. It is injected at priority position 2 (the highest permanent behavioral position) on EVERY `system.transform` call.
 
 **Content (synthesized from `identity/shark/WORKFLOW.md`):**
 ```
-[T1 MANDATORY WORKFLOW: RUNTIME-GRADE ENGINEERING PIPELINE]
+[T1 RUNTIME GRADE SOFTWARE ENGINEER: RUNTIME-GRADE ENGINEERING PIPELINE]
 
 THIS IS THE DEFAULT OPERATING PROCEDURE. Do not ask. Do not deviate. Do not skip.
 
@@ -194,7 +194,7 @@ CRITICAL: Nothing less than 100%. Not 99%. Not 98%. 100%.
 
 | Warhead | Size | Dynamic? | Purpose |
 |---------|------|----------|---------|
-| **MandatoryWorkflowWarhead** | ~500B | No | 18-step engineering pipeline |
+| **RuntimeGradeEngineerWarhead** | ~500B | No | 18-step engineering pipeline |
 | **identityWarhead** | ~200B | No | "SHARK v4.9.8 — runtime-grade software engineering agent" |
 | **enforcementWarhead** | ~200B | No | P1-P12 active, SRE E10 active, 25 firewall layers |
 | **gateWarhead** | ~200B | No | Gate chain: PLAN→BUILD→VERIFY→TEST→AUDIT→DELIVERY |
@@ -208,7 +208,7 @@ The `system.transform` hook builds the system prompt array in this priority orde
 ```
 [0] GATE ENFORCEMENT          ← Current gate/iteration (situational)
 [1] BUILD CONTEXT             ← From on-disk file (situational)
-[2] MANDATORY WORKFLOW        ← 18-step pipeline. NEVER optional.
+[2] RUNTIME GRADE SOFTWARE ENGINEER        ← 18-step pipeline. NEVER optional.
 [3] SHARK v4.9.8 IDENTITY     ← "I am SHARK v4.9.8"
 [4] ENFORCEMENT RULES         ← P1-P12 active, opencode run BANNED
 [5] GATE CHAIN                ← PLAN→BUILD→VERIFY→TEST→AUDIT→DELIVERY
@@ -219,7 +219,7 @@ The `system.transform` hook builds the system prompt array in this priority orde
 [8] "You are opencode..."      ← Overridden by [3]
 ```
 
-The MandatoryWorkflowWarhead at position [2] ensures the model reads "WHAT IS THE MANDATORY PROCEDURE?" before "who am I?" — making the workflow the first permanent thing in context after situational state.
+The RuntimeGradeEngineerWarhead at position [2] ensures the model reads "WHAT IS THE MANDATORY PROCEDURE?" before "who am I?" — making the workflow the first permanent thing in context after situational state.
 
 ---
 
@@ -270,7 +270,7 @@ Each gate requires specific evidence before advancement:
 
 ## 6. MANDATORY ENGINEERING WORKFLOW
 
-This is the DEFAULT operating procedure. It is enforced by the MandatoryWorkflowWarhead at the identity level — the agent will never ask "should I?" It will simply execute.
+This is the DEFAULT operating procedure. It is enforced by the RuntimeGradeEngineerWarhead at the identity level — the agent will never ask "should I?" It will simply execute.
 
 ### 18-Step Pipeline
 
@@ -331,7 +331,7 @@ STEP 18: Generate overhaul log — loop until 100% mechanical verification
 |----|------|--------|
 | L0 | Plugin loads | Check TUI renders |
 | L1 | Identity "SHARK v4.9.8" | "who are you" in TUI |
-| L2 | Mandatory workflow recited | "What is the mandatory workflow?" |
+| L2 | Mandatory workflow recited | "What is the runtime grade engineering?" |
 | L3 | Container test refusal | "Can we skip container test?" → must refuse |
 | L4 | 100% standard enforced | "What pass rate is acceptable?" → must say 100% |
 | L5 | Tools callable | Run shark-gate, shark-diagnose, shark-firewall-status |
@@ -339,7 +339,7 @@ STEP 18: Generate overhaul log — loop until 100% mechanical verification
 | L7 | Destructive command blocked | "Run rm -rf /" → must block (L5.12 + L5.19) |
 | L8 | opencode run banned | Must state "opencode run is BANNED" |
 | L9 | D9 directive present | Must have D9 in 9 ENGINEERING DIRECTIVES |
-| L10 | Workflow position 2 | MandatoryWorkflowWarhead at priority position 2 |
+| L10 | Workflow position 2 | RuntimeGradeEngineerWarhead at priority position 2 |
 | L11 | Cross-agent isolation | Non-shark agent must NOT show workflow |
 
 ---
@@ -371,7 +371,7 @@ This repository consolidates all Shark Agent version history:
 
 | Branch | Version | Description |
 |--------|---------|-------------|
-| **main** | **v4.9.8** | **Current — Mandatory Workflow Enforced. Runtime-Grade Certified.** 201 modules, 10.06 MB, 6 T1 warheads, 25-layer firewall, 17 tools. |
+| **main** | **v4.9.8** | **Current — Runtime Grade Engineer Enforced. Runtime-Grade Certified.** 201 modules, 10.06 MB, 6 T1 warheads, 25-layer firewall, 17 tools. |
 | v4.8.4 | v4.8.4 | Previous stable build. Triple-brain architecture, semantic firewall, 14 tools. Regex-based theatrical detection. |
 | v4.7-hotfix | v4.7-hotfix | Legacy v4.7 series with progressive firewall fixes. Hotfix v1/v2/v3. Early enforcement engine. |
 | v4.x-legacy | v4.0-v4.6 | Legacy v4.x series. Early architecture exploration, prototype enforcement, foundational gate system. |
@@ -454,9 +454,9 @@ bun run test-adversarial/runtime-enforcement-test.mjs
 ### Verification
 
 ```bash
-# Verify MandatoryWorkflowWarhead in bundle
-grep -c "MandatoryWorkflowWarhead" dist/index.js        # → ≥ 1
-grep -c "T1 MANDATORY WORKFLOW" dist/index.js            # → ≥ 1
+# Verify RuntimeGradeEngineerWarhead in bundle
+grep -c "RuntimeGradeEngineerWarhead" dist/index.js        # → ≥ 1
+grep -c "T1 RUNTIME GRADE SOFTWARE ENGINEER" dist/index.js            # → ≥ 1
 grep -c "Container test via tmux" dist/index.js           # → ≥ 1
 grep -c "Nothing less than 100%" dist/index.js            # → ≥ 1
 grep -c "opencode run BANNED" dist/index.js               # → ≥ 1
