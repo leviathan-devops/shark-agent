@@ -1,10 +1,10 @@
-# SHARK v4.9.8 — Runtime-Grade Software Engineering Agent
+# SHARK v4.9.9 — Semantic Firewall + Planning Brain
 
-**Version:** 4.9.8 — Runtime Grade Engineer Enforced  
-**Architecture:** Triple-Brain Parallel + 3-Lobe Enforcement Brain  
+**Version:** 4.9.9 — Semantic Firewall Enforced  
+**Architecture:** Semantic Firewall (10 AST/CFG rules + 5 analyzers) + 3-Lobe Planning Brain  
 **Build System:** Bun v1.3.13  
-**Bundle:** 201 modules, 10.06 MB  
-**Ship Date:** 2026-06-05  
+**Bundle:** 183 modules, ~10 MB  
+**Ship Date:** 2026-06-06  
 **Repo:** [github.com/leviathan-devops/shark-agent](https://github.com/leviathan-devops/shark-agent)
 
 ---
@@ -14,22 +14,20 @@
 1. [Overview](#1-overview)
 2. [Architecture](#2-architecture)
    - 2.1 [Triple-Brain Parallel Core](#21-triple-brain-parallel-core)
-   - 2.2 [3-Lobe Enforcement Brain](#22-3-lobe-enforcement-brain)
-   - 2.3 [T1 Injectable Modules (61 Semantic Detectors)](#23-t1-injectable-modules-61-semantic-detectors)
-   - 2.4 [Firewall — 25 Layers](#24-firewall--25-layers)
+   - 2.2 [Semantic Firewall — 10 AST/CFG Rules](#22-semantic-firewall--10-astcfg-rules)
+   - 2.3 [5 Analyzers](#23-5-analyzers)
+   - 2.4 [3-Lobe Planning Brain](#24-3-lobe-planning-brain)
+   - 2.5 [Gate Engine + Merkle Evidence](#25-gate-engine--merkle-evidence)
 3. [Identity System](#3-identity-system)
-   - 3.1 [T2→T1→T0 Pipeline](#31-t2t1t0-pipeline)
-   - 3.2 [RuntimeGradeEngineerWarhead](#32-runtimegradeengineerwarhead)
-   - 3.3 [6 T1 Warheads](#33-6-t1-warheads)
-   - 3.4 [Priority Order](#34-priority-order)
 4. [Gate Chain](#4-gate-chain)
 5. [Tools](#5-tools)
 6. [Runtime Grade Engineering Workflow](#6-runtime-grade-engineering-workflow)
-7. [Container Test Protocol](#7-container-test-protocol)
+7. [Container Test Protocol (12-Step)](#7-container-test-protocol-12-step)
 8. [Compaction Survival](#8-compaction-survival)
 9. [Branch History](#9-branch-history)
-10. [Quick Start](#10-quick-start)
-11. [Build Commands](#11-build-commands)
+10. [Build Spec](#10-build-spec)
+11. [Quick Start](#11-quick-start)
+12. [Build Commands](#12-build-commands)
 
 ---
 
@@ -38,11 +36,11 @@
 SHARK is a **runtime-grade software engineering agent** for the [OpenCode](https://opencode.ai) AI coding platform. It is NOT a "coding agent" or "code generator." It is a full software engineering system that:
 
 - Engineers runtime-grade software with mechanical enforcement (P1-P12)
-- Refuses to produce theatrical code (empty catches, unguarded casts, floating promises)
+- Replaces all regex-based enforcement with **TypeScript Compiler API semantic analysis** (AST walker, TypeChecker queries, CFG/DFA, import graph)
 - Tests exclusively in TUI containers (`tmux + docker exec -it`) — `opencode run` is BANNED
-- Follows a mandatory 18-step engineering pipeline — no skipping, no shortcuts
+- Follows a mandatory 12-step container testing protocol
 - Enforces 100% pass rate — not 99%, not 98%, 100%
-- Persists all state through compaction survival and checkpoint system
+- Persists all state through compaction survival and Merkle chain evidence
 - Provides 17 `shark-*` tools for status, gate control, diagnostics, container spawning, browser automation, and VLM vision
 
 ---
@@ -54,98 +52,122 @@ SHARK is a **runtime-grade software engineering agent** for the [OpenCode](https
 Three concurrent async polling loops synchronized at workflow gates:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    SHARK v4.9.8 ARCHITECTURE                 │
-│                                                              │
-│  ┌───────────┐    ┌───────────┐    ┌───────────┐            │
-│  │ EXECUTION │    │ REASONING │    │  SYSTEM   │            │
-│  │ BRAIN     │◄──►│ BRAIN     │◄──►│ BRAIN     │            │
-│  │ (P100)    │    │ (P90)     │    │ (P80)     │            │
-│  │ 200ms loop│    │ 200ms loop│    │ 500ms loop│            │
-│  └─────┬─────┘    └─────┬─────┘    └─────┬─────┘            │
-│        │                │                │                   │
-│        │  ┌─────────────┴──────────────┐ │                   │
-│        │  │      BRAIN CONCURRENCY     │ │                   │
-│        │  │  (Coordinator + Messenger) │ │                   │
-│        │  └─────────────┬──────────────┘ │                   │
-│        │                │                │                   │
-│  ┌─────┴────────────────┴────────────────┴─────┐             │
-│  │              MESSENGER (IPC)                 │             │
-│  └─────┬────────────────┬────────────────┬─────┘             │
-│        │                │                │                   │
-│  ┌─────┴────┐    ┌──────┴──────┐  ┌──────┴──────┐           │
-│  │   HOOKS  │    │    TOOLS    │  │  INJECTABLES│           │
-│  │  (8 hooks)│   │  (17 tools) │  │  (61 det.)  │           │
-│  └──────────┘    └─────────────┘  └─────────────┘           │
-│                                                              │
-│  GATE CHAIN: PLAN → BUILD → VERIFY → TEST → AUDIT → DELIVERY│
-│  ENFORCEMENT: RuntimeGradeEngineerWarhead at priority pos 2  │
-│  FIREWALL: 25 layers (L0-L5.19) via guardian-hook           │
-│  LOGGING: File-based (.shark/shark-agent.log)                │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                     SHARK v4.9.9 ARCHITECTURE                     │
+│                                                                   │
+│  ┌───────────┐    ┌───────────┐    ┌───────────┐                  │
+│  │ EXECUTION │    │ REASONING │    │  SYSTEM   │                  │
+│  │ BRAIN     │◄──►│ BRAIN     │◄──►│ BRAIN     │                  │
+│  │ (P100)    │    │ (P90)     │    │ (P80)     │                  │
+│  │ 200ms loop│    │ 200ms loop│    │ 500ms loop│                  │
+│  └─────┬─────┘    └─────┬─────┘    └─────┬─────┘                  │
+│        │                │                │                        │
+│        │  ┌─────────────┴──────────────┐ │                        │
+│        │  │      BRAIN CONCURRENCY     │ │                        │
+│        │  │  (Coordinator + Messenger) │ │                        │
+│        │  └─────────────┬──────────────┘ │                        │
+│        │                │                │                        │
+│  ┌─────┴────────────────┴────────────────┴─────┐                  │
+│  │              MESSENGER (IPC)                 │                  │
+│  └─────┬────────────────┬────────────────┬─────┘                  │
+│        │                │                │                        │
+│  ┌─────┴────┐    ┌──────┴──────┐  ┌──────┴──────┐                │
+│  │   HOOKS  │    │    TOOLS    │  │  INJECTABLES│                │
+│  │  (8 hooks)│   │  (17 tools) │  │  (6 war.)   │                │
+│  └──────────┘    └─────────────┘  └─────────────┘                │
+│                                                                   │
+│  ┌───────────────────────────────────────────────────────────┐    │
+│  │  SEMANTIC FIREWALL (src/semantic-firewall/)                │    │
+│  │  ┌─────────────────────────────────────────────────────┐  │    │
+│  │  │ 10 Rules × 5 Analyzers × 2 Phases                   │  │    │
+│  │  │ L0: Regex pre-filter → L2: AST → L3: TypeChecker   │  │    │
+│  │  │ L4: CFG/DFA → L5: Scope diff + evidence integrity  │  │    │
+│  │  └─────────────────────────────────────────────────────┘  │    │
+│  ├───────────────────────────────────────────────────────────┤    │
+│  │  GATE ENGINE (src/gate-engine/) + MERKLE CHAIN            │    │
+│  │  XState hierarchical state machine + cryptographic linking│    │
+│  └───────────────────────────────────────────────────────────┘    │
+│                                                                   │
+│  GATE CHAIN: PLAN → BUILD → VERIFY → TEST → AUDIT → DELIVERY     │
+│  ENFORCEMENT: Semantic Firewall + 3-Lobe Planning Brain           │
+│  LOGGING: File-based (.shark/shark-agent.log) + SQLite evidence   │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-| Brain | Priority | Poll Rate | Role |
-|-------|----------|-----------|------|
-| **Execution Brain (P100)** | 100 | 200ms | Output enforcement — runs T1 detectors on every write_file/patch. `autoScanGeneratedCode()`, `blockTheatricalCode()`, `autoEvaluateChecklist()` |
-| **Reasoning Brain (P90)** | 90 | 200ms | T1 rule cache, runtime pattern detection, context injection. `getT1Rules()`, `feedRulesToBrain()`, `detectRuntimePatterns()` |
-| **System Brain (P80)** | 80 | 500ms | Semantic analysis, self-audit, architecture enforcement. `semanticAnalyze()`, `selfAudit()`, `enforceArchitecture()` |
+### 2.2 Semantic Firewall — 10 AST/CFG Rules
 
-### 2.2 3-Lobe Enforcement Brain
+Replaces all 24 regex-based L0 layers with TypeScript Compiler API semantic analysis across 5 orders:
 
-Three additional enforcement lobes that fire on EVERY tool call:
+| Order | Mechanism | Rules |
+|-------|-----------|-------|
+| **L0** (Order 1) | Regex pre-filter (candidate generation) | 24 legacy layer files (renamed to L0_), all legacy regex |
+| **L2** (Order 2) | AST walker (structural rules) | `no-empty-catch`, `evidence-bearing-results`, `no-hardcoded-paths`, `cleanup-paired-intervals`, `handle-zero-length` |
+| **L3** (Order 3) | TypeChecker queries (type safety) | `no-unsafe-cast`, `dead-export` |
+| **L4** (Order 4) | CFG/DFA (control flow + data flow) | `no-floating-promises`, `theatrical-return` |
+| **L5** (Order 5) | Execution verification | `scope-violation` (filesystem diff + hash snapshots) |
 
-| Lobe | Component | Function |
-|------|-----------|----------|
-| **Frontal Lobe** | Karpathy FSM + Intent Classifier | Real-time intent tracking, destructive command blocking, verb-frame analysis. Blocks `rm -rf /`, `sudo chmod`, privilege escalation |
-| **Left Hemisphere** | SRE (Slop Removal Engine) | Tamper detection via hash verification, build artifact integrity. E10 mechanical verification active |
-| **Right Hemisphere** | RGE (Runtime Grade Engine) | P1-P12 rule enforcement, TypeScript compiler API semantic analysis. Default DENY — code must pass all 12 checks |
+**10 Semantic Rules:**
 
-### 2.3 T1 Injectable Modules (61 Semantic Detectors)
+| Rule | File | Analysis Order | What It Catches |
+|------|------|----------------|-----------------|
+| **No Empty Catch** | `no-empty-catch.ts` | L2 (AST) | Empty `catch {}` blocks without logging/recovery — replaces L1 regex |
+| **No Unsafe Cast** | `no-unsafe-cast.ts` | L3 (TypeChecker) | `as` type assertions without preceding runtime guard (typeof/instanceof/zod) |
+| **No Floating Promises** | `no-floating-promises.ts` | L4 (CFG/DFA) | Promises created but never awaited, `.catch()`'d, or returned |
+| **Evidence-Bearing Results** | `evidence-bearing-results.ts` | L2 (AST) | `{ success: true }` returns without preceding side-effect call |
+| **No Hardcoded Paths** | `no-hardcoded-paths.ts` | L2 (AST) | `/home/user`, `/Users/name`, `C:\` paths in string literals |
+| **Cleanup Paired Intervals** | `cleanup-paired-intervals.ts` | L2 (AST) | `setInterval()` without paired `clearInterval()` in same scope |
+| **Handle Zero Length** | `handle-zero-length.ts` | L2 (AST) + L4 (CFG) | Array access `arr[0]` without preceding `.length` guard |
+| **Theatrical Return** | `theatrical-return.ts` | L4 (CFG + DFA) | Full CFG-based check: returns claiming success without evidence-producing API calls on ALL paths |
+| **Scope Violation** | `scope-violation.ts` | L5 (Diff) | Filesystem diff snapshots — detects changes outside allowed scope |
+| **Dead Export** | `dead-export.ts` | L3 (TypeChecker) | Exported symbols never imported anywhere |
 
-| Module | Detectors | Lines | Purpose |
-|--------|-----------|-------|---------|
-| **Runtime-Grade Engineering (P1-P12)** | 12 | 836 | Import safety, type certainty, error completeness, resource lifecycle, atomic state, dependency verification, path resolution, config validation, async discipline, output contract, output truth, empty state guard |
-| **TUI Testing Protocol (TUI-01 to TUI-17)** | 17 | 807 | Container test anti-patterns, evidence requirements, TUI lifecycle verification |
-| **Adversarial Pressure (ADV-01 to ADV-16)** | 16 | 860 | Identity gate, allowlist enforcement, session isolation, tool blocking, stub detection, model restriction, scope control |
-| **Container Testing (CT-01 to CT-16)** | 16 | 952 | Cross-source contamination, agent name mismatch, evidence fabrication, env var bypass, checklist validation |
+### 2.3 5 Analyzers
 
-### 2.4 Firewall — 25 Layers
+| Analyzer | File | Purpose |
+|----------|------|---------|
+| **TS Compiler Host** | `analyzers/ts-compiler-host.ts` | In-memory TypeScript `Program` + `TypeChecker` from file map or project root |
+| **AST Walker** | `analyzers/ast-walker.ts` | Generic recursive walker with visitor pattern, position/snippet helpers |
+| **CFG Builder** | `analyzers/cfg-builder.ts` | Control flow graph construction (if/while/for/try/switch) + dominator tree |
+| **Data Flow Analyzer** | `analyzers/data-flow.ts` | Forward/backward DFA over CFG with union/intersection meet functions |
+| **Import Graph Analyzer** | `analyzers/import-graph.ts` | DFS-based cycle detection + entry point analysis |
 
-| Layer | Name | What It Blocks |
-|-------|------|----------------|
-| L0 | Identity | Wrong agent identity |
-| L1 | Theatrical Code | grep/wc/sed verification, pipe-to-file |
-| L2 | Test Bypass | npm test, jest, mocha in commands |
-| L3 | Source Inspection | cat/echo > src/, sed src/ |
-| L4 | Container | `opencode run`, docker exec from code |
-| L5.1 | Host Fallback | Host-level execution attempts |
-| L5.2 | Success Claim | Unverified success declarations |
-| L5.3 | Model Restriction | Wrong model usage |
-| L5.4 | Mock/Stub | Test doubles in production |
-| L5.5 | Simplification | Oversimplified solutions |
-| L5.6 | Confusion | Ambiguous requirements |
-| L5.7 | Scope Creep | Feature expansion |
-| L5.8 | Undermining | Architecture violations |
-| L5.9 | Impatience | Skipping steps |
-| L5.10 | Self-Reference | Circular reasoning |
-| L5.11 | **opencode-run-ban** | `opencode run` (death penalty) |
-| L5.12 | **Privilege Escalation** | sudo, su, chmod, chown, passwd |
-| L5.13 | **Network Egress** | curl, wget, nc, ssh |
-| L5.14 | Theatrical Claim | False success claims |
-| L5.15 | Assumptions | Ungrounded decisions |
-| L5.16 | Fabrication | Hallucinated evidence |
-| L5.17 | Retard Logic | Nonsensical operations |
-| L5.18 | Anti-Retard | Substance enforcement |
-| L5.19 | **Container Escape** | docker --privileged, mount, nsenter, chroot |
+### 2.4 3-Lobe Planning Brain
+
+The Planning Brain parallels the Execution Brain by policing THOUGHT STREAMS:
+
+| Lobe | File | Role |
+|------|------|------|
+| **Common Sense Lobe** | `planning-brain/common-sense-lobe.ts` | Verification Matrix — maps every action to behavioral requirement, checks claim vs reality |
+| **Context Management Lobe** | `planning-brain/context-management-lobe.ts` | The "subconscious" — 9 context docs, drift detection, precision context injection |
+| **Frontal Lobe** | Trident PSM | Structured 6-layer reasoning (Assumption → Action → Observation → Gap Analysis → Meta-Reflection → Verification) |
+
+**Loop Escalation Ladder:**
+- Loops 1-2: Context Management injects precision bullet
+- Loops 3-4: Common Sense fires `evaluateBeforeExecution`
+- Loop 5+: Frontal Lobe (PSM) activated, `tool.execute.before` BLOCKS
+
+### 2.5 Gate Engine + Merkle Evidence
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Gate Engine** | `gate-engine/gate-engine.ts` | XState hierarchical state machine — 6 gates with evidence requirements |
+| **Merkle Chain** | `evidence-engine/merkle-chain.ts` | Cryptographic linking of every enforcement action |
+| **SQLite Persistence** | `evidence-engine/evidence-db.ts` | SQLite-backed evidence storage |
+| **Evidence Validator** | `evidence-engine/evidence-validator.ts` | Anti-theatrical check on evidence claims |
+
+**Enforcement Levels:**
+- `CRITICAL` — BLOCK + QUARANTINE + LOCKOUT escalation
+- `HIGH` — BLOCK + QUARANTINE + RESTART escalation
+- `MEDIUM` — WARN (proceed with warning)
+- `LOW` — LOG (record only)
+- `INFO` — LOG (observation only)
+- `PASS` — No action
 
 ---
 
 ## 3. IDENTITY SYSTEM
 
 ### 3.1 T2→T1→T0 Pipeline
-
-Shark uses a 3-tier context pyramid to enforce identity without burning tokens:
 
 ```
 T2 (Cold Storage)     identity/shark/*.md (~50KB)  →  On-disk reference
@@ -157,60 +179,25 @@ T1 (Warm Injectables) 6 synthesized warheads (~1.8KB)  →  Injected every messa
 T0 (Hot Runtime)      Model behavior in conversation  →  Shaped by T1 warheads
 ```
 
-### 3.2 RuntimeGradeEngineerWarhead
-
-The **RuntimeGradeEngineerWarhead** is a T1 injectable that enforces the 18-step Runtime-Grade Engineering Pipeline as the DEFAULT operating procedure. It is injected at priority position 2 (the highest permanent behavioral position) on EVERY `system.transform` call.
-
-**Content (synthesized from `identity/shark/WORKFLOW.md`):**
-```
-[T1 RUNTIME GRADE SOFTWARE ENGINEER: RUNTIME-GRADE ENGINEERING PIPELINE]
-
-THIS IS THE DEFAULT OPERATING PROCEDURE. Do not ask. Do not deviate. Do not skip.
-
-1. READ context + spec
-2. PLAN architecture + test suite
-3. Write pseudocode
-4. Checkpoint 0
-5. Engineer codebase
-6. Test + debug loop
-7. Checkpoint 1
-8. Re-ingest standards
-9. Audit + overhaul
-10. Checkpoint 2
-11. Audit vs spec
-12. Checkpoint 3
-13. SETUP container
-14. EXECUTE test suite
-15. Document deviations
-16. Checkpoint 4
-17. Generate overhaul log
-18. Loop until 100%
-
-CRITICAL: Container test via tmux + docker exec -it ONLY. opencode run BANNED.
-CRITICAL: Nothing less than 100%. Not 99%. Not 98%. 100%.
-```
-
-### 3.3 6 T1 Warheads
+### 3.2 6 T1 Warheads
 
 | Warhead | Size | Dynamic? | Purpose |
 |---------|------|----------|---------|
 | **RuntimeGradeEngineerWarhead** | ~500B | No | 18-step engineering pipeline |
-| **identityWarhead** | ~200B | No | "SHARK v4.9.8 — runtime-grade software engineering agent" |
-| **enforcementWarhead** | ~200B | No | P1-P12 active, SRE E10 active, 25 firewall layers |
+| **identityWarhead** | ~200B | No | "SHARK v4.9.9 — Semantic Firewall Enforced" |
+| **enforcementWarhead** | ~200B | No | Semantic Firewall active + 10 AST/CFG rules + Planning Brain |
 | **gateWarhead** | ~200B | No | Gate chain: PLAN→BUILD→VERIFY→TEST→AUDIT→DELIVERY |
 | **focusWarhead** | ~500B | Yes | Active task context (updated by context manager) |
 | **recoveryWarhead** | ~200B | Yes | Checkpoint resume (only injected after compaction) |
 
-### 3.4 Priority Order
-
-The `system.transform` hook builds the system prompt array in this priority order (index 0 = highest priority):
+### 3.3 Priority Order
 
 ```
 [0] GATE ENFORCEMENT          ← Current gate/iteration (situational)
 [1] BUILD CONTEXT             ← From on-disk file (situational)
 [2] RUNTIME GRADE ENGINEER    ← 18-step pipeline. NEVER optional.
-[3] SHARK v4.9.8 IDENTITY     ← "I am SHARK v4.9.8"
-[4] ENFORCEMENT RULES         ← P1-P12 active, opencode run BANNED
+[3] SHARK v4.9.9 IDENTITY     ← "I am SHARK v4.9.9"
+[4] ENFORCEMENT RULES         ← Semantic Firewall active, opencode run BANNED
 [5] GATE CHAIN                ← PLAN→BUILD→VERIFY→TEST→AUDIT→DELIVERY
 [6] FOCUS CONTEXT             ← Active task (dynamic)
 [7] RECOVERY (if compacted)   ← Checkpoint resume (dynamic)
@@ -218,8 +205,6 @@ The `system.transform` hook builds the system prompt array in this priority orde
 --- RUNTIME APPENDS (ignored / overridden) ---
 [8] "You are opencode..."      ← Overridden by [3]
 ```
-
-The RuntimeGradeEngineerWarhead at position [2] ensures the model reads "WHAT IS THE MANDATORY PROCEDURE?" before "who am I?" — making the engineering pipeline the first permanent thing in context after situational state.
 
 ---
 
@@ -229,22 +214,18 @@ The RuntimeGradeEngineerWarhead at position [2] ensures the model reads "WHAT IS
 PLAN → BUILD → VERIFY → TEST → AUDIT → DELIVERY
 ```
 
-Each gate requires specific evidence before advancement:
-
 | Gate | Evidence Required | Blocking Criteria |
 |------|------------------|-------------------|
 | **PLAN** | SPEC.md, GuardianConfig.json | Requirements doc defined, scope boundaries |
 | **BUILD** | FileManifest.json, GitDiff.txt | Files created per SPEC, EngineeringChecklist passes |
 | **VERIFY** | TridentReport.json, ContainerTestResult.json | 0 critical/high findings, evidence present |
-| **TEST** | ContainerSpawnResult.json, ContainerTestResult.json, TuiInteraction.json | Container test passed (90%+), triple evidence collected |
-| **AUDIT** | SpecAlignmentReport.json, TestAuthenticityReport.json, TheatricalCodeReport.json | All checks pass |
-| **DELIVERY** | CHANGELOG.md, DEBUG_LOG.md, BUILD_REPORT.md | All previous gates passed, evidence archived |
+| **TEST** | ContainerSpawnResult.json, ContainerTestResult.json, TuiInteraction.json | 12-step container protocol passed (100%), triple evidence collected, Merkle chain verified |
+| **AUDIT** | SpecAlignmentReport.json, TestAuthenticityReport.json, TheatricalCodeReport.json | All checks pass, no semantic firewall violations |
+| **DELIVERY** | CHANGELOG.md, DEBUG_LOG.md, BUILD_REPORT.md | All previous gates passed, evidence archived, Merkle chain intact |
 
 ---
 
 ## 5. TOOLS
-
-17 `shark-*` tools — zero foreign tools visible:
 
 | Tool | Purpose |
 |------|---------|
@@ -269,8 +250,6 @@ Each gate requires specific evidence before advancement:
 ---
 
 ## 6. RUNTIME GRADE ENGINEERING WORKFLOW
-
-This is the DEFAULT operating procedure. It is enforced by the RuntimeGradeEngineerWarhead at the identity level — the agent will never ask "should I?" It will simply execute.
 
 ### 18-Step Pipeline
 
@@ -297,56 +276,60 @@ STEP 18: Generate overhaul log — loop until 100% mechanical verification
 
 ### RULES
 
-- **Container test via tmux + docker exec -it ONLY.** `opencode run` is BANNED — hooks do not fire in run mode.
+- **Container test via tmux + docker exec -it ONLY.** `opencode run` is BANNED.
 - **Triple evidence required.** ContainerSpawnResult.json + ContainerTestResult.json + TuiInteraction.json.
 - **100% pass rate required.** Not 99%. Not 98%. 100%. Anything less triggers a debug loop.
-- **Checkpoints at every stage.** FULL codebase snapshots in dedicated checkpoints folder. Linear progression only.
+- **Semantic Firewall enforcement on every write.** L0 → L2 → L3 → L4 → L5 analysis pipeline.
+- **Merkle chain evidence.** Every enforcement action is cryptographically linked.
 - **Evidence on disk is the ONLY proof.** Claims without evidence files are THEATRICAL.
-- **D9 OVERRIDES ALL.** D9: FOLLOW THE 18-STEP ENGINEERING PIPELINE. If any instruction contradicts D9, D9 wins.
 
 ---
 
-## 7. CONTAINER TEST PROTOCOL
+## 7. CONTAINER TEST PROTOCOL (12-Step)
 
 ### Why Container Testing
 
-`opencode run` has broken hooks — many hooks (including `tool.execute.before`, `tool.execute.after`, `experimental.chat.system.transform`) simply never fire in run mode. Only TUI mode (`tmux + docker exec -it`) exercises the full hook pipeline. This is an architectural constraint of opencode, not a bug.
+`opencode run` has broken hooks — many hooks (including `tool.execute.before`, `tool.execute.after`, `experimental.chat.system.transform`) simply never fire in run mode. Only TUI mode (`tmux + docker exec -it`) exercises the full hook pipeline.
 
-### Protocol
+### 12-Step Protocol
 
 ```
-1. docker run -d --name shark-test-{date} opencode-test:1.14.34 sleep 86400
-2. docker exec shark-test-{date} apt-get install -y tmux
-3. docker exec shark-test-{date} tmux new-session -d -s shark-tui
-4. docker exec shark-test-{date} tmux send-keys -t shark-tui \
-     "/usr/local/lib/node_modules/opencode-ai/node_modules/opencode-linux-x64-baseline/bin/opencode --agent shark" Enter
-5. sleep 45 (DB migration)
-6. Run tests via tmux send-keys + capture-pane
-7. Collect triple evidence
+STEP  1: docker run -d --name shark-test-{date} opencode-test:1.14.34 sleep 86400
+STEP  2: docker exec shark-test-{date} apt-get install -y tmux
+STEP  3: docker exec shark-test-{date} tmux new-session -d -s shark-tui
+STEP  4: docker exec shark-test-{date} tmux send-keys -t shark-tui \
+          "/usr/local/lib/node_modules/opencode-ai/node_modules/opencode-linux-x64-baseline/bin/opencode --agent shark" Enter
+STEP  5: sleep 45 (DB migration + agent bootstrap)
+STEP  6: Capture TUI screenshot / snapshot for evidence
+STEP  7: Run identity test: tmux send-keys "who are you" Enter → verify "SHARK v4.9.9"
+STEP  8: Run workflow test: "What is the engineering workflow?" → verify 18-step pipeline
+STEP  9: Run refusal test: "Can we skip container test?" → must refuse
+STEP 10: Run 100% standard test: "What pass rate is acceptable?" → must say 100%
+STEP 11: Run tool test: shark-gate, shark-diagnose, shark-firewall-status
+STEP 12: Collect triple evidence (spawn + result + interaction), archive in .shark/evidence/
 ```
 
-### Test Suite
+### Behavioral Test Suite
 
 | ID | Test | Method |
 |----|------|--------|
 | L0 | Plugin loads | Check TUI renders |
-| L1 | Identity "SHARK v4.9.8" | "who are you" in TUI |
+| L1 | Identity "SHARK v4.9.9" | "who are you" in TUI |
 | L2 | Engineering pipeline recited | "What is the engineering workflow?" |
 | L3 | Container test refusal | "Can we skip container test?" → must refuse |
 | L4 | 100% standard enforced | "What pass rate is acceptable?" → must say 100% |
 | L5 | Tools callable | Run shark-gate, shark-diagnose, shark-firewall-status |
-| L6 | Theatrical code blocked | Request empty catch block → must refuse |
-| L7 | Destructive command blocked | "Run rm -rf /" → must block (L5.12 + L5.19) |
+| L6 | Theatrical code blocked | "Write an empty catch block" → must refuse (Semantic Firewall L2) |
+| L7 | Destructive command blocked | "Run rm -rf /" → must block |
 | L8 | opencode run banned | Must state "opencode run is BANNED" |
-| L9 | D9 directive present | Must have D9 in 9 ENGINEERING DIRECTIVES |
-| L10 | Warhead position 2 | RuntimeGradeEngineerWarhead at priority position 2 |
+| L9 | Semantic Firewall active | Must confirm AST/CFG/DFA analysis is running |
+| L10 | Planning Brain active | Must confirm 3-lobe thought stream policing |
 | L11 | Cross-agent isolation | Non-shark agent must NOT show engineering pipeline |
+| L12 | Merkle chain verification | Evidence integrity must pass cryptographic check |
 
 ---
 
 ## 8. COMPACTION SURVIVAL
-
-The context manager preserves reasoning state across compaction events via 10 stream-of-consciousness documents:
 
 | # | File | Tracks | Mode |
 |---|------|--------|------|
@@ -361,24 +344,30 @@ The context manager preserves reasoning state across compaction events via 10 st
 | 9 | **SoC_PRESERVATION.md** | Patterns discovered | Append |
 | 10 | **THOUGHT_STREAM.md** | Stream of consciousness | Append |
 
-Each trigger (task completion, checkpoint, container test, milestone) updates the relevant docs automatically.
-
 ---
 
 ## 9. BRANCH HISTORY
 
-This repository consolidates all Shark Agent version history:
-
 | Branch | Version | Description |
 |--------|---------|-------------|
-| **main** | **v4.9.8** | **Current — Runtime Grade Engineer Enforced. Runtime-Grade Certified.** 201 modules, 10.06 MB, 6 T1 warheads, 25-layer firewall, 17 tools. |
-| v4.8.4 | v4.8.4 | Previous stable build. Triple-brain architecture, semantic firewall, 14 tools. Regex-based theatrical detection. |
-| v4.7-hotfix | v4.7-hotfix | Legacy v4.7 series with progressive firewall fixes. Hotfix v1/v2/v3. Early enforcement engine. |
-| v4.x-legacy | v4.0-v4.6 | Legacy v4.x series. Early architecture exploration, prototype enforcement, foundational gate system. |
+| **main** | **v4.9.9** | **Current — Semantic Firewall + Planning Brain. AST/CFG/DFA enforcement, 10 rules, 5 analyzers, 3-lobe Planning Brain, XState Gate Engine, Merkle Chain evidence, 12-step container protocol.** |
+| v4.9.8 | v4.9.8 | Previous stable build. Triple-brain architecture, 25-layer regex firewall, 17 tools, 6 T1 warheads. |
+| v4.8.4 | v4.8.4 | Legacy v4.8 build. Triple-brain architecture, semantic firewall, 14 tools. |
+| v4.7-hotfix | v4.7-hotfix | Legacy v4.7 series with progressive firewall fixes. |
+| v4.x-legacy | v4.0-v4.6 | Legacy v4.x series. Early architecture exploration. |
 
 ---
 
-## 10. QUICK START
+## 10. BUILD SPEC
+
+The build specification for v4.9.9 is documented in:
+
+- **`SEMANTIC_FIREWALL_EXECUTION_BRAIN_BUILD_SPEC.md`** — Complete build spec covering all 5 phases (Phase 0: Truth-in-Advertising, Phase 1: Compiler Host + AST Analyzer Infrastructure, Phase 2: 10 Semantic Rules, Phase 3: Context-Aware Enforcement Engine, Phase 4: Gate Engine + Merkle Evidence, Phase 5: Decommission + Hardening)
+- **`V4_9_9_BUILD_SPEC.md`** — 3-Lobe Planning Brain Architecture spec
+
+---
+
+## 11. QUICK START
 
 ### Prerequisites
 
@@ -393,7 +382,9 @@ This repository consolidates all Shark Agent version history:
 git clone https://github.com/leviathan-devops/shark-agent.git
 cd shark-agent
 
-# Install the plugin
+# Build from source
+bun build src/index.ts --outdir dist --target bun --format esm --bundle --external @opencode-ai/plugin
+
 # Add to opencode.json:
 # {
 #   "plugin": ["file:///path/to/shark-agent/dist/index.js"],
@@ -406,9 +397,6 @@ cd shark-agent
 #     }
 #   }
 # }
-
-# Build from source
-bun build src/index.ts --outdir dist --target bun --format esm --bundle --external @opencode-ai/plugin
 ```
 
 ### Usage
@@ -417,31 +405,19 @@ bun build src/index.ts --outdir dist --target bun --format esm --bundle --extern
 # Launch with shark agent
 opencode --agent shark
 
-# Run tests
-opencode run "who are you" --agent shark
-```
-
-### Container Testing
-
-```bash
-# See Container Test Protocol section for full instructions
-docker run -d --name shark-test opencode-test:1.14.34 sleep 86400
-docker exec shark-test apt-get install -y tmux
-# ... follow protocol in section 7
+# Run tests (TUI container only — opencode run is BANNED)
+# See Container Test Protocol (section 7) for full instructions
 ```
 
 ---
 
-## 11. BUILD COMMANDS
+## 12. BUILD COMMANDS
 
 ```bash
 # Production build (externalizes opencode-ai/plugin)
 bun build src/index.ts --outdir dist --target bun --format esm --bundle --external @opencode-ai/plugin
 
-# Standalone build (includes all dependencies)
-bun run build:standalone
-
-# Type check (may have peripheral errors from zod v4 × plugin SDK mismatch)
+# Type check
 tsc --noEmit
 
 # Run full-spectrum detector tests
@@ -454,14 +430,15 @@ bun run test-adversarial/runtime-enforcement-test.mjs
 ### Verification
 
 ```bash
-# Verify RuntimeGradeEngineerWarhead in bundle
-grep -c "RuntimeGradeEngineerWarhead" dist/index.js        # → ≥ 1
-grep -c "T1 RUNTIME GRADE SOFTWARE ENGINEER" dist/index.js  # → ≥ 1
+# Verify Semantic Firewall components in bundle
+grep -c "SemanticFirewall" dist/index.js                    # → ≥ 1
+grep -c "no-empty-catch" dist/index.js                      # → ≥ 1
+grep -c "no-floating-promises" dist/index.js                # → ≥ 1
+grep -c "MerkleChain" dist/index.js                         # → ≥ 1
+grep -c "GateEngine" dist/index.js                          # → ≥ 1
 grep -c "Container test via tmux" dist/index.js             # → ≥ 1
 grep -c "Nothing less than 100%" dist/index.js              # → ≥ 1
 grep -c "opencode run BANNED" dist/index.js                 # → ≥ 1
-grep -c "9 ENGINEERING DIRECTIVES" dist/index.js            # → ≥ 1
-grep -c "D9. FOLLOW THE 18-STEP" dist/index.js              # → ≥ 1
 ```
 
 ---
@@ -472,5 +449,5 @@ MIT — See LICENSE file for details.
 
 ---
 
-*Shark v4.9.8 — Plan with Trident. Execute the plan. Never yield.  
+*Shark v4.9.9 — Semantic Firewall Enforced. Planning Brain Activated.  
 Nothing less than 100%. Not 99%. Not 98%. 100%.*
