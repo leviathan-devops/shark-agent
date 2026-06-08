@@ -169915,12 +169915,17 @@ class GateManager {
     this.save();
     return true;
   }
+  blockCurrentGate() {
+    this.gateStatus[this.currentGate] = "blocked";
+    this.save();
+  }
   passCurrentGate() {
     this.gateStatus[this.currentGate] = "passed";
     this.save();
   }
   failCurrentGate() {
     this.gateStatus[this.currentGate] = "failed";
+    this.blockCurrentGate();
     this.save();
   }
   getCriteria(gate) {
@@ -186564,6 +186569,22 @@ function createGateHook(gateManager, evidenceCollector, peerDispatch, executionC
         executionContext.setGate(nextGate);
       createPhaseSnapshot(gateManager, completedGate);
       checkpointOnGateTransition(completedGate, gateManager);
+      if (executionBrainRef) {
+        try {
+          const state = executionBrainRef.getState();
+          const completedFileCount = state?.state?.context?.planArtifacts?.length ?? 0;
+          executionBrainRef.checkPoint(`gate-${completedGate}-completed`, completedFileCount);
+        } catch {}
+        try {
+          const state = executionBrainRef.getState();
+          if (state?.state?.engineeringChecklist) {
+            const checklistResult = executionBrainRef.validateEngineeringChecklist(state.state.engineeringChecklist);
+            if (!checklistResult.passed) {
+              console.warn("[SHARK] Engineering checklist validation failed on gate transition:", checklistResult.violations);
+            }
+          }
+        } catch {}
+      }
       if (nextGate === "verify" && currentGate === "build" && peerDispatch) {
         peerDispatch.onBuildComplete();
       }
@@ -189735,6 +189756,72 @@ class RGEStateMachine {
 
 // src/shark/rge/evidence-validator.ts
 class EvidenceValidator {
+  validateReport(report) {
+    const errors3 = [];
+    if (report === null || typeof report !== "object") {
+      errors3.push({ field: "report", message: "Report must be an object" });
+      return { valid: false, errors: errors3 };
+    }
+    if (typeof report === "object" && report !== null) {
+      const r = report;
+      this.validateReportFields(r, errors3);
+    }
+    return { valid: errors3.length === 0, errors: errors3 };
+  }
+  validateReportFields(r, errors3) {
+    if (typeof r.overallPassed !== "boolean") {
+      errors3.push({ field: "overallPassed", message: "Must be a boolean" });
+    }
+    if (typeof r.passRate !== "number") {
+      errors3.push({ field: "passRate", message: "Must be a number" });
+    } else if (r.passRate < 0 || r.passRate > 1) {
+      errors3.push({ field: "passRate", message: "Must be between 0 and 1" });
+    }
+    if (r.layers !== null && typeof r.layers === "object") {
+      const layers = r.layers;
+      const expectedLayers = ["l0_syntactic", "l1_type_contract", "l2_control_flow", "l3_architecture", "l4_side_effect_truth", "l5_pattern_db"];
+      for (const expected of expectedLayers) {
+        if (!layers[expected]) {
+          errors3.push({ field: `layers.${expected}`, message: "Missing required layer" });
+        } else if (layers[expected] !== null && typeof layers[expected] === "object") {
+          const layer = layers[expected];
+          if (typeof layer.passed !== "boolean") {
+            errors3.push({ field: `layers.${expected}.passed`, message: "Must be a boolean" });
+          }
+          if (!Array.isArray(layer.findings)) {
+            errors3.push({ field: `layers.${expected}.findings`, message: "Must be an array" });
+          }
+        }
+      }
+    }
+    if (Array.isArray(r.semanticFindings)) {
+      for (let i = 0;i < r.semanticFindings.length; i++) {
+        if (r.semanticFindings[i] !== null && typeof r.semanticFindings[i] === "object") {
+          const finding = r.semanticFindings[i];
+          if (!finding.ruleId) {
+            errors3.push({ field: `semanticFindings[${i}].ruleId`, message: "Missing ruleId" });
+          }
+          const severity = finding.severity;
+          if (typeof severity !== "string" || !["CRITICAL", "HIGH", "MEDIUM", "LOW"].includes(severity)) {
+            errors3.push({ field: `semanticFindings[${i}].severity`, message: `Invalid severity: ${finding.severity}` });
+          }
+        }
+      }
+    } else if (r.semanticFinding !== undefined) {
+      errors3.push({ field: "semanticFindings", message: "Must be an array" });
+    }
+    if (r.returnTo !== undefined) {
+      if (typeof r.returnTo !== "string" || !["coder", "reviewer", "test_engineer"].includes(r.returnTo)) {
+        errors3.push({ field: "returnTo", message: "Must be coder, reviewer, or test_engineer" });
+      }
+    }
+    if (r.fixInstructions !== undefined && !Array.isArray(r.fixInstructions)) {
+      errors3.push({ field: "fixInstructions", message: "Must be an array of strings" });
+    }
+    if (r.evidencePath !== undefined && typeof r.evidencePath !== "string") {
+      errors3.push({ field: "evidencePath", message: "Must be a string path" });
+    }
+  }
 }
 
 // src/shark/rge/rules/p1-defensive-import.ts
@@ -191593,6 +191680,10 @@ class RuntimeGradeEngine {
       fixInstructions,
       evidencePath
     };
+    const validation = this.evidenceValidator.validateReport(report);
+    if (!validation.valid) {
+      console.error("[RGE] Report validation failed:", validation.errors.map((e) => `${e.field}: ${e.message}`).join(", "));
+    }
     fs19.writeFileSync(evidencePath, JSON.stringify(report, null, 2), "utf-8");
     return report;
   }
@@ -195979,6 +196070,76 @@ function createExecutionBrain(config2) {
       return {};
     }
   }
+  function validateEngineeringChecklist(checklist, code, context) {
+    let merged;
+    if (code && context) {
+      try {
+        const autoResult = evaluateCodeAgainstChecklist(code, context);
+        merged = { ...DEFAULT_CHECKLIST, ...checklist, ...autoResult };
+      } catch {
+        merged = { ...DEFAULT_CHECKLIST, ...checklist };
+      }
+    } else {
+      merged = { ...DEFAULT_CHECKLIST, ...checklist };
+    }
+    const violations = [];
+    if (!merged.returnTypeCorrect)
+      violations.push("Return type not verified in all paths");
+    if (!merged.nullSafetyHandled)
+      violations.push("Null/undefined input not handled");
+    if (!merged.errorPathsComplete)
+      violations.push("Error paths incomplete \u2014 catch {} without handling");
+    if (!merged.resourceCleanupAllPaths)
+      violations.push("Resource cleanup missing in error paths");
+    if (!merged.concurrentSafety)
+      violations.push("Concurrent call safety not verified");
+    if (!merged.importValidity)
+      violations.push("Import validity not verified");
+    if (!merged.pathResolution)
+      violations.push("Path resolution may fail in different environments");
+    if (!merged.configValidated)
+      violations.push("Configuration values not validated");
+    if (!merged.typeAssertionsGuarded)
+      violations.push("Type assertions (as) not guarded by runtime checks");
+    if (!merged.asyncDiscipline)
+      violations.push("Async operations missing error handling");
+    if (!merged.crossSystemDataContractsValidated)
+      violations.push("Cross-system data contracts not validated \u2014 data shape at integration boundaries not verified");
+    if (!merged.coupledDataConsistencyVerified)
+      violations.push("Coupled data consistency not verified \u2014 cross-referenced values may be inconsistent");
+    if (!merged.gridDataIntegrityVerified)
+      violations.push("Grid/map data integrity not verified \u2014 ragged rows, missing tiles, or invalid warp targets");
+    const result = { passed: violations.length === 0, violations };
+    if (!result.passed) {
+      for (const v of violations) {
+        reportRuntimeViolation(`[EngineeringChecklist] ${v}`);
+      }
+    }
+    return result;
+  }
+  function checkPoint(phase, completedFiles) {
+    updateState({ progress: `${completedFiles} files completed` });
+    messenger.send({
+      from: "shark-execution",
+      to: "shark-system",
+      type: "checkpoint",
+      priority: "normal",
+      payload: { phase, completedFiles },
+      requiresAck: false
+    });
+    const state = getState();
+    if (state?.state.context?.buildOutput && typeof state.state.context.buildOutput === "string") {
+      autoScanGeneratedCode(state.state.context.buildOutput, {
+        filePath: basePath,
+        toolName: "checkpoint",
+        gate: state.gate,
+        surroundingCode: ""
+      });
+    }
+    if (state?.state?.engineeringChecklist) {
+      validateEngineeringChecklist(state.state.engineeringChecklist);
+    }
+  }
   function reportRuntimeViolation(violation) {
     const current = getState();
     const existing = current?.state.context?.runtimeViolations ?? [];
@@ -196026,10 +196187,12 @@ function createExecutionBrain(config2) {
   return {
     getState,
     updateState,
+    checkPoint,
     readPlanState,
     readThinkingState,
     setGate,
     setIteration,
+    validateEngineeringChecklist,
     reportRuntimeViolation,
     autoScanGeneratedCode,
     blockTheatricalCode,

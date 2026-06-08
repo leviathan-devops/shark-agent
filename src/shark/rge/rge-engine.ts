@@ -258,6 +258,11 @@ export class RuntimeGradeEngine {
       evidencePath
     };
 
+    const validation = this.evidenceValidator.validateReport(report);
+    if (!validation.valid) {
+      console.error('[RGE] Report validation failed:', validation.errors.map(e => `${e.field}: ${e.message}`).join(', '));
+    }
+
     fs.writeFileSync(evidencePath, JSON.stringify(report, null, 2), 'utf-8');
 
     return report;

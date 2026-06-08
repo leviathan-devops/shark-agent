@@ -303,6 +303,11 @@ export class GateManager {
   }
 
 
+  blockCurrentGate(): void {
+    this.gateStatus[this.currentGate] = 'blocked';
+    this.save();
+  }
+
   passCurrentGate(): void {
     this.gateStatus[this.currentGate] = 'passed';
     this.save();
@@ -310,6 +315,7 @@ export class GateManager {
 
   failCurrentGate(): void {
     this.gateStatus[this.currentGate] = 'failed';
+    this.blockCurrentGate();
     this.save();
   }
 

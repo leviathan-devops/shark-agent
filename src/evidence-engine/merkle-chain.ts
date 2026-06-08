@@ -21,6 +21,13 @@ export class MerkleChain {
   }
 
   append(data: Record<string, unknown>): EvidenceBlock {
+    if (this.blocks.length > 0) {
+      const preCheck = this.validate();
+      if (!preCheck.valid) {
+        console.error('[MerkleChain] Chain integrity compromised before append:', JSON.stringify(preCheck.errors));
+      }
+    }
+
     const previousBlock = this.blocks[this.blocks.length - 1];
     const block: EvidenceBlock = {
       index: this.blocks.length,
@@ -32,6 +39,12 @@ export class MerkleChain {
     block.hash = this.computeHash(block);
     this.blocks.push(block);
     this.persistBlock(block);
+
+    const postCheck = this.validate();
+    if (!postCheck.valid) {
+      console.error('[MerkleChain] Chain integrity compromised after append:', JSON.stringify(postCheck.errors));
+    }
+
     return block;
   }
 
@@ -40,6 +53,31 @@ export class MerkleChain {
   }
 
   recent(n: number): EvidenceBlock[] { return this.blocks.slice(-n); }
+
+  validate(): { valid: boolean; errors: Array<{ blockIndex: number; expected: string; computed: string; type: 'hash' | 'chain' }> } {
+    const errors: Array<{ blockIndex: number; expected: string; computed: string; type: 'hash' | 'chain' }> = [];
+
+    for (let i = 0; i < this.blocks.length; i++) {
+      const block = this.blocks[i];
+      const computed = this.computeHash({ ...block, hash: '' });
+      if (computed !== block.hash) {
+        errors.push({ blockIndex: i, expected: block.hash, computed, type: 'hash' });
+      }
+
+      if (i === 0) {
+        if (block.previousHash !== '0'.repeat(64)) {
+          errors.push({ blockIndex: i, expected: '0'.repeat(64), computed: block.previousHash, type: 'chain' });
+        }
+      } else {
+        const expectedPrev = this.blocks[i - 1].hash;
+        if (block.previousHash !== expectedPrev) {
+          errors.push({ blockIndex: i, expected: expectedPrev, computed: block.previousHash, type: 'chain' });
+        }
+      }
+    }
+
+    return { valid: errors.length === 0, errors };
+  }
 
 
   private computeHash(block: EvidenceBlock): string {

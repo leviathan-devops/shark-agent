@@ -269,6 +269,28 @@ export function createGateHook(
       createPhaseSnapshot(gateManager, completedGate);
       checkpointOnGateTransition(completedGate, gateManager);
 
+      if (executionBrainRef) {
+        try {
+          const state = executionBrainRef.getState();
+          const completedFileCount = state?.state?.context?.planArtifacts?.length ?? 0;
+          executionBrainRef.checkPoint(`gate-${completedGate}-completed`, completedFileCount);
+        } catch {
+          // checkpoint failure non-fatal
+        }
+
+        try {
+          const state = executionBrainRef.getState();
+          if (state?.state?.engineeringChecklist) {
+            const checklistResult = executionBrainRef.validateEngineeringChecklist(state.state.engineeringChecklist);
+            if (!checklistResult.passed) {
+              console.warn('[SHARK] Engineering checklist validation failed on gate transition:', checklistResult.violations);
+            }
+          }
+        } catch {
+          // checklist validation failure non-fatal
+        }
+      }
+
       if (nextGate === 'verify' && currentGate === 'build' && peerDispatch) {
         peerDispatch.onBuildComplete();
       }
