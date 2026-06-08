@@ -36,7 +36,7 @@ export class MerkleChain {
   }
 
   search(key: string, value: unknown): EvidenceBlock[] {
-    return this.blocks.filter(b => (b.data as any)[key] === value);
+    return this.blocks.filter(b => b.data[key] === value);
   }
 
   recent(n: number): EvidenceBlock[] { return this.blocks.slice(-n); }

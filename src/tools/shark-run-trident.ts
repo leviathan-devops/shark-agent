@@ -15,6 +15,7 @@ import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { validatePath } from '../shared/validate-path.js';
 
 export interface RunTridentInput {
   codePath: string;
@@ -80,7 +81,7 @@ const ARTIFACT_DIR = '.trident';
 function ensureArtifactDir(): void {
   const artifactPath = path.join(process.cwd(), ARTIFACT_DIR);
   if (!fs.existsSync(artifactPath)) {
-    fs.mkdirSync(artifactPath, { recursive: true });
+    fs.mkdirSync(validatePath(artifactPath, true), { recursive: true });
   }
 }
 
@@ -189,7 +190,7 @@ function writeBuildReport(buildReportPath: string, safeContext: string, codePath
     reportLines.push(`| ${entry.name} | ${entry.sizeKB} |`);
   }
   reportLines.push('', `## Date`, `${dateStr}`);
-  fs.writeFileSync(buildReportPath, reportLines.join('\n'));
+  fs.writeFileSync(validatePath(buildReportPath, true), reportLines.join('\n'));
 }
 
 function parseFindingsFromReview(codeReviewPath: string): { critical: number; high: number; medium: number; low: number } {
@@ -268,10 +269,10 @@ function runTridentContainer(codePath: string, contextName: string, dryRun: bool
       if (!cliOutput || cliOutput.trim().length === 0) {
         return { codeReviewPath, buildReportPath, success: false, error: 'Trident CLI produced empty output' };
       }
-      fs.writeFileSync(codeReviewPath, cliOutput);
+      fs.writeFileSync(validatePath(codeReviewPath, true), cliOutput);
       writeBuildReport(buildReportPath, safeContext, codePath, dateStr);
       return { codeReviewPath, buildReportPath, success: true };
-    } catch (cliErr: any) {
+    } catch (_cliErr: unknown) {
       // CLI failed — will try other methods below
     }
   }
@@ -310,9 +311,9 @@ function runTridentContainer(codePath: string, contextName: string, dryRun: bool
       `## Date`,
       `${dateStr}`,
     ];
-    fs.writeFileSync(codeReviewPath, dryRunLines.join('\n'));
+    fs.writeFileSync(validatePath(codeReviewPath, true), dryRunLines.join('\n'));
     // Generate tiny build report for dry run too
-    fs.writeFileSync(buildReportPath, `# TRIDENT BUILD REPORT — ${safeContext} (DRY RUN)\n\n## Target\n${codePath}\n\n## Status\nTrident source verified. No build executed.\n\n## Date\n${dateStr}\n`);
+    fs.writeFileSync(validatePath(buildReportPath, true), `# TRIDENT BUILD REPORT — ${safeContext} (DRY RUN)\n\n## Target\n${codePath}\n\n## Status\nTrident source verified. No build executed.\n\n## Date\n${dateStr}\n`);
     const dryRunReview = fs.existsSync(codeReviewPath) ? fs.readFileSync(codeReviewPath, 'utf-8') : '';
     if (dryRunReview.trim().length === 0) {
       return { codeReviewPath, buildReportPath, success: false, error: 'Dry run verification file is empty' };
@@ -331,9 +332,9 @@ function runTridentContainer(codePath: string, contextName: string, dryRun: bool
           encoding: 'utf-8',
           maxBuffer: 1024 * 1024,
         });
-        fs.writeFileSync(codeReviewPath, output);
-      } catch (execErr: any) {
-        generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, `Algorithmic core execution failed: ${execErr.message}`);
+        fs.writeFileSync(validatePath(codeReviewPath, true), output);
+      } catch (execErr: unknown) {
+        generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, `Algorithmic core execution failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`);
       }
     } else {
       try {
@@ -342,9 +343,9 @@ function runTridentContainer(codePath: string, contextName: string, dryRun: bool
           encoding: 'utf-8',
           maxBuffer: 1024 * 1024,
         });
-        fs.writeFileSync(codeReviewPath, output);
-      } catch (execErr: any) {
-        generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, `Trident execution failed: ${execErr.message}`);
+        fs.writeFileSync(validatePath(codeReviewPath, true), output);
+      } catch (execErr: unknown) {
+        generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, `Trident execution failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`);
       }
     }
 
@@ -397,9 +398,9 @@ export function runTrident(input: RunTridentInput): RunTridentOutput {
 
   try {
     const testEvidenceDir = path.join(process.cwd(), '.shark', 'evidence', 'test');
-    fs.mkdirSync(testEvidenceDir, { recursive: true });
+    fs.mkdirSync(validatePath(testEvidenceDir, true), { recursive: true });
     fs.writeFileSync(
-      path.join(testEvidenceDir, 'TridentReport.json'),
+      path.join(validatePath(testEvidenceDir, true), 'TridentReport.json'),
       JSON.stringify({ approved, findings, codeReviewPath, buildReportPath })
     );
   } catch { /* evidence dir not writable */ }

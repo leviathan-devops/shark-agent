@@ -17,17 +17,17 @@ const WRITE_TIME_RULES: RuleConfig[] = [
 ];
 
 export function createWriteTimeGate(firewall: SemanticFirewall, context: ExecutionContext) {
-  return async (input: any, output: any) => {
+  return async (input: Record<string, unknown>, output: Record<string, unknown>) => {
     const toolName = input?.tool || '';
     const WRITE_TOOLS = ['write', 'write_file', 'mcp_write_file', 'edit', 'mcp_edit', 'patch', 'mcp_patch', 'create', 'mcp_create', 'bash'];
     if (!WRITE_TOOLS.includes(toolName)) return;
     const agent = input?.agent || '';
     if (agent && !isSharkAgent(agent)) return;
     if ((toolName === 'write' || toolName === 'write_file' || toolName === 'edit' || toolName === 'mcp_edit' || toolName === 'patch' || toolName === 'mcp_patch' || toolName === 'create' || toolName === 'mcp_create') && context) {
-      const filePath = typeof ((input as any)?.args || (output as any)?.args || {}).filePath === 'string'
-        ? ((input as any)?.args || (output as any)?.args || {}).filePath
-        : typeof ((input as any)?.args || (output as any)?.args || {}).path === 'string'
-        ? ((input as any)?.args || (output as any)?.args || {}).path
+      const filePath = typeof ((input as Record<string, unknown>)?.args || (output as Record<string, unknown>)?.args || {}).filePath === 'string'
+        ? ((input as Record<string, unknown>)?.args || (output as Record<string, unknown>)?.args || {}).filePath
+        : typeof ((input as Record<string, unknown>)?.args || (output as Record<string, unknown>)?.args || {}).path === 'string'
+        ? ((input as Record<string, unknown>)?.args || (output as Record<string, unknown>)?.args || {}).path
         : '';
       if (filePath && !context.isSharkProjectFile(filePath)) {
         if (!context.isOperationAllowedForGate(toolName, filePath)) {
@@ -41,7 +41,7 @@ export function createWriteTimeGate(firewall: SemanticFirewall, context: Executi
         }
       }
     }
-    const args = (input as any)?.args || (output as any)?.args || {};
+    const args = (input as Record<string, unknown>)?.args || (output as Record<string, unknown>)?.args || {};
     if (context.shouldAllowEngineeringOperation(toolName, args)) return;
     const result = firewall.analyze('write-time' as AnalysisPhase, WRITE_TIME_RULES);
     if (!result.passed) {

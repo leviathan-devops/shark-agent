@@ -25,7 +25,7 @@ export interface Unsubscribe {
 }
 
 export interface StateSnapshot {
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   versions: Record<string, number>;
   timestamp: number;
 }
@@ -33,7 +33,7 @@ export interface StateSnapshot {
 export interface StateStore {
   get<T>(key: string, domain?: StateDomain): T | undefined;
   set<T>(key: string, value: T, domain: StateDomain, ownerBrain?: string): WriteResult;
-  watch(key: string, callback: (value: any, version: number) => void): Unsubscribe;
+  watch(key: string, callback: (value: unknown, version: number) => void): Unsubscribe;
   snapshot(): StateSnapshot;
   restore(snapshot: StateSnapshot): void;
   cleanup(): void;
@@ -66,9 +66,9 @@ export const DOMAIN_OWNERSHIP: Record<StateDomain, string[]> = {
 };
 
 export function createStateStore(): StateStore {
-  const data = new Map<string, any>();
+  const data = new Map<string, unknown>();
   const versions = new Map<string, number>();
-  const watchers = new Map<string, Array<(value: any, version: number) => void>>();
+  const watchers = new Map<string, Array<(value: unknown, version: number) => void>>();
 
   function getKey(key: string, domain?: StateDomain): string {
     return domain ? `${domain}:${key}` : key;
@@ -119,7 +119,7 @@ export function createStateStore(): StateStore {
       return { success: true, version: newVersion };
     },
 
-    watch(key: string, callback: (value: any, version: number) => void): Unsubscribe {
+    watch(key: string, callback: (value: unknown, version: number) => void): Unsubscribe {
       const allKeys = [key];
       for (const domain of Object.keys(DOMAIN_OWNERSHIP)) {
         allKeys.push(`${domain}:${key}`);
@@ -144,7 +144,7 @@ export function createStateStore(): StateStore {
     },
 
     snapshot(): StateSnapshot {
-      const snapshotData: Record<string, any> = {};
+      const snapshotData: Record<string, unknown> = {};
       const snapshotVersions: Record<string, number> = {};
 
       for (const [key, value] of data.entries()) {

@@ -17,7 +17,7 @@ export function createSharkEvidenceTool(evidenceCollector: EvidenceCollector) {
       gate: tool.schema.enum(['plan', 'build', 'test', 'verify', 'audit', 'delivery']).optional(),
       iteration: tool.schema.string().optional(),
     },
-    execute: async (args: any) => {
+    execute: async (args: { action: string; gate?: string; iteration?: string }) => {
       const { action, gate, iteration } = args;
 
       if (action === 'status') {

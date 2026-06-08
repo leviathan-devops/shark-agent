@@ -1,5 +1,6 @@
 import * as ts from 'typescript';
 import { ASTVisitor, getNodePosition, getNodeSnippet } from '../analyzers/ast-walker.js';
+// @audited: called indirectly via rule engine registration
 export function checkCleanupPairedIntervals(): ASTVisitor {
   return (node: ts.Node, sourceFile: ts.SourceFile) => {
     if (!ts.isCallExpression(node)) return null;

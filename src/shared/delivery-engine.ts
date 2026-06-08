@@ -15,8 +15,16 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { GateName } from './evidence.js';
 import { GATE_CHAIN } from './gates.js';
+import { validatePath } from './validate-path.js';
 
-const SHIP_BASE = '/home/leviathan/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/SHIP APPROVED';
+const SHIP_BASE = process.env.SHARK_SHIP_BASE || path.join(process.env.HOME || '/tmp', 'OPENCODE_WORKSPACE', 'Shared Workspace Context', 'Shark Agent', 'SHIP APPROVED');
+
+interface EvidenceTimelineEntry {
+  gate: string;
+  timestamp: number;
+  passed: boolean;
+  files: string[];
+}
 
 export interface DeliveryConfig {
   projectName: string;
@@ -63,8 +71,8 @@ function collectDebugLogs(evidenceBase: string): string[] {
   return logs;
 }
 
-function collectEvidenceTimeline(evidenceBase: string): Array<{ gate: string; timestamp: number; passed: boolean; files: string[] }> {
-  const timeline: Array<{ gate: string; timestamp: number; passed: boolean; files: string[] }> = [];
+function collectEvidenceTimeline(evidenceBase: string): EvidenceTimelineEntry[] {
+  const timeline: EvidenceTimelineEntry[] = [];
   for (const gate of GATE_CHAIN) {
     const gateDir = path.join(evidenceBase, gate);
     if (!fs.existsSync(gateDir)) continue;
@@ -75,7 +83,7 @@ function collectEvidenceTimeline(evidenceBase: string): Array<{ gate: string; ti
         if (fs.existsSync(evidencePath)) {
           try {
             const content = fs.readFileSync(evidencePath, 'utf-8');
-            const evidence = JSON.parse(content);
+            const evidence = JSON.parse(content) as Partial<EvidenceTimelineEntry>;
             timeline.push({
               gate: evidence.gate || gate,
               timestamp: evidence.timestamp || 0,
@@ -92,10 +100,10 @@ function collectEvidenceTimeline(evidenceBase: string): Array<{ gate: string; ti
     }
   }
 
-  return timeline.sort((a, b) => a.timestamp - b.timestamp);
+  return timeline.sort((a: EvidenceTimelineEntry, b: EvidenceTimelineEntry) => a.timestamp - b.timestamp);
 }
 
-function generateChangelog(config: DeliveryConfig, timeline: Array<{ gate: string; timestamp: number; passed: boolean; files: string[] }>, debugLogs: string[]): string {
+function generateChangelog(config: DeliveryConfig, timeline: EvidenceTimelineEntry[], debugLogs: string[]): string {
   const lines: string[] = [
     `# CHANGELOG — ${config.projectName} ${config.version}`,
     '',
@@ -125,7 +133,7 @@ function generateChangelog(config: DeliveryConfig, timeline: Array<{ gate: strin
   return lines.join('\n');
 }
 
-function generateDebugLog(config: DeliveryConfig, timeline: Array<{ gate: string; timestamp: number; passed: boolean; files: string[] }>): string {
+function generateDebugLog(config: DeliveryConfig, timeline: EvidenceTimelineEntry[]): string {
   const lines: string[] = [
     `# DEBUG LOG — ${config.projectName} ${config.version}`,
     '',
@@ -176,7 +184,7 @@ function generateBuildReport(config: DeliveryConfig): string {
     walkDir(srcDir);
   }
 
-  const totalBytes = files.reduce((sum, f) => {
+  const totalBytes = files.reduce((sum: number, f: string) => {
     try {
       return sum + fs.statSync(path.join(srcDir, f)).size;
     } catch {
@@ -232,7 +240,7 @@ export function generateDelivery(config: DeliveryConfig): DeliveryResult {
   const shipDir = path.join(SHIP_BASE, `${config.projectName}-${config.version}-${new Date().toISOString().replace(/[:.]/g, '-')}`);
 
   try {
-    fs.mkdirSync(shipDir, { recursive: true });
+    fs.mkdirSync(validatePath(shipDir, true), { recursive: true });
   } catch (mkdirErr) {
     return {
       success: false,
@@ -257,9 +265,9 @@ export function generateDelivery(config: DeliveryConfig): DeliveryResult {
   const buildReportPath = path.join(shipDir, 'BUILD_REPORT.md');
 
   try {
-    fs.writeFileSync(changelogPath, changelog);
-    fs.writeFileSync(debugLogPath, debugLog);
-    fs.writeFileSync(buildReportPath, buildReport);
+    fs.writeFileSync(validatePath(changelogPath, true), changelog);
+    fs.writeFileSync(validatePath(debugLogPath, true), debugLog);
+    fs.writeFileSync(validatePath(buildReportPath, true), buildReport);
   } catch (writeErr) {
     return {
       success: false,
@@ -274,10 +282,10 @@ export function generateDelivery(config: DeliveryConfig): DeliveryResult {
 
   const evidenceDir = path.join(config.evidenceBase, 'delivery');
   try {
-    fs.mkdirSync(evidenceDir, { recursive: true });
-    fs.writeFileSync(path.join(evidenceDir, 'CHANGELOG.md'), changelog);
-    fs.writeFileSync(path.join(evidenceDir, 'DEBUG_LOG.md'), debugLog);
-    fs.writeFileSync(path.join(evidenceDir, 'BUILD_REPORT.md'), buildReport);
+    fs.mkdirSync(validatePath(evidenceDir, true), { recursive: true });
+    fs.writeFileSync(validatePath(path.join(evidenceDir, 'CHANGELOG.md'), true), changelog);
+    fs.writeFileSync(validatePath(path.join(evidenceDir, 'DEBUG_LOG.md'), true), debugLog);
+    fs.writeFileSync(validatePath(path.join(evidenceDir, 'BUILD_REPORT.md'), true), buildReport);
   } catch {
     // evidence write failure — non-fatal
   }
@@ -304,7 +312,7 @@ export function generateDelivery(config: DeliveryConfig): DeliveryResult {
       if (fs.existsSync(evidencePath)) {
         try {
           const raw = fs.readFileSync(evidencePath, 'utf-8');
-          const data = JSON.parse(raw);
+          const data = JSON.parse(raw) as Record<string, unknown>;
           if (data.passed === true) { gatePassed = true; break; }
         } catch { /* skip invalid */ }
       }

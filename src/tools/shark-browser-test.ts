@@ -21,8 +21,10 @@ import { z } from 'zod';
 import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { validatePath } from '../shared/validate-path.js';
 
-const VLM_ENDPOINT = 'http://127.0.0.1:8082/v1/chat/completions';
+const VLM_HOST = process.env.VLM_HOST || "127.0.0.1";
+const VLM_ENDPOINT = `http://${VLM_HOST}:8082/v1/chat/completions`;
 const BROWSER_IMAGE = 'opencode-test-browser:1.0';
 
 /**
@@ -85,8 +87,8 @@ function dockerExec(container: string, command: string): string {
     return execSync(`docker exec ${container} sh -c ${JSON.stringify(command)}`, {
       encoding: 'utf-8', timeout: 60000, maxBuffer: 10 * 1024 * 1024,
     }).trim();
-  } catch (execErr: any) {
-    throw new Error(`Container exec failed: ${execErr.message}`);
+  } catch (execErr: unknown) {
+    throw new Error(`Container exec failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`);
   }
 }
 
@@ -146,7 +148,7 @@ export function createSharkBrowserTestTool() {
       };
 
       try {
-        fs.mkdirSync(browserTestDir, { recursive: true });
+        fs.mkdirSync(validatePath(browserTestDir, true), { recursive: true });
       } catch (err) {
         console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
       }
@@ -159,14 +161,14 @@ export function createSharkBrowserTestTool() {
 
       try {
         dockerExec(container, `cd ${JSON.stringify(fileDir)} && python3 -m http.server ${port} --bind 127.0.0.1 &>/dev/null &`);
-      } catch (httpErr: any) {
-        result.runtimeErrors.push(`HTTP server start failed: ${httpErr.message}`);
+      } catch (httpErr: unknown) {
+        result.runtimeErrors.push(`HTTP server start failed: ${httpErr instanceof Error ? httpErr.message : String(httpErr)}`);
       }
 
       try {
         dockerExec(container, `agent-browser open "http://127.0.0.1:${port}/${fileName}" 2>&1`);
-      } catch (browserErr: any) {
-        result.runtimeErrors.push(`Browser open failed: ${browserErr.message}`);
+      } catch (browserErr: unknown) {
+        result.runtimeErrors.push(`Browser open failed: ${browserErr instanceof Error ? browserErr.message : String(browserErr)}`);
       }
 
       await new Promise(r => setTimeout(r, 3000));
@@ -275,9 +277,9 @@ export function createSharkBrowserTestTool() {
       result.overallPassed = !hasFatalErrors && !!hasRequiredDom;
 
       try {
-        fs.mkdirSync(browserTestDir, { recursive: true });
+        fs.mkdirSync(validatePath(browserTestDir, true), { recursive: true });
         fs.writeFileSync(
-          path.join(browserTestDir, 'BrowserTestResult.json'),
+          path.join(validatePath(browserTestDir, true), 'BrowserTestResult.json'),
           JSON.stringify(result, null, 2),
         );
       } catch (err) {

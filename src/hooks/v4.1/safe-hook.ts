@@ -56,7 +56,7 @@ export function safeHook<T extends Hooks[keyof Hooks]>(
 
   const awareness = createAgentAwareness(managedAgents, agentPrefix, orchestratorName);
 
-  return (async (input: any, output: any) => {
+  return (async (input: Record<string, unknown>, output: Record<string, unknown>) => {
     const agentName = input?.session?.agentName ?? input?.agentName ?? input?.agent ?? '';
 
     if (!awareness.isMyAgent(agentName)) {
@@ -66,7 +66,7 @@ export function safeHook<T extends Hooks[keyof Hooks]>(
     const startTime = Date.now();
     try {
       await Promise.race([
-        (handler as any)(input, output, { isMyAgent: awareness.isMyAgent, agentName }),
+        (handler as (i: Record<string, unknown>, o: Record<string, unknown>, ctx: { isMyAgent: (n: string) => boolean; agentName: string }) => Promise<void>)(input, output, { isMyAgent: awareness.isMyAgent, agentName }),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error(`Hook timeout after ${timeout}ms`)), timeout)
         )

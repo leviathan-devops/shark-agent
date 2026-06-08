@@ -120,7 +120,7 @@ export class SemanticFirewall {
   }
 
   private evaluateRule(rule: RuleConfig): FirewallDiag[] {
-    const visitors: Function[] = [];
+    const visitors: import('./analyzers/ast-walker.js').ASTVisitor[] = [];
     switch (rule.name) {
       case 'no-empty-catch': visitors.push(checkNoEmptyCatches()); break;
       case 'no-unsafe-cast': if (this.checker) visitors.push(checkNoUnsafeCasts()); break;
@@ -140,10 +140,17 @@ export class SemanticFirewall {
       case 'dead-export': return this.evaluateDeadExport();
     }
     if (visitors.length === 0 || this.sourceFiles.size === 0) return [];
-    const results: Record<string, unknown>[] = walkAST(this.sourceFiles, visitors);
-    return results.map(r => ({
-      ...r,
+    const results: ASTVisitResult[] = walkAST(this.sourceFiles, visitors);
+    return results.map((r): FirewallDiag => ({
+      rule: r.rule,
       severity: r.severity === 'error' ? rule.severity : 'MEDIUM' as Severity,
+      file: r.file,
+      line: r.line,
+      column: r.column,
+      message: r.message,
+      nodeKind: r.nodeKind,
+      sourceSnippet: r.sourceSnippet,
+      phase: 'write-time' as AnalysisPhase,
     }));
   }
 

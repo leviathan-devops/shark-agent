@@ -81,7 +81,7 @@ export class EvidenceCollector {
         if (fs.existsSync(evidencePath)) {
           try {
             const content = fs.readFileSync(evidencePath, 'utf-8');
-            evidences.push(JSON.parse(content));
+            evidences.push(JSON.parse(content) as GateEvidence);
           } catch {
             // Skip invalid evidence files
           }
@@ -91,7 +91,7 @@ export class EvidenceCollector {
       // directory read failure
     }
 
-    return evidences.sort((a, b) => b.timestamp - a.timestamp);
+    return evidences.sort((a: GateEvidence, b: GateEvidence) => b.timestamp - a.timestamp);
   }
 
   getLatestEvidence(gate: GateName): GateEvidence | null {
@@ -105,9 +105,9 @@ export class EvidenceCollector {
 
     try {
       return fs.readdirSync(logsDir)
-        .filter(f => f.endsWith('.md'))
+        .filter((f: string) => f.endsWith('.md'))
         .sort()
-        .map(f => fs.readFileSync(path.join(logsDir, f), 'utf-8'));
+        .map((f: string) => fs.readFileSync(path.join(logsDir, f), 'utf-8'));
     } catch {
       return [];
     }

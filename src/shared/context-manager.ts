@@ -36,6 +36,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { validatePath } from './validate-path.js';
 
 const PROJECT_TOKEN = 'SHARK_v4.9.9_T3_3LOBE_ENFORCEMENT';
 let CONTEXT_DIR: string;
@@ -51,7 +52,7 @@ export function getContextDir(): string {
 function ensureDir(dir?: string): string {
   const target = dir || getContextDir();
   if (!fs.existsSync(target)) {
-    fs.mkdirSync(target, { recursive: true });
+    fs.mkdirSync(validatePath(target, true), { recursive: true });
     console.error(`[ContextManager] Created: ${target}`);
   }
   return target;
@@ -64,7 +65,7 @@ function readDoc(docName: string): string | null {
 
 function writeDoc(docName: string, content: string): void {
   const dir = ensureDir();
-  fs.writeFileSync(path.join(dir, docName), content, 'utf-8');
+  fs.writeFileSync(validatePath(path.join(dir, docName), true), content, 'utf-8');
 }
 
 // ============================================================
@@ -99,7 +100,7 @@ export function initializeContextManager(workspaceBase?: string): string {
     'THOUGHT_STREAM.md': '# THOUGHT STREAM\n\nStream of consciousness — NOT context management. RGE/SRE enforcement results only.\n',
   };
   for (const [name, content] of Object.entries(seed)) {
-    fs.writeFileSync(path.join(dir, name), content, 'utf-8');
+    fs.writeFileSync(validatePath(path.join(dir, name), true), content, 'utf-8');
   }
   console.error(`[ContextManager] Seeded all 10 docs at ${dir}`);
   return CONTEXT_DIR;

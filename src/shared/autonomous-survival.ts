@@ -20,6 +20,7 @@ import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 import type { GateManager } from './gates.js';
 import type { GateName } from './evidence.js';
+import { validatePath } from './validate-path.js';
 
 export interface SurvivalCheckpoint {
   id: string;
@@ -259,7 +260,7 @@ export class CompactionManager {
   }
 
   updateTaskStatus(taskId: string, status: TaskRecord['status']): void {
-    const task = this.tasks.find(t => t.id === taskId);
+    const task = this.tasks.find((t: TaskRecord) => t.id === taskId);
     if (task) {
       task.status = status;
       this.updateTaskQueue(this.tasks);
@@ -291,16 +292,16 @@ export class CompactionManager {
   private ensureDirs(): void {
     const survivalDir = path.join(process.cwd(), SURVIVAL_DIR);
     const versionsDir = path.join(process.cwd(), VERSIONS_DIR);
-    fs.mkdirSync(survivalDir, { recursive: true });
-    fs.mkdirSync(versionsDir, { recursive: true });
+    fs.mkdirSync(validatePath(survivalDir, true), { recursive: true });
+    fs.mkdirSync(validatePath(versionsDir, true), { recursive: true });
   }
 
   private writeCheckpoint(cp: SurvivalCheckpoint): void {
     this.ensureDirs();
     const versionsDir = path.join(process.cwd(), VERSIONS_DIR);
     const versionPath = path.join(versionsDir, `${cp.id}.json`);
-    fs.writeFileSync(versionPath, JSON.stringify(cp, null, 2));
-    fs.writeFileSync(path.join(versionsDir, '_latest.json'), JSON.stringify(cp, null, 2));
+    fs.writeFileSync(validatePath(versionPath, true), JSON.stringify(cp, null, 2));
+    fs.writeFileSync(validatePath(path.join(versionsDir, '_latest.json'), true), JSON.stringify(cp, null, 2));
   }
 
   private readAnchor(filename: string): string {
@@ -311,8 +312,8 @@ export class CompactionManager {
 
   private writeAnchor(filename: string, content: string): void {
     const dir = path.join(process.cwd(), SURVIVAL_DIR);
-    fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, filename), content);
+    fs.mkdirSync(validatePath(dir, true), { recursive: true });
+    fs.writeFileSync(validatePath(path.join(dir, filename), true), content);
   }
 
   private formatHeader(): string {
@@ -391,7 +392,7 @@ ${tokenInfo.tier === 'RED' || tokenInfo.tier === 'CRITICAL' || tokenInfo.tier ==
       this.writeAnchor('DECISION_CHAIN.md', `${this.formatHeader()}# DECISION CHAIN\n\n_No decisions recorded yet._\n\nUse shark-gate or recordDecision() to track architecturally significant decisions here.\n`);
       return;
     }
-    const decisionEntries = decisions.map(d => `### ${d.decision}
+    const decisionEntries = decisions.map((d: DecisionRecord) => `### ${d.decision}
 - **Timestamp**: ${d.timestamp}
 - **Rationale**: ${d.rationale}
 - **Alternatives considered**: ${d.alternatives.join(', ') || 'none'}
@@ -431,7 +432,7 @@ ${tokenInfo.tier === 'RED' || tokenInfo.tier === 'CRITICAL' || tokenInfo.tier ==
 ${evidenceSummary}
 
 ## Artifacts
-${cp.artifacts.map(a => `- ${a}`).join('\n')}
+${cp.artifacts.map((a: string) => `- ${a}`).join('\n')}
 `);
   }
 
@@ -440,12 +441,12 @@ ${cp.artifacts.map(a => `- ${a}`).join('\n')}
       this.writeAnchor('TASK_QUEUE.md', `${this.formatHeader()}# TASK QUEUE\n\n_No tasks recorded. Tasks are automatically tracked through gate milestones._\n\n## Current Focus\n- Gate: ${this.gateManager?.getCurrentGate() ?? 'plan'}\n- See BUILD_STATE.md for current status\n`);
       return;
     }
-    const pendingTasks = tasks.filter(t => t.status === 'pending' || t.status === 'in_progress');
-    const completedTasks = tasks.filter(t => t.status === 'completed');
-    const taskEntries = pendingTasks.map(t => `- [${t.status === 'in_progress' ? 'x' : ' '}] **${t.description}** (${t.priority})
+    const pendingTasks = tasks.filter((t: TaskRecord) => t.status === 'pending' || t.status === 'in_progress');
+    const completedTasks = tasks.filter((t: TaskRecord) => t.status === 'completed');
+    const taskEntries = pendingTasks.map((t: TaskRecord) => `- [${t.status === 'in_progress' ? 'x' : ' '}] **${t.description}** (${t.priority})
   - Depends on: ${t.dependsOn.join(', ') || 'nothing'}
 `).join('\n');
-    this.writeAnchor('TASK_QUEUE.md', `${this.formatHeader()}# TASK QUEUE\n\n## Pending / In Progress\n${taskEntries || '_(no pending tasks)_'}\n## Completed\n${completedTasks.slice(-5).map(t => `- [x] ${t.description}`).join('\n') || '_(no completed tasks)_'}\n`);
+    this.writeAnchor('TASK_QUEUE.md', `${this.formatHeader()}# TASK QUEUE\n\n## Pending / In Progress\n${taskEntries || '_(no pending tasks)_'}\n## Completed\n${completedTasks.slice(-5).map((t: TaskRecord) => `- [x] ${t.description}`).join('\n') || '_(no completed tasks)_'}\n`);
   }
 
   private updateChangelog(cp: SurvivalCheckpoint): void {
@@ -552,7 +553,7 @@ export function getLatestCheckpoint(): SurvivalCheckpoint | null {
   try {
     const latestPath = path.join(process.cwd(), VERSIONS_DIR, '_latest.json');
     if (!fs.existsSync(latestPath)) return null;
-    return JSON.parse(fs.readFileSync(latestPath, 'utf-8'));
+    return JSON.parse(fs.readFileSync(latestPath, 'utf-8')) as SurvivalCheckpoint;
   } catch { return null; }
 }
 
@@ -561,9 +562,9 @@ export function listCheckpoints(): SurvivalCheckpoint[] {
   if (!fs.existsSync(versionsDir)) return [];
   try {
     return fs.readdirSync(versionsDir)
-      .filter(f => f.startsWith('surv_') && f.endsWith('.json'))
+      .filter((f: string) => f.startsWith('surv_') && f.endsWith('.json'))
       .sort().reverse()
-      .map(f => { try { return JSON.parse(fs.readFileSync(path.join(versionsDir, f), 'utf-8')); } catch { return null; } })
-      .filter((cp): cp is SurvivalCheckpoint => cp !== null);
+      .map((f: string) => { try { return JSON.parse(fs.readFileSync(path.join(versionsDir, f), 'utf-8')) as SurvivalCheckpoint; } catch { return null; } })
+      .filter((cp: SurvivalCheckpoint | null): cp is SurvivalCheckpoint => cp !== null);
   } catch { return []; }
 }

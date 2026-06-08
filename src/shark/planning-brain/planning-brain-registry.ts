@@ -20,6 +20,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { PlanningBrain, type PlanningBrainConfig } from './index.js';
+import { validatePath } from '../../shared/validate-path.js';
 
 export interface SharkConfig {
   project: {
@@ -63,7 +64,7 @@ export class PlanningBrainRegistry {
 
     // Create context directory
     const contextDir = path.join(projectRoot, config.planningBrain.contextDir);
-    try { fs.mkdirSync(contextDir, { recursive: true }); } catch { /* ignore */ }
+    try { fs.mkdirSync(validatePath(contextDir, true), { recursive: true }); } catch { /* ignore */ }
 
     // Create new PlanningBrain instance
     const pbConfig: PlanningBrainConfig = {

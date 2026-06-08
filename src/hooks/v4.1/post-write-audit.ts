@@ -17,10 +17,10 @@ const POST_WRITE_RULES: RuleConfig[] = [
 ];
 
 export function createPostWriteAudit(firewall: SemanticFirewall, quarantineDir: string) {
-  return async (input: any, output: any) => {
+  return async (input: Record<string, unknown>, output: Record<string, unknown>) => {
     const toolName = input?.tool || '';
     if (!['write', 'edit'].includes(toolName)) return;
-    const args = (input as any)?.args || (output as any)?.args || {};
+    const args = (input as Record<string, unknown>)?.args || (output as Record<string, unknown>)?.args || {};
     const filePath = typeof args.filePath === 'string' ? args.filePath : '';
     const result = firewall.analyze('post-write' as AnalysisPhase, POST_WRITE_RULES);
     const critical = result.diagnostics.filter(d => d.severity === 'CRITICAL');

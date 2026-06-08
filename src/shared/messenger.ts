@@ -57,7 +57,7 @@ export function createSharkMessenger(): SharkMessenger {
   }
 
   function sortQueue(queue: BrainMessage[]): void {
-    queue.sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
+    queue.sort((a: BrainMessage, b: BrainMessage) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
   }
 
   return {
@@ -114,7 +114,7 @@ export function createSharkMessenger(): SharkMessenger {
           }
         }, timeoutMs);
 
-        pendingAcks.set(messageId, { resolved: false, resolve, reject: () => {}, timer });
+        pendingAcks.set(messageId, { resolved: false, resolve, reject: () => { return undefined; }, timer });
       });
     },
 

@@ -46,6 +46,19 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = import.meta.require;
 
+// src/shared/validate-path.ts
+function validatePath(p, allowAbsolute = false) {
+  if (!p || typeof p !== "string")
+    throw new Error(`[PATH-REJECTED] empty or non-string path`);
+  if (p.includes("../") || p.includes("..\\"))
+    throw new Error(`[PATH-REJECTED] path traversal detected: ${p}`);
+  if (!allowAbsolute && p.startsWith("/"))
+    throw new Error(`[PATH-REJECTED] absolute path not allowed: ${p}`);
+  if (/[;&|`$(){}]/.test(p))
+    throw new Error(`[PATH-REJECTED] shell metacharacters in path: ${p}`);
+  return p;
+}
+
 // ../../../../node_modules/typescript/lib/typescript.js
 var require_typescript = __commonJS((exports, module) => {
   var __dirname = "/home/leviathan/OPENCODE_WORKSPACE/node_modules/typescript/lib", __filename = "/home/leviathan/OPENCODE_WORKSPACE/node_modules/typescript/lib/typescript.js";
@@ -168795,7 +168808,7 @@ function getContextDir() {
 function ensureDir(dir) {
   const target = dir || getContextDir();
   if (!fs21.existsSync(target)) {
-    fs21.mkdirSync(target, { recursive: true });
+    fs21.mkdirSync(validatePath(target, true), { recursive: true });
     console.error(`[ContextManager] Created: ${target}`);
   }
   return target;
@@ -168809,7 +168822,7 @@ function readDoc(docName) {
 }
 function writeDoc(docName, content) {
   const dir = ensureDir();
-  fs21.writeFileSync(path21.join(dir, docName), content, "utf-8");
+  fs21.writeFileSync(validatePath(path21.join(dir, docName), true), content, "utf-8");
 }
 function initializeContextManager(workspaceBase) {
   if (CONTEXT_DIR)
@@ -168876,7 +168889,7 @@ Stream of consciousness \u2014 NOT context management. RGE/SRE enforcement resul
 `
   };
   for (const [name, content] of Object.entries(seed)) {
-    fs21.writeFileSync(path21.join(dir, name), content, "utf-8");
+    fs21.writeFileSync(validatePath(path21.join(dir, name), true), content, "utf-8");
   }
   console.error(`[ContextManager] Seeded all 10 docs at ${dir}`);
   return CONTEXT_DIR;
@@ -169212,7 +169225,9 @@ function createSharkMessenger() {
             resolve(false);
           }
         }, timeoutMs);
-        pendingAcks.set(messageId, { resolved: false, resolve, reject: () => {}, timer });
+        pendingAcks.set(messageId, { resolved: false, resolve, reject: () => {
+          return;
+        }, timer });
       });
     },
     getQueueDepth(brainId) {
@@ -169427,7 +169442,7 @@ class Guardian {
     return { allowed: true };
   }
   classifyZone(path) {
-    const expandedPath = path.replace(/^~/, process.env.HOME || "/home/user");
+    const expandedPath = path.replace(/^~/, process.env.HOME || process.cwd());
     for (const pattern of PERSONAL_PATHS)
       if (pattern.test(expandedPath))
         return "PERSONAL";
@@ -186082,15 +186097,15 @@ class CompactionManager {
   ensureDirs() {
     const survivalDir = path8.join(process.cwd(), SURVIVAL_DIR);
     const versionsDir = path8.join(process.cwd(), VERSIONS_DIR);
-    fs8.mkdirSync(survivalDir, { recursive: true });
-    fs8.mkdirSync(versionsDir, { recursive: true });
+    fs8.mkdirSync(validatePath(survivalDir, true), { recursive: true });
+    fs8.mkdirSync(validatePath(versionsDir, true), { recursive: true });
   }
   writeCheckpoint(cp) {
     this.ensureDirs();
     const versionsDir = path8.join(process.cwd(), VERSIONS_DIR);
     const versionPath = path8.join(versionsDir, `${cp.id}.json`);
-    fs8.writeFileSync(versionPath, JSON.stringify(cp, null, 2));
-    fs8.writeFileSync(path8.join(versionsDir, "_latest.json"), JSON.stringify(cp, null, 2));
+    fs8.writeFileSync(validatePath(versionPath, true), JSON.stringify(cp, null, 2));
+    fs8.writeFileSync(validatePath(path8.join(versionsDir, "_latest.json"), true), JSON.stringify(cp, null, 2));
   }
   readAnchor(filename) {
     try {
@@ -186101,8 +186116,8 @@ class CompactionManager {
   }
   writeAnchor(filename, content) {
     const dir = path8.join(process.cwd(), SURVIVAL_DIR);
-    fs8.mkdirSync(dir, { recursive: true });
-    fs8.writeFileSync(path8.join(dir, filename), content);
+    fs8.mkdirSync(validatePath(dir, true), { recursive: true });
+    fs8.writeFileSync(validatePath(path8.join(dir, filename), true), content);
   }
   formatHeader() {
     const tokenInfo = this.estimateTokenUsage();
@@ -187871,9 +187886,9 @@ function handleSessionCreated(gateManager, peerDispatch) {
   if (!dirCreationAttempted) {
     dirCreationAttempted = true;
     const sharkDir = path14.join(process.cwd(), ".shark");
-    fs14.mkdirSync(sharkDir, { recursive: true });
-    fs14.mkdirSync(path14.join(sharkDir, "evidence"), { recursive: true });
-    fs14.mkdirSync(path14.join(sharkDir, "checkpoints"), { recursive: true });
+    fs14.mkdirSync(validatePath(sharkDir, true), { recursive: true });
+    fs14.mkdirSync(validatePath(path14.join(sharkDir, "evidence"), true), { recursive: true });
+    fs14.mkdirSync(validatePath(path14.join(sharkDir, "checkpoints"), true), { recursive: true });
   }
 }
 function handleSessionEnded(stateStore, messenger, sessionId, concurrencyManager) {
@@ -192834,7 +192849,7 @@ function createSharkHooks(guardian, gateManager, evidenceCollector, stateStore, 
     "command.execute.before": safeHook(createCommandExecuteHook(), hookOptions),
     "experimental.chat.messages.transform": safeHook(createMessagesTransformHook(), hookOptions),
     "tool.execute.before": async (input, output) => {
-      const currentAgent = getCurrentAgent(input.sessionID) || input?.agent || "";
+      const currentAgent = getCurrentAgent(input.sessionID) || input.agent || "";
       if (typeof currentAgent === "string" && currentAgent !== "" && !isSharkAgent(currentAgent))
         return;
       if (executionContext && typeof currentAgent === "string" && currentAgent !== "") {
@@ -192842,9 +192857,9 @@ function createSharkHooks(guardian, gateManager, evidenceCollector, stateStore, 
       }
       try {
         if (enforcementBrain) {
-          const toolName = input?.tool || "";
-          const toolArgs = input?.args || output?.args || {};
-          const thoughtStream = input?.thoughtStream || output?.thoughtStream || "";
+          const toolName = input.tool || "";
+          const toolArgs = input.args ?? output.args ?? {};
+          const thoughtStream = input.thoughtStream ?? output.thoughtStream ?? "";
           const results = enforcementBrain.evaluateBefore(toolName, toolArgs, thoughtStream);
           const blocks = results.filter((r) => r.level === "BLOCK");
           if (blocks.length > 0)
@@ -192864,7 +192879,7 @@ function createSharkHooks(guardian, gateManager, evidenceCollector, stateStore, 
       } catch (err) {
         try {
           const { updateDebugLog: updateDebugLog2, updateSoCPreservation: updateSoCPreservation2 } = await Promise.resolve().then(() => (init_context_manager(), exports_context_manager));
-          const toolName = input?.tool || "";
+          const toolName = input.tool || "";
           const errMsg = err instanceof Error ? err.message : String(err);
           updateDebugLog2("enforcement-block", `Blocked: ${toolName}`, errMsg, `Layer: guardian-hook`, `Enforcement block: ${toolName} - ${errMsg}`);
           updateSoCPreservation2([{ pattern: `Enforcement block: ${toolName}`, context: errMsg, source: "guardian-hook" }]);
@@ -192875,11 +192890,11 @@ function createSharkHooks(guardian, gateManager, evidenceCollector, stateStore, 
       }
     },
     "tool.execute.after": async (input, output) => {
-      const afterAgent = getCurrentAgent(input.sessionID) || input?.agent || "";
+      const afterAgent = getCurrentAgent(input.sessionID) || input.agent || "";
       if (typeof afterAgent === "string" && afterAgent !== "" && !isSharkAgent(afterAgent))
         return;
-      const toolName = input?.tool || "";
-      const toolArgs = input?.args || output?.args || {};
+      const toolName = input.tool || "";
+      const toolArgs = input.args ?? output.args ?? {};
       if (enforcementBrain) {
         const results = await enforcementBrain.evaluateAfter(toolName, toolArgs, output);
         const blocks = results.filter((r) => r.level === "BLOCK");
@@ -193234,7 +193249,7 @@ function createStateStore2(basePath = process.cwd()) {
       }
       const filePath = path25.join(basePath, STATE_DIR, BRAIN_STATES_DIR, `${domain2}.json`);
       try {
-        fs24.writeFileSync(filePath, JSON.stringify(state, null, 2));
+        fs24.writeFileSync(validatePath(filePath, true), JSON.stringify(state, null, 2));
         return true;
       } catch (err) {
         return false;
@@ -197709,7 +197724,7 @@ function createSharkDiagnosticTool() {
           name: "Gate Manager",
           status: "non-operational",
           verificationMethod: "Import + instantiation of GateManager",
-          failureReason: `Error: ${e.message}`
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`
         });
       }
       try {
@@ -197730,7 +197745,7 @@ function createSharkDiagnosticTool() {
           name: "Evidence Collector",
           status: "non-operational",
           verificationMethod: "Import + instantiation of EvidenceCollector",
-          failureReason: `Error: ${e.message}`
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`
         });
       }
       try {
@@ -197749,7 +197764,7 @@ function createSharkDiagnosticTool() {
           name: "Guardian: Zone Protection",
           status: "non-operational",
           verificationMethod: "Import + instantiation of Guardian",
-          failureReason: `Error: ${e.message}`
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`
         });
       }
       try {
@@ -197779,7 +197794,7 @@ function createSharkDiagnosticTool() {
           name: "Hooks: createSharkHooks",
           status: "non-operational",
           verificationMethod: "Import + invocation of createSharkHooks",
-          failureReason: `Error: ${e.message}`
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`
         });
       }
       (() => {
@@ -197807,7 +197822,7 @@ function createSharkDiagnosticTool() {
               name: "Tool: shark-status",
               status: "non-operational",
               verificationMethod: "createSharkStatusTool() invocation",
-              failureReason: `Error: ${e.message}`
+              failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`
             });
           }
           try {
@@ -197830,7 +197845,7 @@ function createSharkDiagnosticTool() {
               name: "Tool: shark-gate",
               status: "non-operational",
               verificationMethod: "createSharkGateTool() invocation",
-              failureReason: `Error: ${e.message}`
+              failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`
             });
           }
           try {
@@ -197853,7 +197868,7 @@ function createSharkDiagnosticTool() {
               name: "Tool: checkpoint",
               status: "non-operational",
               verificationMethod: "createCheckpointTool() invocation",
-              failureReason: `Error: ${e.message}`
+              failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`
             });
           }
           const circularDepsTools = [
@@ -197879,7 +197894,7 @@ function createSharkDiagnosticTool() {
             name: "Tools (all)",
             status: "non-operational",
             verificationMethod: "Tool verification batch",
-            failureReason: `Batch error: ${e.message}`
+            failureReason: `Batch error: ${e instanceof Error ? e.message : String(e)}`
           });
         }
       })();
@@ -197915,7 +197930,7 @@ function createSharkDiagnosticTool() {
           name: "Firewall: DEFAULT_LAYERS",
           status: "non-operational",
           verificationMethod: "Import from firewall/layers/index.js",
-          failureReason: `Error: ${e.message}`
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`
         });
       }
       const operational = subsystems.filter((s) => s.status === "operational").length;
@@ -197933,7 +197948,7 @@ function createSharkDiagnosticTool() {
   });
 }
 function createSharkHealthCheckTool() {
-  return tool8({
+  const healthTool = tool8({
     description: "Quick health check for all Shark subsystems \u2014 returns operational status of brain, identity, gate, and firewall",
     args: {},
     execute: async () => {
@@ -197976,6 +197991,10 @@ function createSharkHealthCheckTool() {
       return JSON.stringify(checks3, null, 2);
     }
   });
+  if (!healthTool || typeof healthTool !== "object") {
+    throw new Error("[SHARK] createSharkHealthCheckTool: tool creation failed");
+  }
+  return healthTool;
 }
 
 // src/tools/shark-spawn-container.ts
@@ -198282,7 +198301,7 @@ var ARTIFACT_DIR = ".trident";
 function ensureArtifactDir() {
   const artifactPath = path29.join(process.cwd(), ARTIFACT_DIR);
   if (!fs28.existsSync(artifactPath)) {
-    fs28.mkdirSync(artifactPath, { recursive: true });
+    fs28.mkdirSync(validatePath(artifactPath, true), { recursive: true });
   }
 }
 function getDateString2() {
@@ -198386,7 +198405,7 @@ function writeBuildReport(buildReportPath, safeContext, codePath, dateStr) {
     reportLines.push(`| ${entry.name} | ${entry.sizeKB} |`);
   }
   reportLines.push("", `## Date`, `${dateStr}`);
-  fs28.writeFileSync(buildReportPath, reportLines.join(`
+  fs28.writeFileSync(validatePath(buildReportPath, true), reportLines.join(`
 `));
 }
 function parseFindingsFromReview(codeReviewPath) {
@@ -198455,10 +198474,10 @@ function runTridentContainer(codePath, contextName, dryRun) {
       if (!cliOutput || cliOutput.trim().length === 0) {
         return { codeReviewPath, buildReportPath, success: false, error: "Trident CLI produced empty output" };
       }
-      fs28.writeFileSync(codeReviewPath, cliOutput);
+      fs28.writeFileSync(validatePath(codeReviewPath, true), cliOutput);
       writeBuildReport(buildReportPath, safeContext, codePath, dateStr);
       return { codeReviewPath, buildReportPath, success: true };
-    } catch (cliErr) {}
+    } catch (_cliErr) {}
   }
   if (!fs28.existsSync(tridentIndex)) {
     generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, "Trident source not available \u2014 static analysis fallback");
@@ -198499,9 +198518,9 @@ function runTridentContainer(codePath, contextName, dryRun) {
       `## Date`,
       `${dateStr}`
     ];
-    fs28.writeFileSync(codeReviewPath, dryRunLines.join(`
+    fs28.writeFileSync(validatePath(codeReviewPath, true), dryRunLines.join(`
 `));
-    fs28.writeFileSync(buildReportPath, `# TRIDENT BUILD REPORT \u2014 ${safeContext} (DRY RUN)
+    fs28.writeFileSync(validatePath(buildReportPath, true), `# TRIDENT BUILD REPORT \u2014 ${safeContext} (DRY RUN)
 
 ## Target
 ${codePath}
@@ -198527,9 +198546,9 @@ ${dateStr}
           encoding: "utf-8",
           maxBuffer: 1024 * 1024
         });
-        fs28.writeFileSync(codeReviewPath, output);
+        fs28.writeFileSync(validatePath(codeReviewPath, true), output);
       } catch (execErr) {
-        generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, `Algorithmic core execution failed: ${execErr.message}`);
+        generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, `Algorithmic core execution failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`);
       }
     } else {
       try {
@@ -198538,9 +198557,9 @@ ${dateStr}
           encoding: "utf-8",
           maxBuffer: 1024 * 1024
         });
-        fs28.writeFileSync(codeReviewPath, output);
+        fs28.writeFileSync(validatePath(codeReviewPath, true), output);
       } catch (execErr) {
-        generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, `Trident execution failed: ${execErr.message}`);
+        generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, `Trident execution failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`);
       }
     }
     writeBuildReport(buildReportPath, safeContext, codePath, dateStr);
@@ -198571,8 +198590,8 @@ function runTrident(input) {
   const approved = findings.critical === 0 && findings.high === 0;
   try {
     const testEvidenceDir = path29.join(process.cwd(), ".shark", "evidence", "test");
-    fs28.mkdirSync(testEvidenceDir, { recursive: true });
-    fs28.writeFileSync(path29.join(testEvidenceDir, "TridentReport.json"), JSON.stringify({ approved, findings, codeReviewPath, buildReportPath }));
+    fs28.mkdirSync(validatePath(testEvidenceDir, true), { recursive: true });
+    fs28.writeFileSync(path29.join(validatePath(testEvidenceDir, true), "TridentReport.json"), JSON.stringify({ approved, findings, codeReviewPath, buildReportPath }));
   } catch {}
   const reviewContent = fs28.existsSync(codeReviewPath) ? fs28.readFileSync(codeReviewPath, "utf-8") : "";
   if (reviewContent.trim().length === 0) {
@@ -199416,7 +199435,7 @@ function dockerExec(container, command) {
       maxBuffer: 10 * 1024 * 1024
     }).trim();
   } catch (execErr) {
-    throw new Error(`Container exec failed: ${execErr.message}`);
+    throw new Error(`Container exec failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`);
   }
 }
 function findChromePath(container) {
@@ -199492,7 +199511,7 @@ function createSharkBrowserTool() {
             hasPreinstalledChrome: image.includes(BROWSER_IMAGE)
           });
         } catch (err) {
-          return JSON.stringify({ success: false, error: err.message, container });
+          return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err), container });
         }
       }
       if (action === "ensure-chrome") {
@@ -199522,7 +199541,7 @@ function createSharkBrowserTool() {
             action: chromePath ? "chrome_already_available" : "chrome_installed"
           });
         } catch (err) {
-          return JSON.stringify({ success: false, error: err.message, container });
+          return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err), container });
         }
       }
       if (action === "status") {
@@ -199541,7 +199560,7 @@ function createSharkBrowserTool() {
             hasPreinstalledChrome: image.includes(BROWSER_IMAGE)
           });
         } catch (err) {
-          return JSON.stringify({ success: false, error: err.message });
+          return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err) });
         }
       }
       ensureAgentBrowser(container);
@@ -199615,7 +199634,7 @@ function createSharkBrowserTool() {
         }
         return JSON.stringify({ success: true, result, container });
       } catch (err) {
-        return JSON.stringify({ success: false, error: err.message, container });
+        return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err), container });
       }
     }
   });
@@ -199627,7 +199646,8 @@ import * as fs33 from "fs";
 import * as path34 from "path";
 import { execSync as execSync4 } from "child_process";
 var VLM_PORT = 8082;
-var LOCAL_ENDPOINT = `http://127.0.0.1:${VLM_PORT}`;
+var VLM_HOST = process.env.VLM_HOST || "127.0.0.1";
+var LOCAL_ENDPOINT = `http://${VLM_HOST}:${VLM_PORT}`;
 var VLM_ENDPOINT = `${LOCAL_ENDPOINT}/v1/chat/completions`;
 var VLM_HEALTH_ENDPOINT = `${LOCAL_ENDPOINT}/health`;
 var VLM_TIMEOUT_MS = 540000;
@@ -199715,7 +199735,9 @@ async function checkVlmHealth() {
               source: "docker:host-network"
             };
           }
-        } catch {}
+        } catch (err) {
+          console.error("[ERROR] shark-vision.checkVlmHealth: JSON parse failed for docker health result:", err instanceof Error ? err.message : String(err));
+        }
       }
     } catch {}
     try {
@@ -199820,7 +199842,7 @@ async function queryVlm(imageBase64, imageMime, prompt, maxTokens, temperature) 
       errors3.push("docker: host-network exec failed");
     }
   }
-  const msg = `VLM server is not running at any endpoint. Try: vlm_on (agent-vision plugin), ` + `or systemctl --user start glm-vlm-server.service on the host, ` + `or docker run --network host alpine curl http://127.0.0.1:8082/health`;
+  const msg = `VLM server is not running at any endpoint. Try: vlm_on (agent-vision plugin), ` + `or systemctl --user start glm-vlm-server.service on the host, ` + `or docker run --network host alpine curl http://${VLM_HOST}:8082/health`;
   throw new Error(msg);
 }
 function imageToBase64(imagePath) {
@@ -199865,7 +199887,7 @@ async function handleInstallAction() {
     "To fix this, use one of the following:",
     "  1. vlm_on (agent-vision plugin)",
     "  2. systemctl --user start glm-vlm-server.service on the host",
-    "  3. docker run --network host alpine curl http://127.0.0.1:8082/health"
+    "  3. docker run --network host alpine curl http://${VLM_HOST}:8082/health"
   ];
   if (inContainer) {
     instructions.push("");
@@ -199930,7 +199952,7 @@ async function handleAnalyzeAction(image, prompt, maxTokens, temperature) {
     return JSON.stringify({
       success: false,
       error: "VLM server is not running at any endpoint.",
-      fix: "Try: vlm_on (agent-vision plugin), or systemctl --user start glm-vlm-server.service on the host, or docker run --network host alpine curl http://127.0.0.1:8082/health",
+      fix: "Try: vlm_on (agent-vision plugin), or systemctl --user start glm-vlm-server.service on the host, or docker run --network host alpine curl http://${VLM_HOST}:8082/health",
       imageFile: image,
       environment: inContainer ? "container" : "host"
     }, null, 2);
@@ -199989,7 +200011,8 @@ import { tool as tool16 } from "@opencode-ai/plugin";
 import { execSync as execSync5 } from "child_process";
 import * as fs34 from "fs";
 import * as path35 from "path";
-var VLM_ENDPOINT2 = "http://127.0.0.1:8082/v1/chat/completions";
+var VLM_HOST2 = process.env.VLM_HOST || "127.0.0.1";
+var VLM_ENDPOINT2 = `http://${VLM_HOST2}:8082/v1/chat/completions`;
 var BROWSER_IMAGE2 = "opencode-test-browser:1.0";
 function findTestContainer2() {
   try {
@@ -200026,7 +200049,7 @@ function dockerExec2(container, command) {
       maxBuffer: 10 * 1024 * 1024
     }).trim();
   } catch (execErr) {
-    throw new Error(`Container exec failed: ${execErr.message}`);
+    throw new Error(`Container exec failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`);
   }
 }
 function createSharkBrowserTestTool() {
@@ -200077,7 +200100,7 @@ function createSharkBrowserTestTool() {
         container
       };
       try {
-        fs34.mkdirSync(browserTestDir, { recursive: true });
+        fs34.mkdirSync(validatePath(browserTestDir, true), { recursive: true });
       } catch (err) {
         console.error("[ERROR] shark-browser-test: execute:", err instanceof Error ? err.message : String(err));
       }
@@ -200089,12 +200112,12 @@ function createSharkBrowserTestTool() {
       try {
         dockerExec2(container, `cd ${JSON.stringify(fileDir)} && python3 -m http.server ${port} --bind 127.0.0.1 &>/dev/null &`);
       } catch (httpErr) {
-        result.runtimeErrors.push(`HTTP server start failed: ${httpErr.message}`);
+        result.runtimeErrors.push(`HTTP server start failed: ${httpErr instanceof Error ? httpErr.message : String(httpErr)}`);
       }
       try {
         dockerExec2(container, `agent-browser open "http://127.0.0.1:${port}/${fileName}" 2>&1`);
       } catch (browserErr) {
-        result.runtimeErrors.push(`Browser open failed: ${browserErr.message}`);
+        result.runtimeErrors.push(`Browser open failed: ${browserErr instanceof Error ? browserErr.message : String(browserErr)}`);
       }
       await new Promise((r) => setTimeout(r, 3000));
       try {
@@ -200189,8 +200212,8 @@ function createSharkBrowserTestTool() {
       const hasRequiredDom = result.domCheck && result.domCheck.hasCanvas === true;
       result.overallPassed = !hasFatalErrors && !!hasRequiredDom;
       try {
-        fs34.mkdirSync(browserTestDir, { recursive: true });
-        fs34.writeFileSync(path35.join(browserTestDir, "BrowserTestResult.json"), JSON.stringify(result, null, 2));
+        fs34.mkdirSync(validatePath(browserTestDir, true), { recursive: true });
+        fs34.writeFileSync(path35.join(validatePath(browserTestDir, true), "BrowserTestResult.json"), JSON.stringify(result, null, 2));
       } catch (err) {
         console.error("[ERROR] shark-browser-test: execute:", err instanceof Error ? err.message : String(err));
       }
@@ -200832,8 +200855,15 @@ class SemanticFirewall {
       return [];
     const results = walkAST(this.sourceFiles, visitors);
     return results.map((r) => ({
-      ...r,
-      severity: r.severity === "error" ? rule.severity : "MEDIUM"
+      rule: r.rule,
+      severity: r.severity === "error" ? rule.severity : "MEDIUM",
+      file: r.file,
+      line: r.line,
+      column: r.column,
+      message: r.message,
+      nodeKind: r.nodeKind,
+      sourceSnippet: r.sourceSnippet,
+      phase: "write-time"
     }));
   }
   evaluateScopeViolation() {

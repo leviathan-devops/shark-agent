@@ -148,7 +148,7 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
       'shark-vision': createSharkVisionTool(),
       'shark-browser-test': createSharkBrowserTestTool(),
     },
-    config: async (cfg: any) => {
+    config: async (cfg: { agent?: Record<string, unknown>; [key: string]: unknown }) => {
       if (!cfg) return;
       if (!cfg.agent) cfg.agent = {};
       cfg.agent['shark'] = {

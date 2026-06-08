@@ -89,7 +89,7 @@ export class ContextManagementLobe {
     }
 
     if (toolName === 'todowrite') {
-      const todos = (args as any)?.todos || [];
+      const todos = (args as Record<string, unknown>)?.todos || [];
       if (Array.isArray(todos)) {
         for (const todo of todos) {
           if (todo?.content && todo?.status) {

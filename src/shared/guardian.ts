@@ -157,7 +157,7 @@ export class Guardian {
   }
 
   classifyZone(path: string): Zone {
-    const expandedPath = path.replace(/^~/, process.env.HOME || '/home/user');
+    const expandedPath = path.replace(/^~/, process.env.HOME || process.cwd());
     for (const pattern of PERSONAL_PATHS) if (pattern.test(expandedPath)) return 'PERSONAL';
     for (const pattern of SYSTEM_PATHS) if (pattern.test(expandedPath)) return 'SYSTEM';
     if (expandedPath.startsWith(this.workspacePath)) return 'WORKSPACE';

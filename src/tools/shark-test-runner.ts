@@ -196,7 +196,7 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
           'getState',
           'restore',
         ];
-        const missing = requiredMethods.filter(m => typeof (gm as any)[m] !== 'function');
+        const missing = requiredMethods.filter(m => typeof (gm as Record<string, unknown>)[m] !== 'function');
         const passed = missing.length === 0;
         return {
           name: 'L3-gate-manager-methods',
@@ -226,7 +226,7 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
       try {
         const mockStore = { get: () => null, snapshot: () => ({}) };
         const mockGate = new GateManager();
-        const result = createSharkStatusTool(mockStore as any, mockGate as any);
+        const result = createSharkStatusTool(mockStore as Record<string, unknown>, mockGate as Record<string, unknown>);
         const hasExecute = typeof result?.execute === 'function';
         return {
           name: 'L4-shark-status-tool-created',
@@ -257,7 +257,7 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
         const mockGate = new GateManager();
         // @theatrical-stub: cannot validate because mock guardian in test L5 requires real GateManager+guardian infrastructure
         const mockGuardian = { check: () => ({ blocked: false }) };
-        const result = createSharkGateTool(mockGate as any, mockGuardian as any);
+        const result = createSharkGateTool(mockGate as Record<string, unknown>, mockGuardian as Record<string, unknown>);
         const hasExecute = typeof result?.execute === 'function';
         return {
           name: 'L5-shark-gate-tool-created',
@@ -287,7 +287,7 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
       try {
         const mockStore = { get: () => null, snapshot: () => ({}) };
         const mockGate = new GateManager();
-        const result = createCheckpointTool(mockStore as any, mockGate as any);
+        const result = createCheckpointTool(mockStore as Record<string, unknown>, mockGate as Record<string, unknown>);
         const hasExecute = typeof result?.execute === 'function';
         return {
           name: 'L6-checkpoint-tool-created',
@@ -393,7 +393,7 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
           'clearCurrentAgent',
           'getSessionIds',
         ];
-        const missing = requiredExports.filter(fn => typeof (agentState as any)[fn] !== 'function');
+        const missing = requiredExports.filter(fn => typeof (agentState as Record<string, unknown>)[fn] !== 'function');
         const passed = missing.length === 0;
 
         if (passed) {

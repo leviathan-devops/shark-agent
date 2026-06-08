@@ -9,6 +9,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { DomainName, BrainName } from './domain-ownership.js';
 import { canWrite, canRead } from './domain-ownership.js';
+import { validatePath } from '../../shared/validate-path.js';
 
 export interface BrainState {
   brain: BrainName;
@@ -72,7 +73,7 @@ export function createStateStore(basePath: string = process.cwd()): StateStore {
 
       const filePath = path.join(basePath, STATE_DIR, BRAIN_STATES_DIR, `${domain}.json`);
       try {
-        fs.writeFileSync(filePath, JSON.stringify(state, null, 2));
+        fs.writeFileSync(validatePath(filePath, true), JSON.stringify(state, null, 2));
         return true;
       } catch (err) {
         return false;

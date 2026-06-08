@@ -236,7 +236,7 @@ export class SlopRemovalEngine {
     }
 
     this.addCheckRecord('MVS hash verification', 'mechanical');
-    return JSON.parse(mvsContent);
+    return JSON.parse(mvsContent) as MVS;
   }
 
   private addCheckRecord(name: string, category: 'mechanical' | 'textual'): void {

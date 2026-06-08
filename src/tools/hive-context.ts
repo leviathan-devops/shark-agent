@@ -398,7 +398,7 @@ export function createHiveContextTool() {
       ),
     },
 
-    execute: async (args: any, _ctx: any): Promise<string> => {
+    execute: async (args: { action?: string; topic?: string; query?: string }, _ctx: unknown): Promise<string> => {
       const action = (args && args.action) || 'read';
       const topic = (args && args.topic) || undefined;
       const query = (args && args.query) || undefined;

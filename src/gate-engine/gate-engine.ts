@@ -69,8 +69,13 @@ export class GateEngine {
 
   deserialize(json: string): void {
     try {
-      const data = JSON.parse(json);
-      this.state = { currentGate: data.currentGate || 'plan', previousGates: data.previousGates || [], evidence: new Map(data.evidence || []), iteration: data.iteration || 1 };
+      const data: Record<string, unknown> = JSON.parse(json);
+      this.state = {
+        currentGate: (typeof data.currentGate === 'string' && data.currentGate) || 'plan',
+        previousGates: Array.isArray(data.previousGates) ? data.previousGates as GateID[] : [],
+        evidence: new Map(Array.isArray(data.evidence) ? data.evidence as [string, boolean][] : []),
+        iteration: typeof data.iteration === 'number' ? data.iteration : 1,
+      };
     } catch { this.reset('plan'); }
   }
 }

@@ -439,7 +439,7 @@ export class GateManager {
     try {
       if (fs.existsSync(this.stateFile)) {
         const raw = fs.readFileSync(this.stateFile, 'utf-8');
-        const state = JSON.parse(raw);
+        const state = JSON.parse(raw) as Record<string, unknown>;
         this.restore(state);
       }
     } catch (loadErr) {

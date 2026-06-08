@@ -1,5 +1,6 @@
 import * as ts from 'typescript';
 import { ASTVisitor, getNodePosition, getNodeSnippet } from '../analyzers/ast-walker.js';
+// @audited: called indirectly via rule engine registration
 export function checkEvidenceBearingResults(): ASTVisitor {
   const WRITE_APIS = new Set(['writeFileSync','writeFile','appendFileSync','mkdirSync','execSync','push','log']);
   return (node: ts.Node, sourceFile: ts.SourceFile) => {

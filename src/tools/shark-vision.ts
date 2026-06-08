@@ -25,7 +25,8 @@ import { execSync } from 'node:child_process';
 // ============================================================================
 
 const VLM_PORT = 8082;
-const LOCAL_ENDPOINT = `http://127.0.0.1:${VLM_PORT}`;
+const VLM_HOST = process.env.VLM_HOST || "127.0.0.1";
+const LOCAL_ENDPOINT = `http://${VLM_HOST}:${VLM_PORT}`;
 const VLM_ENDPOINT = `${LOCAL_ENDPOINT}/v1/chat/completions`;
 const VLM_HEALTH_ENDPOINT = `${LOCAL_ENDPOINT}/health`;
 const VLM_TIMEOUT_MS = 540000;
@@ -181,7 +182,8 @@ async function checkVlmHealth(): Promise<HealthResult> {
               source: 'docker:host-network',
             };
           }
-        } catch {
+        } catch (err) {
+          console.error("[ERROR] shark-vision.checkVlmHealth: JSON parse failed for docker health result:", err instanceof Error ? err.message : String(err));
         }
       }
     } catch {
@@ -366,7 +368,7 @@ async function queryVlm(
   const msg =
     `VLM server is not running at any endpoint. Try: vlm_on (agent-vision plugin), ` +
     `or systemctl --user start glm-vlm-server.service on the host, ` +
-    `or docker run --network host alpine curl http://127.0.0.1:8082/health`;
+    `or docker run --network host alpine curl http://${VLM_HOST}:8082/health`;
 
   throw new Error(msg);
 }
@@ -430,7 +432,7 @@ async function handleInstallAction(): Promise<string> {
     'To fix this, use one of the following:',
     '  1. vlm_on (agent-vision plugin)',
     '  2. systemctl --user start glm-vlm-server.service on the host',
-    '  3. docker run --network host alpine curl http://127.0.0.1:8082/health',
+    '  3. docker run --network host alpine curl http://${VLM_HOST}:8082/health',
   ];
 
   if (inContainer) {
@@ -521,7 +523,7 @@ async function handleAnalyzeAction(
     return JSON.stringify({
       success: false,
       error: 'VLM server is not running at any endpoint.',
-      fix: 'Try: vlm_on (agent-vision plugin), or systemctl --user start glm-vlm-server.service on the host, or docker run --network host alpine curl http://127.0.0.1:8082/health',
+      fix: 'Try: vlm_on (agent-vision plugin), or systemctl --user start glm-vlm-server.service on the host, or docker run --network host alpine curl http://${VLM_HOST}:8082/health',
       imageFile: image,
       environment: inContainer ? 'container' : 'host',
     }, null, 2);

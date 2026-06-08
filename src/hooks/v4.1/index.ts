@@ -73,8 +73,8 @@ export function createSharkHooks(
     'experimental.chat.messages.transform': safeHook(createMessagesTransformHook(), hookOptions),
 
     /* tool.execute.before: Frontal Lobe + Guardian */
-    'tool.execute.before': async (input: any, output: any) => {
-      const currentAgent = getCurrentAgent(input.sessionID) || input?.agent || '';
+    'tool.execute.before': async (input: Record<string, unknown>, output: Record<string, unknown>) => {
+      const currentAgent = getCurrentAgent(input.sessionID as string | undefined) || (input.agent as string | undefined) || '';
       if (typeof currentAgent === 'string' && currentAgent !== '' && !isSharkAgent(currentAgent)) return;
 
       if (executionContext && typeof currentAgent === 'string' && currentAgent !== '') {
@@ -83,16 +83,16 @@ export function createSharkHooks(
 
       try {
         if (enforcementBrain) {
-          const toolName = input?.tool || '';
-          const toolArgs = (input as any)?.args || (output as any)?.args || {};
-          const thoughtStream = (input as any)?.thoughtStream || (output as any)?.thoughtStream || '';
+          const toolName = (input.tool as string) || '';
+          const toolArgs = (input.args ?? output.args ?? {}) as Record<string, unknown>;
+          const thoughtStream = (input.thoughtStream ?? output.thoughtStream ?? '') as string;
           const results = enforcementBrain.evaluateBefore(toolName, toolArgs, thoughtStream);
           const blocks = results.filter((r: EnforcementResult) => r.level === 'BLOCK');
           if (blocks.length > 0) throw new StructuredBlockError(blocks[0]);
           const warns = results.filter((r: EnforcementResult) => r.level === 'WARN');
           if (warns.length > 0) {
-            output.system = output.system || [];
-            output.system.push(`[ENFORCEMENT] ${warns[0].message}`);
+            output.system = (output.system as string[] | undefined) || [];
+            (output.system as string[]).push(`[ENFORCEMENT] ${warns[0].message}`);
           }
         }
         if (writeTimeHandler) {
@@ -103,7 +103,7 @@ export function createSharkHooks(
       } catch (err) {
         try {
           const { updateDebugLog, updateSoCPreservation } = await import('../../shared/context-manager.js');
-          const toolName = input?.tool || '';
+          const toolName = (input.tool as string) || '';
           const errMsg = err instanceof Error ? err.message : String(err);
           updateDebugLog('enforcement-block', `Blocked: ${toolName}`, errMsg, `Layer: guardian-hook`, `Enforcement block: ${toolName} - ${errMsg}`);
           updateSoCPreservation([{ pattern: `Enforcement block: ${toolName}`, context: errMsg, source: 'guardian-hook' }]);
@@ -115,24 +115,24 @@ export function createSharkHooks(
     },
 
     /* tool.execute.after: RGE + SRE + context doc updates */
-    'tool.execute.after': async (input: any, output: any) => {
-      const afterAgent = getCurrentAgent(input.sessionID) || input?.agent || '';
+    'tool.execute.after': async (input: Record<string, unknown>, output: Record<string, unknown>) => {
+      const afterAgent = getCurrentAgent(input.sessionID as string | undefined) || (input.agent as string | undefined) || '';
       if (typeof afterAgent === 'string' && afterAgent !== '' && !isSharkAgent(afterAgent)) return;
 
-      const toolName = input?.tool || '';
-      const toolArgs = (input as any)?.args || (output as any)?.args || {};
+      const toolName = (input.tool as string) || '';
+      const toolArgs = (input.args ?? output.args ?? {}) as Record<string, unknown>;
 
       if (enforcementBrain) {
         const results = await enforcementBrain.evaluateAfter(toolName, toolArgs, output);
         const blocks = results.filter((r: EnforcementResult) => r.level === 'BLOCK');
         if (blocks.length > 0) {
-          output.system = output.system || [];
-          output.system.push(`[ENFORCEMENT BLOCKED] ${blocks[0].message}`);
+          output.system = (output.system as string[] | undefined) || [];
+          (output.system as string[]).push(`[ENFORCEMENT BLOCKED] ${blocks[0].message}`);
         }
         const warns = results.filter((r: EnforcementResult) => r.level === 'WARN');
         if (warns.length > 0) {
-          output.system = output.system || [];
-          for (const w of warns) output.system.push(`[ENFORCEMENT] ${w.message}`);
+          output.system = (output.system as string[] | undefined) || [];
+          for (const w of warns) (output.system as string[]).push(`[ENFORCEMENT] ${w.message}`);
         }
       }
 

@@ -194,7 +194,7 @@ export class CommonSenseLobe {
 
   private detectEvidenceValidity(output: unknown): boolean {
     // Check that evidence has proper structure
-    const out = (output as any)?.output;
+    const out = (output as Record<string, unknown>)?.output;
     if (!out) return false;
     const outStr = typeof out === 'string' ? out : JSON.stringify(out);
     return outStr.includes('"name"') && outStr.includes('"passed"') && outStr.includes('"machineEvidence"');

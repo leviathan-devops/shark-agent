@@ -165,12 +165,12 @@ export function createSharkDiagnosticTool() {
             : `GateManager methods: getCurrentGate=${hasGetCurrentGate}, transitionTo=${hasTransitionTo}, handleVerifyFailure=${hasHandleVerifyFailure}`,
           failureReason: allOk ? undefined : 'Required methods missing on GateManager instance',
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         subsystems.push({
           name: 'Gate Manager',
           status: 'non-operational',
           verificationMethod: 'Import + instantiation of GateManager',
-          failureReason: `Error: ${e.message}`,
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`,
         });
       }
 
@@ -190,12 +190,12 @@ export function createSharkDiagnosticTool() {
             : `EvidenceCollector methods: collectEvidence=${hasCollect}, getGateEvidence=${hasGetGate}, getLatestEvidence=${hasGetLatest}, hasCompleteEvidence=${hasComplete}`,
           failureReason: allOk ? undefined : 'Required methods missing on EvidenceCollector instance',
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         subsystems.push({
           name: 'Evidence Collector',
           status: 'non-operational',
           verificationMethod: 'Import + instantiation of EvidenceCollector',
-          failureReason: `Error: ${e.message}`,
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`,
         });
       }
 
@@ -213,12 +213,12 @@ export function createSharkDiagnosticTool() {
             : `Guardian methods: canWrite=${hasCanWrite}, isDangerousCommand=${hasDangerous}`,
           failureReason: allOk ? undefined : 'Required methods missing on Guardian instance',
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         subsystems.push({
           name: 'Guardian: Zone Protection',
           status: 'non-operational',
           verificationMethod: 'Import + instantiation of Guardian',
-          failureReason: `Error: ${e.message}`,
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`,
         });
       }
 
@@ -245,12 +245,12 @@ export function createSharkDiagnosticTool() {
             verificationMethod: `createSharkHooks() called with mock deps — returned object with ${hookNames.length} hooks: ${hookNames.join(', ')}`,
           });
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         subsystems.push({
           name: 'Hooks: createSharkHooks',
           status: 'non-operational',
           verificationMethod: 'Import + invocation of createSharkHooks',
-          failureReason: `Error: ${e.message}`,
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`,
         });
       }
 
@@ -276,12 +276,12 @@ export function createSharkDiagnosticTool() {
                 verificationMethod: 'createSharkStatusTool() returned object but missing execute()',
               });
             }
-          } catch (e: any) {
+          } catch (e: unknown) {
             subsystems.push({
               name: 'Tool: shark-status',
               status: 'non-operational',
               verificationMethod: 'createSharkStatusTool() invocation',
-              failureReason: `Error: ${e.message}`,
+              failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`,
             });
           }
 
@@ -300,12 +300,12 @@ export function createSharkDiagnosticTool() {
                 verificationMethod: 'createSharkGateTool() returned object but missing execute()',
               });
             }
-          } catch (e: any) {
+          } catch (e: unknown) {
             subsystems.push({
               name: 'Tool: shark-gate',
               status: 'non-operational',
               verificationMethod: 'createSharkGateTool() invocation',
-              failureReason: `Error: ${e.message}`,
+              failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`,
             });
           }
 
@@ -324,12 +324,12 @@ export function createSharkDiagnosticTool() {
                 verificationMethod: 'createCheckpointTool() returned object but missing execute()',
               });
             }
-          } catch (e: any) {
+          } catch (e: unknown) {
             subsystems.push({
               name: 'Tool: checkpoint',
               status: 'non-operational',
               verificationMethod: 'createCheckpointTool() invocation',
-              failureReason: `Error: ${e.message}`,
+              failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`,
             });
           }
 
@@ -346,12 +346,12 @@ export function createSharkDiagnosticTool() {
               verificationMethod: 'Registered at plugin startup in src/index.ts. Direct import would create circular dependencies — verified indirectly via plugin load.',
             });
           }
-        } catch (e: any) {
+        } catch (e: unknown) {
           subsystems.push({
             name: 'Tools (all)',
             status: 'non-operational',
             verificationMethod: 'Tool verification batch',
-            failureReason: `Batch error: ${e.message}`,
+            failureReason: `Batch error: ${e instanceof Error ? e.message : String(e)}`,
           });
         }
       })();
@@ -386,12 +386,12 @@ export function createSharkDiagnosticTool() {
             ? `${layersBad} layers failed verification: ${failedLayers.slice(0, 3).join('; ')}${failedLayers.length > 3 ? '...' : ''}`
             : undefined,
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         subsystems.push({
           name: 'Firewall: DEFAULT_LAYERS',
           status: 'non-operational',
           verificationMethod: 'Import from firewall/layers/index.js',
-          failureReason: `Error: ${e.message}`,
+          failureReason: `Error: ${e instanceof Error ? e.message : String(e)}`,
         });
       }
 
@@ -413,7 +413,7 @@ export function createSharkDiagnosticTool() {
 }
 
 export function createSharkHealthCheckTool() {
-  return tool({
+  const healthTool = tool({
     description: 'Quick health check for all Shark subsystems — returns operational status of brain, identity, gate, and firewall',
     args: {},
     execute: async (): Promise<string> => {
@@ -463,4 +463,9 @@ export function createSharkHealthCheckTool() {
       return JSON.stringify(checks, null, 2);
     },
   });
+
+  if (!healthTool || typeof healthTool !== 'object') {
+    throw new Error('[SHARK] createSharkHealthCheckTool: tool creation failed');
+  }
+  return healthTool;
 }

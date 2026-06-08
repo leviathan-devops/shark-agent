@@ -141,6 +141,7 @@ export function createDefaultVerificationMatrix(): VerificationMatrix {
       },
       status: 'untested',
       lastChecked: null,
+      lastUpdated: null,
     },
     {
       id: 'EVIDENCE_PROTOCOL',
@@ -184,13 +185,13 @@ export function detectContextDocStatus(contextDir: string, sessionStartTime: num
       'DEBUG_LOG.md', 'COMPACTION_SURVIVAL.md', 'EVIDENCE_STATE.md',
       'POST-COMPACTION_PROMPT.md', 'SoC_PRESERVATION.md',
     ];
-    const allUpdated = docs.every(d => {
+    const allUpdated = docs.every((d: string) => {
       const p = path.join(contextDir, d);
       if (!fs.existsSync(p)) return false;
       return fs.statSync(p).mtimeMs >= sessionStartTime;
     });
     if (allUpdated) return 'behavioral-pass';
-    const anyUpdated = docs.some(d => {
+    const anyUpdated = docs.some((d: string) => {
       const p = path.join(contextDir, d);
       if (!fs.existsSync(p)) return false;
       return fs.statSync(p).mtimeMs >= sessionStartTime;
@@ -236,7 +237,7 @@ export function updateRequirementStatus(
   id: string,
   status: RequirementStatus
 ): VerificationMatrix {
-  return matrix.map(r => {
+  return matrix.map((r: BehavioralRequirement) => {
     if (r.id !== id) return r;
     const now = Date.now();
     const updated = { ...r, status, lastChecked: now };
@@ -275,8 +276,8 @@ export function verifyRuntimeGradeEvidence(basePath: string): RuntimeGradeEviden
   try {
     if (fs.existsSync(containerTestPath)) {
       const content = fs.readFileSync(containerTestPath, 'utf-8');
-      const result = JSON.parse(content);
-      containerTestPassed = result.overallPassed === true && (result.passRate || 0) >= 0.90;
+      const result = JSON.parse(content) as Record<string, unknown>;
+      containerTestPassed = result.overallPassed === true && (result.passRate as number || 0) >= 0.90;
     }
   } catch (err) {
     console.error('[ERROR] verification-matrix.verifyRuntimeGradeEvidence:', err instanceof Error ? err.message : String(err));
@@ -290,7 +291,7 @@ export function verifyRuntimeGradeEvidence(basePath: string): RuntimeGradeEviden
   try {
     if (fs.existsSync(srePath)) {
       const content = fs.readFileSync(srePath, 'utf-8');
-      const result = JSON.parse(content);
+      const result = JSON.parse(content) as Record<string, unknown>;
       sreAligned = result.aligned === true;
     }
   } catch (err) {
@@ -305,7 +306,7 @@ export function verifyRuntimeGradeEvidence(basePath: string): RuntimeGradeEviden
   try {
     if (fs.existsSync(authPath)) {
       const content = fs.readFileSync(authPath, 'utf-8');
-      const result = JSON.parse(content);
+      const result = JSON.parse(content) as Record<string, unknown>;
       authenticityVerified = result.authentic === true;
     }
   } catch (err) {
@@ -320,9 +321,9 @@ export function verifyRuntimeGradeEvidence(basePath: string): RuntimeGradeEviden
   try {
     if (fs.existsSync(tridentPath)) {
       const content = fs.readFileSync(tridentPath, 'utf-8');
-      const result = JSON.parse(content);
-      const findings = result.findings || {};
-      tridentClean = (findings.critical || 0) === 0 && (findings.high || 0) === 0;
+      const result = JSON.parse(content) as Record<string, unknown>;
+      const findings = result.findings as Record<string, unknown> || {};
+      tridentClean = (findings.critical as number || 0) === 0 && (findings.high as number || 0) === 0;
     }
   } catch (err) {
     console.error('[ERROR] verification-matrix.verifyRuntimeGradeEvidence:', err instanceof Error ? err.message : String(err));
@@ -336,7 +337,7 @@ export function verifyRuntimeGradeEvidence(basePath: string): RuntimeGradeEviden
   try {
     if (fs.existsSync(gatePath)) {
       const content = fs.readFileSync(gatePath, 'utf-8');
-      const state = JSON.parse(content);
+      const state = JSON.parse(content) as Record<string, unknown>;
       deliveryPassed = state.currentGate === 'delivery';
     }
   } catch (err) {
@@ -351,8 +352,8 @@ export function verifyRuntimeGradeEvidence(basePath: string): RuntimeGradeEviden
   try {
     if (fs.existsSync(matrixPath)) {
       const content = fs.readFileSync(matrixPath, 'utf-8');
-      const matrix = JSON.parse(content) as Array<{ status: string }>;
-      allProtocolsPassed = matrix.every(r => r.status === 'behavioral-pass');
+      const matrixData = JSON.parse(content) as Array<Record<string, unknown>>;
+      allProtocolsPassed = matrixData.every((r: Record<string, unknown>) => r.status === 'behavioral-pass');
     }
   } catch (err) {
     console.error('[ERROR] verification-matrix.verifyRuntimeGradeEvidence:', err instanceof Error ? err.message : String(err));

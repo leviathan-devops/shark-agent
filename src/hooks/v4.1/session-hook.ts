@@ -19,6 +19,7 @@ import { resetGateHookState } from './gate-hook.js';
 import type { BrainConcurrencyManager } from '../../shark/brains/brain-concurrency.js';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import { validatePath } from '../../shared/validate-path.js';
 
 const BUILD_CONTEXT_FILE = 'build-context.md';
 const BUILD_REMINDER_FILE = 'build-reminder.txt';
@@ -124,7 +125,7 @@ function handleSessionCreated(
       if (files.length > 0) {
         const latest = files[0];
         const raw = fs.readFileSync(latest.path, 'utf-8');
-        const state = JSON.parse(raw);
+        const state = JSON.parse(raw) as Record<string, unknown>;
         gateManager.restore(state);
         restored = true;
       }
@@ -159,9 +160,9 @@ function handleSessionCreated(
   if (!dirCreationAttempted) {
     dirCreationAttempted = true;
     const sharkDir = path.join(process.cwd(), '.shark');
-    fs.mkdirSync(sharkDir, { recursive: true });
-    fs.mkdirSync(path.join(sharkDir, 'evidence'), { recursive: true });
-    fs.mkdirSync(path.join(sharkDir, 'checkpoints'), { recursive: true });
+    fs.mkdirSync(validatePath(sharkDir, true), { recursive: true });
+    fs.mkdirSync(validatePath(path.join(sharkDir, 'evidence'), true), { recursive: true });
+    fs.mkdirSync(validatePath(path.join(sharkDir, 'checkpoints'), true), { recursive: true });
   }
 }
 

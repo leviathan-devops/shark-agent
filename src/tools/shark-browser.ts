@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { validatePath } from '../shared/validate-path.js';
 
 const CONTAINER_IMAGE = 'opencode-test:1.14.34';
 const BROWSER_IMAGE = 'opencode-test-browser:1.0';
@@ -118,8 +119,8 @@ function dockerExec(container: string, command: string): string {
     return execSync(`docker exec ${container} sh -c ${JSON.stringify(command)}`, {
       encoding: 'utf-8', timeout: 60000, maxBuffer: 10 * 1024 * 1024,
     }).trim();
-  } catch (execErr: any) {
-    throw new Error(`Container exec failed: ${execErr.message}`);
+  } catch (execErr: unknown) {
+    throw new Error(`Container exec failed: ${execErr instanceof Error ? execErr.message : String(execErr)}`);
   }
 }
 
@@ -188,8 +189,8 @@ export function createSharkBrowserTool() {
             image,
             hasPreinstalledChrome: image.includes(BROWSER_IMAGE),
           });
-        } catch (err: any) {
-          return JSON.stringify({ success: false, error: err.message, container });
+        } catch (err: unknown) {
+          return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err), container });
         }
       }
 
@@ -231,8 +232,8 @@ export function createSharkBrowserTool() {
             hasPreinstalledChrome,
             action: chromePath ? 'chrome_already_available' : 'chrome_installed',
           });
-        } catch (err: any) {
-          return JSON.stringify({ success: false, error: err.message, container });
+        } catch (err: unknown) {
+          return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err), container });
         }
       }
 
@@ -252,8 +253,8 @@ export function createSharkBrowserTool() {
             image,
             hasPreinstalledChrome: image.includes(BROWSER_IMAGE),
           });
-        } catch (err: any) {
-          return JSON.stringify({ success: false, error: err.message });
+        } catch (err: unknown) {
+          return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err) });
         }
       }
 
@@ -331,8 +332,8 @@ export function createSharkBrowserTool() {
         }
 
         return JSON.stringify({ success: true, result, container });
-      } catch (err: any) {
-        return JSON.stringify({ success: false, error: err.message, container });
+      } catch (err: unknown) {
+        return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err), container });
       }
     },
   });
