@@ -293,7 +293,7 @@ export function createReasoningBrain(config: ReasoningBrainConfig) {
 
 function feedRulesToBrain(): void {
   const rules = getT1Rules();
-  const ruleSummary = rules.map(r => ({
+  const ruleSummary = rules.map((r: EnforcementRule) => ({
     id: r.detector.id,
     category: r.detector.category,
     severity: r.detector.severity,

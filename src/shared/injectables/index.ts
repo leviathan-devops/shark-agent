@@ -13,7 +13,7 @@ export const ALL_T1_RULES: EnforcementRule[] = [
 ];
 
 export function detectAllT1Violations(code: string, context: CodeContext): EnforcementRule[] {
-  return ALL_T1_RULES.filter(rule => rule.detector.detect(code, context));
+  return ALL_T1_RULES.filter((rule: EnforcementRule) => rule.detector.detect(code, context));
 }
 
 export {

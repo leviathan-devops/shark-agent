@@ -28,7 +28,7 @@ export class PatternDatabase {
   load(jsonPath: string): void {
     try {
       const content = fs.readFileSync(jsonPath, 'utf-8');
-      const data = JSON.parse(content);
+      const data = JSON.parse(content) as Record<string, unknown>;
       if (Array.isArray(data)) {
         this.patterns = data;
       } else if (data.patterns && Array.isArray(data.patterns)) {
@@ -65,7 +65,7 @@ export class PatternDatabase {
       }
     }
 
-    return matches.sort((a, b) => b.confidence - a.confidence);
+    return matches.sort((a: PatternMatch, b: PatternMatch) => b.confidence - a.confidence);
   }
 
   getPatterns(): FailurePattern[] {

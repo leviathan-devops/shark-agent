@@ -86,7 +86,7 @@ export class CommonSenseLobe {
     }
 
     for (const reqId of reqIds) {
-      const req = matrix.find(r => r.id === reqId);
+      const req = matrix.find((r: BehavioralRequirement) => r.id === reqId);
       if (req && req.status !== 'behavioral-pass') {
         return `[VERIFY] ${req.id}:${req.status}. Test: ${req.behavioralTest.action}. Pass: ${req.behavioralTest.passCondition}.`;
       }
@@ -103,7 +103,7 @@ export class CommonSenseLobe {
     if (!reqIds) return;
 
     for (const reqId of reqIds) {
-      const req = matrix.find(r => r.id === reqId);
+      const req = matrix.find((r: BehavioralRequirement) => r.id === reqId);
       if (!req || req.status === 'behavioral-pass') continue;
 
       let newStatus: RequirementStatus | null = null;
@@ -180,9 +180,9 @@ export class CommonSenseLobe {
     const identityDir = path.join(this.basePath, 'identity', 'shark');
     try {
       if (!fs.existsSync(identityDir)) return false;
-      const files = fs.readdirSync(identityDir).filter(f => f.endsWith('.md'));
+      const files = fs.readdirSync(identityDir).filter((f: string) => f.endsWith('.md'));
       if (files.length === 0) return false;
-      const versions = files.map(f => {
+      const versions = files.map((f: string) => {
         const content = fs.readFileSync(path.join(identityDir, f), 'utf-8');
         const m = content.match(/v?\d+\.\d+\.\d+/);
         return m ? m[0] : null;

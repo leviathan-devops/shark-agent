@@ -258,7 +258,7 @@ export function createSystemBrain(config: SystemBrainConfig) {
 
     if (!auditResult.passed) {
       const criticalViolations = auditResult.violations.filter(
-        v => v.detector.severity === 'critical'
+        (v: EnforcementRule) => v.detector.severity === 'critical'
       );
 
       if (criticalViolations.length > 0) {
@@ -269,7 +269,7 @@ export function createSystemBrain(config: SystemBrainConfig) {
           priority: 'critical',
           payload: {
             issue: `ARCHITECTURE ENFORCEMENT: ${criticalViolations.length} critical violations detected — code requires correction`,
-            violations: criticalViolations.map(v => ({
+            violations: criticalViolations.map((v: EnforcementRule) => ({
               id: v.detector.id,
               description: v.detector.description,
               severity: v.detector.severity,
@@ -295,7 +295,7 @@ export function createSystemBrain(config: SystemBrainConfig) {
 
   function getUnresolvedViolations(): RuntimeViolation[] {
     const current = getState();
-    return (current?.state.runtimeViolations ?? []).filter(v => !v.resolved);
+    return (current?.state.runtimeViolations ?? []).filter((v: RuntimeViolation) => !v.resolved);
   }
 
   function readExecutionState(): BrainState | null {

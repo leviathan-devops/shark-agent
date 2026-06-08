@@ -78,7 +78,7 @@ export class ImportGraphAnalyzer {
     for (const node of adjacency.keys()) {
       if (!visited.has(node)) dfs(node);
     }
-    cycles.sort((a, b) => a.length - b.length);
+    cycles.sort((a: Cycle, b: Cycle) => a.length - b.length);
     return cycles;
   }
 

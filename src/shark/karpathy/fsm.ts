@@ -273,7 +273,7 @@ class StateMachine {
 
     // Step 1: Find all candidate transitions matching (fromState, event.type)
     const candidates = this.transitions.filter(
-      (t): boolean => t.from === fromState && t.event === event.type,
+      (t: TransitionEntry): boolean => t.from === fromState && t.event === event.type,
     );
 
     if (candidates.length === 0) {

@@ -193,7 +193,7 @@ export function scanForTheatricalCode(sourceDir: string): TheatricalCodeReport {
   const fullSpectrumPath = path.join(testDir, 'FullSpectrumTestResult.json');
   if (fs.existsSync(fullSpectrumPath)) {
     try {
-      const fullSpectrum = JSON.parse(fs.readFileSync(fullSpectrumPath, 'utf-8'));
+      const fullSpectrum = JSON.parse(fs.readFileSync(fullSpectrumPath, 'utf-8')) as Record<string, unknown>;
       if (fullSpectrum.overallPassed === true && fullSpectrum.failedTests === 0) {
         // All T1 detectors pass — no theatrical code detected by algorithmic enforcement
         return { clean: true, timestamp: new Date().toISOString(), violations: [] };

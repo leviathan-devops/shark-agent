@@ -27,7 +27,7 @@ function hasContainerTestEvidence(): boolean {
   const evidencePath = path.join(process.cwd(), '.shark', 'evidence', 'delivery', CONTAINER_TEST_RESULT_FILE);
   if (!fs.existsSync(evidencePath)) return false;
   try {
-    const result = JSON.parse(fs.readFileSync(evidencePath, 'utf-8'));
+    const result = JSON.parse(fs.readFileSync(evidencePath, 'utf-8')) as Record<string, unknown>;
     return result.overallPassed === true && result.passRate >= 0.90;
   } catch { return false; }
 }

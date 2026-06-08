@@ -44,11 +44,11 @@ const FABRICATION_PATTERNS = [
   /\boutput\s+(was|is)\s+(fabricated|hallucinated|not\s+real)\b/i,
 ];
 
-const EXCUSES = new RegExp(EXCUSE_PATTERNS.map(p => p.source).join('|'), 'i');
-const DENIAL = new RegExp(DENIAL_PATTERNS.map(p => p.source).join('|'), 'i');
-const LAZY = new RegExp(LAZY_REPETITION.map(p => p.source).join('|'), 'i');
-const OFFTOPIC = new RegExp(OFF_TOPIC_PATTERNS.map(p => p.source).join('|'), 'i');
-const FABR = new RegExp(FABRICATION_PATTERNS.map(p => p.source).join('|'), 'i');
+const EXCUSES = new RegExp(EXCUSE_PATTERNS.map((p: RegExp) => p.source).join('|'), 'i');
+const DENIAL = new RegExp(DENIAL_PATTERNS.map((p: RegExp) => p.source).join('|'), 'i');
+const LAZY = new RegExp(LAZY_REPETITION.map((p: RegExp) => p.source).join('|'), 'i');
+const OFFTOPIC = new RegExp(OFF_TOPIC_PATTERNS.map((p: RegExp) => p.source).join('|'), 'i');
+const FABR = new RegExp(FABRICATION_PATTERNS.map((p: RegExp) => p.source).join('|'), 'i');
 
 export const L5_18_ANTI_RETARD: LayerRule = {
   layer: 'L5.18',

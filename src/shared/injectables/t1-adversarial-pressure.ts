@@ -103,7 +103,7 @@ function findHookHandlers(code: string, hookName: string): Array<{ body: string;
 }
 
 function getFirstNonTrivialLine(body: string): string {
-  const lines = body.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('//'));
+  const lines = body.split('\n').map((l: string) => l.trim()).filter((l: string) => l.length > 0 && !l.startsWith('//'));
   return lines[0] || '';
 }
 
@@ -285,7 +285,7 @@ export const ADV06_TOOL_BLOCK_NO_IDENTITY_GATE: ViolationDetector = {
     const handlers = findHookHandlers(cleaned, 'tool.execute.before');
     for (const { body, index } of handlers) {
       const firstLine = getFirstNonTrivialLine(body);
-      const bodyLines = body.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const bodyLines = body.split('\n').map((l: string) => l.trim()).filter((l: string) => l.length > 0);
       const identityGateLines = bodyLines.slice(0, 5);
       const hasIdentityInFirst5 = identityGateLines.some(line =>
         /(?:agent|agentName)\s*[!=]==?\s*['"]/.test(line) ||
@@ -502,7 +502,7 @@ export const ADV12_MODE_ROUTING_FIRST: ViolationDetector = {
     const cleaned = stripComments(code);
     const handlers = findHookHandlers(cleaned, 'chat.message');
     for (const { body } of handlers) {
-      const lines = body.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('//'));
+      const lines = body.split('\n').map((l: string) => l.trim()).filter((l: string) => l.length > 0 && !l.startsWith('//'));
       const identityCheckEnd = Math.min(lines.length, 10);
       const first10 = lines.slice(0, identityCheckEnd).join('\n');
       const hasIdentityGate = /(?:agent\s*[!=]==?\s*['"]|startsWith\s*\(\s*['"])/.test(first10);
@@ -605,12 +605,12 @@ export const ADV15_CONFIG_WILDCARD_PERMISSION: ViolationDetector = {
       /['"]\*['"]\s*:\s*\{[^}]*['"]\*['"]\s*:\s*['"]allow['"]/,
       /permission\s*:\s*\{[^}]*['"]\*['"]\s*:\s*['"]allow['"]/,
     ];
-    const hasWildcard = wildcardPatterns.some(p => p.test(cleaned));
+    const hasWildcard = wildcardPatterns.some((p: RegExp) => p.test(cleaned));
     if (!hasWildcard) return false;
     const isTestConfig = /test|snap|\/tmp\/|mock|fixture/i.test(ctx.filePath) ||
       /test|snap|\/tmp\//i.test(cleaned.substring(0, 500));
     const isDocumentingAnti = /(?:anti.pattern|wrong|don't|do not|banned|never|avoid)/i.test(
-      getPrecedingScope(cleaned, cleaned.search(wildcardPatterns.find(p => p.test(cleaned))!), 300)
+      getPrecedingScope(cleaned, cleaned.search(wildcardPatterns.find((p: RegExp) => p.test(cleaned))!), 300)
     );
     return !isTestConfig && !isDocumentingAnti;
   },
@@ -837,10 +837,10 @@ export function detectAdversarialViolations(
     }
   }
 
-  const critical = violations.filter(v => v.severity === 'critical').length;
-  const high = violations.filter(v => v.severity === 'high').length;
-  const medium = violations.filter(v => v.severity === 'medium').length;
-  const blocked = violations.some(v => v.enforcementAction === 'block');
+  const critical = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'critical').length;
+  const high = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'high').length;
+  const medium = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'medium').length;
+  const blocked = violations.some((v: { severity: string; enforcementAction: string }) => v.enforcementAction === 'block');
 
   return {
     passed: violations.length === 0,

@@ -148,8 +148,8 @@ function globDirs(root: string, pattern: RegExp): string[] {
   try {
     if (!fs.existsSync(root)) return [];
     return fs.readdirSync(root, { withFileTypes: true })
-      .filter(e => e.isDirectory() && pattern.test(e.name))
-      .map(e => path.join(root, e.name));
+      .filter((e: fs.Dirent) => e.isDirectory() && pattern.test(e.name))
+      .map((e: fs.Dirent) => path.join(root, e.name));
   } catch {
     return [];
   }
@@ -159,8 +159,8 @@ function globFiles(root: string, pattern: RegExp): string[] {
   try {
     if (!fs.existsSync(root)) return [];
     return fs.readdirSync(root, { withFileTypes: true })
-      .filter(e => e.isFile() && pattern.test(e.name))
-      .map(e => path.join(root, e.name));
+      .filter((e: fs.Dirent) => e.isFile() && pattern.test(e.name))
+      .map((e: fs.Dirent) => path.join(root, e.name));
   } catch {
     return [];
   }
@@ -221,8 +221,8 @@ function readDirMarkdown(dirPath: string): string[] {
     if (!stat.isDirectory()) return parts;
 
     const entries = fs.readdirSync(dirPath, { withFileTypes: true })
-      .filter(e => e.isFile() && e.name.endsWith('.md'))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .filter((e: fs.Dirent) => e.isFile() && e.name.endsWith('.md'))
+      .sort((a: fs.Dirent, b: fs.Dirent) => a.name.localeCompare(b.name));
 
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
@@ -250,8 +250,8 @@ function readTopicContent(topic: string, root: string): { content: string; files
 
     if (stat.isDirectory()) {
       const dirFiles = fs.readdirSync(candidate, { withFileTypes: true })
-        .filter(e => e.isFile() && e.name.endsWith('.md'))
-        .map(e => path.join(candidate, e.name));
+        .filter((e: fs.Dirent) => e.isFile() && e.name.endsWith('.md'))
+        .map((e: fs.Dirent) => path.join(candidate, e.name));
       files.push(...dirFiles);
       const dirContent = readDirMarkdown(candidate);
       parts.push(...dirContent);
@@ -276,8 +276,8 @@ function readTopicContent(topic: string, root: string): { content: string; files
     }
     // Avoid duplicate directory reads
     const dirMdFiles = fs.readdirSync(candidate, { withFileTypes: true })
-      .filter(e => e.isFile() && e.name.endsWith('.md'))
-      .map(e => path.join(candidate, e.name));
+      .filter((e: fs.Dirent) => e.isFile() && e.name.endsWith('.md'))
+      .map((e: fs.Dirent) => path.join(candidate, e.name));
     for (const f of dirMdFiles) {
       if (!files.includes(f)) files.push(f);
     }
@@ -360,8 +360,8 @@ function listAvailableTopics(root: string): string[] {
   // Also note top-level .md files as individual topics
   try {
     const topLevel = fs.readdirSync(root, { withFileTypes: true })
-      .filter(e => e.isFile() && e.name.endsWith('.md'))
-      .map(e => e.name);
+      .filter((e: fs.Dirent) => e.isFile() && e.name.endsWith('.md'))
+      .map((e: fs.Dirent) => e.name);
     for (const f of topLevel) {
       topics.push(f);
     }
@@ -376,7 +376,7 @@ function listAvailableTopics(root: string): string[] {
 function countMdFiles(dir: string): number {
   try {
     return fs.readdirSync(dir, { withFileTypes: true })
-      .filter(e => e.isFile() && e.name.endsWith('.md')).length;
+      .filter((e: fs.Dirent) => e.isFile() && e.name.endsWith('.md')).length;
   } catch {
     return 0;
   }
@@ -440,7 +440,7 @@ export function createHiveContextTool() {
         }
         const matches = searchHiveMind(root, query);
         let content = matches.length > 0
-          ? matches.map(m => `${m.file}:${m.line}\n${m.snippet}\n---`).join('\n')
+          ? matches.map((m: { file: string; line: number; snippet: string }) => `${m.file}:${m.line}\n${m.snippet}\n---`).join('\n')
           : `No matches found for "${query}" in ${root}`;
 
         const result: HiveContextOutput = {

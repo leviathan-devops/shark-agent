@@ -148,7 +148,7 @@ export class PlanningBrainRegistry {
       const configPath = path.join(projectRoot, '.sharkconfig');
       if (!fs.existsSync(configPath)) return null;
       const raw = fs.readFileSync(configPath, 'utf-8');
-      const config: SharkConfig = JSON.parse(raw);
+      const config = JSON.parse(raw) as SharkConfig;
       this.configCache.set(projectRoot, config);
       return config;
     } catch {
@@ -211,7 +211,7 @@ export class PlanningBrainRegistry {
       try {
         const content = fs.readFileSync(thoughtStreamPath, 'utf-8');
         const lines = content.split('\n');
-        const matches = lines.filter(l => l.toLowerCase().includes(query.toLowerCase()));
+        const matches = lines.filter((l: string) => l.toLowerCase().includes(query.toLowerCase()));
         if (matches.length > 0) {
           results.push({ projectId, matches });
         }
@@ -268,7 +268,7 @@ export class PlanningBrainRegistry {
       let entryCount = 0;
       try {
         const content = fs.readFileSync(threadPath, 'utf-8');
-        entryCount = content.split('\n').filter(l => l.startsWith('- **')).length;
+        entryCount = content.split('\n').filter((l: string) => l.startsWith('- **')).length;
       } catch {
         entryCount = 0;
       }

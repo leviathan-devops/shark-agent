@@ -95,7 +95,7 @@ export const p11SideEffectTruth: SemanticRule = {
           }
 
           if (hasTheatricalProperty) {
-            const hasActionRequired = objectExpr.properties.some(p =>
+            const hasActionRequired = objectExpr.properties.some((p: ts.ObjectLiteralElementLike) =>
               ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'action_required'
             );
 

@@ -180,7 +180,7 @@ export const P1_DEFENSIVE_IMPORT: ViolationDetector = {
     while ((m = relImportRe.exec(code)) !== null) {
       const namedList = m[1];
       const importEnd = m.index + m[0].length;
-      const symbols = namedList.split(',').map(s => {
+      const symbols = namedList.split(',').map((s: string) => {
         const parts = s.trim().split(/\s+as\s+/);
         return (parts[parts.length - 1] || '').trim();
       }).filter(Boolean);
@@ -233,7 +233,7 @@ export const P2_TYPE_CERTAINTY: ViolationDetector = {
         /\btypeof\s+\w+\s*[!=]==?\s*['"]\w+/,
         /!\s*[\w.]+\s*$/,
       ];
-      const guarded = guardPatterns.some(p => p.test(preceding));
+      const guarded = guardPatterns.some((p: RegExp) => p.test(preceding));
       if (!guarded) return true;
     }
 
@@ -481,7 +481,7 @@ export const P8_CONFIG_VALIDATION: ViolationDetector = {
         new RegExp(`config\\.${fieldEsc}\\s*\\|\\|`),
         new RegExp(`Number\\.is(?:Integer|Finite)\\s*\\(\\s*config\\.${fieldEsc}`),
       ];
-      const hasValidation = validationPatterns.some(p => p.test(region));
+      const hasValidation = validationPatterns.some((p: RegExp) => p.test(region));
       if (!hasValidation) {
         const criticalUse = new RegExp(
           `(?:\\.listen\\s*\\(|setTimeout\\s*\\(|setInterval\\s*\\(|fetch\\s*\\().{0,100}config\\.${fieldEsc}`

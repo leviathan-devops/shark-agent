@@ -53,13 +53,13 @@ function findTestContainer(): string | null {
     const lines = output.split('\n').filter(Boolean);
 
     // Priority 1: containers using the browser image (Chrome pre-installed)
-    const browserLines = lines.filter(l => l.includes(BROWSER_IMAGE));
+    const browserLines = lines.filter((l: string) => l.includes(BROWSER_IMAGE));
     if (browserLines.length > 0) {
       return browserLines[0].split('\t')[0];
     }
 
     // Priority 2: containers with 'shark' in the name
-    const sharkLines = lines.filter(l => {
+    const sharkLines = lines.filter((l: string) => {
       const name = l.split('\t')[0] || '';
       return name.includes('shark');
     });
@@ -163,7 +163,7 @@ export function createSharkBrowserTool() {
       file: z.string().optional().describe('Path to save screenshot output'),
       container: z.string().optional().describe('Target container name (auto-detected if omitted)'),
     },
-    execute: async (args) => {
+    execute: async (args: { action: string; url?: string; selector?: string; text?: string; js?: string; file?: string; container?: string }) => {
       const { action, url, selector, text, js, file } = args;
       let container = args.container || '';
 

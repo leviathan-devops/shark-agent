@@ -60,13 +60,13 @@ function findTestContainer(): string | null {
     const lines = output.split('\n').filter(Boolean);
 
     // Priority 1: containers using the browser image (Chrome pre-installed)
-    const browserLines = lines.filter(l => l.includes(BROWSER_IMAGE));
+    const browserLines = lines.filter((l: string) => l.includes(BROWSER_IMAGE));
     if (browserLines.length > 0) {
       return browserLines[0].split('\t')[0];
     }
 
     // Priority 2: containers with 'shark' in the name
-    const sharkLines = lines.filter(l => {
+    const sharkLines = lines.filter((l: string) => {
       const name = l.split('\t')[0] || '';
       return name.includes('shark');
     });
@@ -106,7 +106,7 @@ export function createSharkBrowserTestTool() {
       port: z.number().optional().default(9999).describe('HTTP server port (default: 9999)'),
       container: z.string().optional().describe('Target container name (auto-detected if omitted)'),
     },
-    execute: async (args) => {
+    execute: async (args: { action: 'run'; file: string; port?: number; container?: string }) => {
       const { file, port, container: explicitContainer } = args;
 
       if (!fs.existsSync(file)) {
@@ -185,7 +185,7 @@ export function createSharkBrowserTestTool() {
           };
           const origConsoleError = console.error;
           console.error = function(...args) {
-            window.__testErrors.push(args.map(a => String(a)).join(' '));
+            window.__testErrors.push(args.map((a: unknown) => String(a)).join(' '));
             origConsoleError.apply(console, args);
           };
           JSON.stringify({ready: true, url: window.location.href});
@@ -199,7 +199,7 @@ export function createSharkBrowserTestTool() {
 
       try {
         const errors = dockerExec(container, `agent-browser eval "JSON.stringify(window.__testErrors)" 2>&1`);
-        const parsed = JSON.parse(errors);
+        const parsed = JSON.parse(errors) as unknown[];
         if (Array.isArray(parsed)) {
           result.runtimeErrors = parsed;
         }
@@ -219,7 +219,7 @@ export function createSharkBrowserTestTool() {
             doctype: document.doctype ? document.doctype.name : 'none',
           })
         " 2>&1`);
-        const domData = JSON.parse(domResult);
+        const domData = JSON.parse(domResult) as Record<string, unknown>;
         result.domCheck = domData;
       } catch (err) {
         console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
@@ -247,11 +247,12 @@ export function createSharkBrowserTestTool() {
           });
 
           try {
+            // [R13-SAFE] VLM_ENDPOINT=constant, vlmPayload=JSON.stringify output
             const vlmResult = execSync(
               `curl -s --max-time 540 ${VLM_ENDPOINT} -H "Content-Type: application/json" -d ${JSON.stringify(vlmPayload)}`,
               { encoding: 'utf-8', timeout: 130000 },
             );
-            const vlmData = JSON.parse(vlmResult);
+            const vlmData = JSON.parse(vlmResult) as Record<string, unknown>;
             result.visualAnalysis = vlmData.choices?.[0]?.message?.content || '';
           } catch (err) {
             console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));

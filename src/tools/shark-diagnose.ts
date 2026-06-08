@@ -10,6 +10,7 @@ import { z } from 'zod';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { DEFAULT_LAYERS } from '../hooks/firewall/layers/index.js';
+import type { LayerRule } from '../hooks/firewall/types.js';
 import { createSharkStatusTool } from './shark-status.js';
 import { createSharkGateTool } from './shark-gate.js';
 import { createCheckpointTool } from './checkpoint.js';
@@ -92,7 +93,7 @@ function verifyIdentity(): SubsystemDetail {
     try {
       if (fs.existsSync(searchPath)) {
         const files = fs.readdirSync(searchPath);
-        const hasAll = requiredFiles.every(f => files.includes(f));
+        const hasAll = requiredFiles.every((f: string) => files.includes(f));
         if (hasAll) {
           let totalLength = 0;
           for (const f of requiredFiles) {
@@ -395,8 +396,8 @@ export function createSharkDiagnosticTool() {
         });
       }
 
-      const operational = subsystems.filter(s => s.status === 'operational').length;
-      const nonOperational = subsystems.filter(s => s.status === 'non-operational').length;
+      const operational = subsystems.filter((s: SubsystemDetail) => s.status === 'operational').length;
+      const nonOperational = subsystems.filter((s: SubsystemDetail) => s.status === 'non-operational').length;
 
       const output: DiagnoseOutput = {
         totalSubsystems: subsystems.length,
@@ -432,7 +433,7 @@ export function createSharkHealthCheckTool() {
       }
 
       try {
-        const enabled = DEFAULT_LAYERS.filter(l => l.enabled && Array.isArray(l.patterns) && l.patterns.length > 0);
+        const enabled = DEFAULT_LAYERS.filter((l: LayerRule) => l.enabled && Array.isArray(l.patterns) && l.patterns.length > 0);
         checks.firewall = enabled.length > 0;
         checks.layers = enabled.length;
         checks.layersTotal = DEFAULT_LAYERS.length;

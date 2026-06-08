@@ -11,7 +11,7 @@ export function findDeadExports(program: ts.Program, checker: ts.TypeChecker): D
         if (symbol) {
           try {
             const refs = checker.findReferences(symbol);
-            const hasExternal = refs?.some(r => r.references.some(ref => ref.getSourceFile().fileName !== sourceFile.fileName)) ?? false;
+            const hasExternal = refs?.some((r: ts.ReferencedSymbol) => r.references.some((ref: ts.ReferenceEntry) => ref.getSourceFile().fileName !== sourceFile.fileName)) ?? false;
             if (!hasExternal) {
               const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart());
               const key = sourceFile.fileName + ':default';
@@ -39,7 +39,7 @@ export function findDeadExports(program: ts.Program, checker: ts.TypeChecker): D
       const line = decl.getSourceFile().getLineAndCharacterOfPosition(decl.getStart()).line + 1;
       try {
         const references = checker.findReferences(decl);
-        const hasExternal = references?.some(r => r.references.some(ref => ref.getSourceFile().fileName !== sourceFile.fileName)) ?? false;
+        const hasExternal = references?.some((r: ts.ReferencedSymbol) => r.references.some((ref: ts.ReferenceEntry) => ref.getSourceFile().fileName !== sourceFile.fileName)) ?? false;
         if (!hasExternal) {
           seenExports.add(key);
           dead.push({ file: sourceFile.fileName, exportName: name, line });

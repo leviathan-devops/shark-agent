@@ -179,7 +179,7 @@ function isCrossAgentTool(tool: string): boolean {
 }
 
 function isDangerousCommand(command: string): boolean {
-  return DANGEROUS_COMMAND_PATTERNS.some((p) => p.test(command));
+  return DANGEROUS_COMMAND_PATTERNS.some((p: RegExp) => p.test(command));
 }
 
 function isTestExecution(command: string, tokens: string[]): boolean {
@@ -191,11 +191,11 @@ function isTestExecution(command: string, tokens: string[]): boolean {
       /^yarn\s+test(\s|$)/i.test(command);
   }
   if (TEST_FRAMEWORKS.has(firstToken)) return true;
-  return TEST_EXECUTION_PATTERNS.some((p) => p.test(command));
+  return TEST_EXECUTION_PATTERNS.some((p: RegExp) => p.test(command));
 }
 
 function isContainerCommand(command: string): boolean {
-  return CONTAINER_PATTERNS.some((p) => p.test(command));
+  return CONTAINER_PATTERNS.some((p: RegExp) => p.test(command));
 }
 
 function isBuildCommand(command: string, tokens: string[]): boolean {
@@ -205,7 +205,7 @@ function isBuildCommand(command: string, tokens: string[]): boolean {
   if (firstToken === 'cargo' || firstToken === 'go' || firstToken === 'gradle' || firstToken === 'mvn') {
     return tokens.length > 1;
   }
-  return BUILD_COMMAND_PATTERNS.some((p) => p.test(command));
+  return BUILD_COMMAND_PATTERNS.some((p: RegExp) => p.test(command));
 }
 
 function isStatLsRead(tokens: string[]): boolean {
@@ -214,7 +214,7 @@ function isStatLsRead(tokens: string[]): boolean {
   if (firstToken !== 'test' && firstToken !== 'stat' && firstToken !== 'ls') return false;
   if (firstToken === 'ls') {
     const hasListingFlags = tokens.some(
-      (t) => t === '-l' || t === '-la' || t === '-al' || t.startsWith('-l') || t === '-1'
+      (t: string) => t === '-l' || t === '-la' || t === '-al' || t.startsWith('-l') || t === '-1'
     );
     return hasListingFlags;
   }
@@ -314,14 +314,14 @@ function detectPipeChain(command: string): { hasPipe: boolean; pipeChain: string
       const redirectParts = command.split(/>+/);
       return {
         hasPipe: true,
-        pipeChain: redirectParts.map((p) => p.trim()).filter(Boolean),
+        pipeChain: redirectParts.map((p: string) => p.trim()).filter(Boolean),
       };
     }
     return { hasPipe: false, pipeChain: [] };
   }
   return {
     hasPipe: true,
-    pipeChain: parts.map((p) => p.trim()).filter(Boolean),
+    pipeChain: parts.map((p: string) => p.trim()).filter(Boolean),
   };
 }
 

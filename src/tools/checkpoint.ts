@@ -45,7 +45,7 @@ async function updateBuildJourney(
     await fs.promises.writeFile(journeyPath, existing + entry);
   } else {
     const lines = existing.split('\n');
-    const updated = lines.map((line) =>
+    const updated = lines.map((line: string) =>
       line.startsWith(`| Phase ${phaseN} | ${gate} |`)
         ? entry.trim()
         : line

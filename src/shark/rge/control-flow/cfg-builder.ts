@@ -139,13 +139,13 @@ export function buildCFG(node: ts.FunctionDeclaration | ts.ArrowFunction | ts.Fu
   }
 
   const entryBlock = blocks.length > 0 ? blocks[0] : null;
-  const exitBlocks = blocks.filter(b => b.kind === 'exit');
+  const exitBlocks = blocks.filter((b: BasicBlock) => b.kind === 'exit');
 
   return { blocks, entryBlock, exitBlocks };
 }
 
 function getBlockById(cfg: ControlFlowGraph, id: number): BasicBlock | undefined {
-  return cfg.blocks.find(b => b.id === id);
+  return cfg.blocks.find((b: BasicBlock) => b.id === id);
 }
 
 export function pathsToExit(cfg: ControlFlowGraph): BasicBlock[][] {

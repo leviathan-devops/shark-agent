@@ -29,7 +29,7 @@ export function createSemanticEngine(
   return {
     program,
     checker,
-    getSourceFiles: () => program.getSourceFiles().filter(sf => !sf.isDeclarationFile && !sf.fileName.includes('node_modules')),
+    getSourceFiles: () => program.getSourceFiles().filter((sf: ts.SourceFile) => !sf.isDeclarationFile && !sf.fileName.includes('node_modules')),
     dispose: () => {}
   };
 }
@@ -97,7 +97,7 @@ export function createInMemoryEngine(
   return {
     program,
     checker,
-    getSourceFiles: () => program.getSourceFiles().filter(sf => !sf.isDeclarationFile && !sf.fileName.includes('node_modules')),
+    getSourceFiles: () => program.getSourceFiles().filter((sf: ts.SourceFile) => !sf.isDeclarationFile && !sf.fileName.includes('node_modules')),
     dispose: () => {}
   };
 }

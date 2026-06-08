@@ -69,7 +69,7 @@ export class GateEngine {
 
   deserialize(json: string): void {
     try {
-      const data: Record<string, unknown> = JSON.parse(json);
+      const data = JSON.parse(json) as Record<string, unknown>;
       this.state = {
         currentGate: (typeof data.currentGate === 'string' && data.currentGate) || 'plan',
         previousGates: Array.isArray(data.previousGates) ? data.previousGates as GateID[] : [],

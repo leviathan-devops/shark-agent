@@ -40,8 +40,8 @@ export class ExecutionContext {
 
   hasRecentEdit(): boolean {
     const recent = this.editHistory
-      .filter(e => Date.now() - e.timestamp < 60000)
-      .filter(e => e.toolName === 'edit' || e.toolName === 'write');
+      .filter((e: EditHistoryEntry) => Date.now() - e.timestamp < 60000)
+      .filter((e: EditHistoryEntry) => e.toolName === 'edit' || e.toolName === 'write');
     return recent.length > 0;
   }
 

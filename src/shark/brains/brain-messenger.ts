@@ -47,7 +47,7 @@ function getMessageQueue(brain: BrainName): BrainMessage[] {
 }
 
 function sortByPriority(messages: BrainMessage[]): BrainMessage[] {
-  return [...messages].sort((a, b) => {
+  return [...messages].sort((a: BrainMessage, b: BrainMessage) => {
     const priorityDiff = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
     if (priorityDiff !== 0) return priorityDiff;
     return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();

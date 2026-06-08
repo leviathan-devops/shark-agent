@@ -186,7 +186,6 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
           'getCurrentIteration',
           'canTransition',
           'transitionTo',
-          'blockCurrentGate',
           'passCurrentGate',
           'failCurrentGate',
           'getCriteria',
@@ -196,7 +195,7 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
           'getState',
           'restore',
         ];
-        const missing = requiredMethods.filter(m => typeof (gm as Record<string, unknown>)[m] !== 'function');
+        const missing = requiredMethods.filter((m: string) => typeof (gm as Record<string, unknown>)[m] !== 'function');
         const passed = missing.length === 0;
         return {
           name: 'L3-gate-manager-methods',
@@ -349,7 +348,7 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
         let totalMatched = 0;
 
         for (const sample of BANNED_PATTERN_SAMPLES) {
-          const matched = BANNED_OPENCODE_RUN_PATTERNS.some(r => r.test(sample));
+          const matched = BANNED_OPENCODE_RUN_PATTERNS.some((r: RegExp) => r.test(sample));
           if (matched) {
             totalMatched++;
           } else {
@@ -472,7 +471,7 @@ export function createSharkTestRunnerTool() {
           status: 'ready',
           containerAware: true,
           testCount: TEST_SUITE.length,
-          tests: TEST_SUITE.map(t => t.name),
+          tests: TEST_SUITE.map((t: { name: string; test: () => Promise<TestResult> }) => t.name),
         });
       }
 
@@ -499,7 +498,7 @@ export function createSharkTestRunnerTool() {
           }
         }
 
-        const passedTests = results.filter(r => r.passed).length;
+        const passedTests = results.filter((r: TestResult) => r.passed).length;
         const totalTests = results.length;
         const passRate = totalTests > 0 ? passedTests / totalTests : 0;
         const overallPassed = passRate >= 0.90;

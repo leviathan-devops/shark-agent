@@ -36,8 +36,8 @@ export function createCheckpointHistoryTool() {
         try {
           const entries = await fs.promises.readdir(versionsDir, { withFileTypes: true });
           const phases = entries
-            .filter(e => e.isDirectory())
-            .map(e => e.name)
+            .filter((e: fs.Dirent) => e.isDirectory())
+            .map((e: fs.Dirent) => e.name)
             .sort();
 
           if (phases.length === 0) {

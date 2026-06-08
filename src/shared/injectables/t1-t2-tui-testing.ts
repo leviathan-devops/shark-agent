@@ -88,7 +88,7 @@ function isInsideTestAssertion(code: string, position: number): boolean {
     /\.toBeTruthy\b/,
     /\.toBeFalsy\b/,
   ];
-  return assertionPatterns.some(p => p.test(before));
+  return assertionPatterns.some((p: RegExp) => p.test(before));
 }
 
 function isInsideHeredocOrString(code: string, position: number): boolean {
@@ -120,7 +120,7 @@ function hasEvidenceFileGeneration(code: string, filename: string): boolean {
     new RegExp(`Bun\\.write.*${filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`),
     new RegExp(`fs\\.\\w+.*${filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`),
   ];
-  return patterns.some(p => p.test(code));
+  return patterns.some((p: RegExp) => p.test(code));
 }
 
 // ═══════════════════════════════════════════════
@@ -171,14 +171,14 @@ export const TUI02_GREP_BASED_TESTING: ViolationDetector = {
       /\brg\s+/,
       /\bgrep\b.*-e\s+/,
     ];
-    const hasGrep = grepPatterns.some(p => p.test(cleaned));
+    const hasGrep = grepPatterns.some((p: RegExp) => p.test(cleaned));
     if (!hasGrep) return false;
     const passClaimPatterns = [
       /test\s*(?:passed?|complete|verified|success)/i,
       /all\s*(?:tests?\s*)?(?:pass|work|correct)/i,
       /verified\s*(?:the\s*)?(?:fix|implementation|module)/i,
     ];
-    const hasPassClaim = passClaimPatterns.some(p => p.test(cleaned));
+    const hasPassClaim = passClaimPatterns.some((p: RegExp) => p.test(cleaned));
     const hasActualTestFramework = /\b(describe|it\(|test\(|expect\s*\(|beforeEach|afterEach)\b/.test(cleaned);
     return hasPassClaim && !hasActualTestFramework;
   },
@@ -202,7 +202,7 @@ export const TUI03_BUNDLE_VERIFICATION_ONLY: ViolationDetector = {
       /console\.log.*Tools:|console\.log.*Hooks:/,
       /Object\.keys\(hooks\)/,
     ];
-    const hasBundleCheck = bundleCheckPatterns.some(p => p.test(cleaned));
+    const hasBundleCheck = bundleCheckPatterns.some((p: RegExp) => p.test(cleaned));
     if (!hasBundleCheck) return false;
     const containerPatterns = [
       /docker\s+(run|exec)/,
@@ -210,7 +210,7 @@ export const TUI03_BUNDLE_VERIFICATION_ONLY: ViolationDetector = {
       /ContainerTestResult/,
       /TuiInteraction/,
     ];
-    const hasContainerTest = containerPatterns.some(p => p.test(cleaned));
+    const hasContainerTest = containerPatterns.some((p: RegExp) => p.test(cleaned));
     const declaredComplete = /(?:test|verify|check|validation)\s*(?:passed|complete|done|successful)/i.test(cleaned);
     return hasBundleCheck && !hasContainerTest && declaredComplete;
   },
@@ -236,7 +236,7 @@ export const TUI04_HOST_ONLY_TESTING: ViolationDetector = {
       /bun\s+test/,
       /vitest/,
     ];
-    const isTestFile = testIndicators.some(p => p.test(cleaned));
+    const isTestFile = testIndicators.some((p: RegExp) => p.test(cleaned));
     if (!isTestFile) return false;
     const runtimeIndicators = [
       /hooks?\s*\.\s*(tool|chat|config|system)/,
@@ -244,7 +244,7 @@ export const TUI04_HOST_ONLY_TESTING: ViolationDetector = {
       /agent.*identity/i,
       /hook.*fire/i,
     ];
-    return runtimeIndicators.some(p => p.test(cleaned));
+    return runtimeIndicators.some((p: RegExp) => p.test(cleaned));
   },
   fix: 'Tests involving plugin hooks, agent identity, or tool registration MUST run inside a Docker container. Host-only tests cannot verify runtime behavior under OpenCode\'s plugin loader.',
 };
@@ -443,7 +443,7 @@ export const TUI12_EVIDENCE_FRAUD_PASS_NO_DETAIL: ViolationDetector = {
       /all\s*\d+\s*tests?\s*pass/i,
       /\d+\/\d+\s*(?:tests?\s*)?pass/i,
     ];
-    const hasPassClaim = passPatterns.some(p => p.test(cleaned));
+    const hasPassClaim = passPatterns.some((p: RegExp) => p.test(cleaned));
     if (!hasPassClaim) return false;
     const detailPatterns = [
       /"tests"\s*:\s*\[/,
@@ -452,7 +452,7 @@ export const TUI12_EVIDENCE_FRAUD_PASS_NO_DETAIL: ViolationDetector = {
       /"details"\s*:\s*\[/,
       /\b(TC-\d+\.\d+|test case)\b/i,
     ];
-    const hasDetails = detailPatterns.some(p => p.test(cleaned));
+    const hasDetails = detailPatterns.some((p: RegExp) => p.test(cleaned));
     return !hasDetails;
   },
   fix: 'Include individual test results with the evidence: test names, pass/fail per test, assertion details. "overallPassed: true" alone is not evidence — it\'s a claim. T2 Bible Rule E3: "Every claim requires mechanical evidence."',
@@ -500,7 +500,7 @@ export const TUI14_SKIPPED_DB_MIGRATION_WAIT: ViolationDetector = {
       /tmux\s+(new-session|send-keys)/,
       /grep.*model/,
     ];
-    const firstVerify = verifyPatterns.reduce((earliest, pattern) => {
+    const firstVerify = verifyPatterns.reduce((earliest: number, pattern: RegExp) => {
       const m = pattern.exec(afterRun);
       return m && (earliest === -1 || m.index < earliest) ? m.index : earliest;
     }, -1);
@@ -771,10 +771,10 @@ export function validateTestingProtocol(
     }
   }
 
-  const critical = violations.filter(v => v.severity === 'critical').length;
-  const high = violations.filter(v => v.severity === 'high').length;
-  const medium = violations.filter(v => v.severity === 'medium').length;
-  const blocked = violations.some(v => v.enforcementAction === 'block');
+  const critical = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'critical').length;
+  const high = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'high').length;
+  const medium = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'medium').length;
+  const blocked = violations.some((v: { severity: string; enforcementAction: string }) => v.enforcementAction === 'block');
 
   return {
     passed: violations.length === 0,

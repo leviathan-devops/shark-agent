@@ -233,8 +233,8 @@ export class EnforcementBrain {
     if (results.length === 0) return;
 
     try {
-      const blocks = results.filter(r => r.level === 'BLOCK');
-      const warns = results.filter(r => r.level === 'WARN');
+      const blocks = results.filter((r: EnforcementResult) => r.level === 'BLOCK');
+      const warns = results.filter((r: EnforcementResult) => r.level === 'WARN');
       const passes = results.length - blocks.length - warns.length;
 
       // Build thought stream entry — stream of consciousness, NOT context management
@@ -259,7 +259,7 @@ export class EnforcementBrain {
       const dir = path.join(this.basePath, 'evidence', 'enforcement');
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, `enf-${Date.now()}.json`), JSON.stringify({
-        passed: results.every(r => r.level !== 'BLOCK'), results, timestamp: new Date().toISOString(), toolName, sessionId: this.sessionId,
+        passed: results.every((r: EnforcementResult) => r.level !== 'BLOCK'), results, timestamp: new Date().toISOString(), toolName, sessionId: this.sessionId,
       } as EnforcementReport, null, 2), 'utf-8');
 
       // Also write structured evidence for audit trail
@@ -267,10 +267,10 @@ export class EnforcementBrain {
         type: 'enforcement-log',
         toolName,
         resultCount: results.length,
-        blockCount: results.filter(r => r.level === 'BLOCK').length,
-        warnCount: results.filter(r => r.level === 'WARN').length,
+        blockCount: results.filter((r: EnforcementResult) => r.level === 'BLOCK').length,
+        warnCount: results.filter((r: EnforcementResult) => r.level === 'WARN').length,
         sessionId: this.sessionId,
-        results: results.map(r => ({ lobe: r.lobe, findingId: r.findingId, level: r.level, message: r.message })),
+        results: results.map((r: EnforcementResult) => ({ lobe: r.lobe, findingId: r.findingId, level: r.level, message: r.message })),
       });
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);

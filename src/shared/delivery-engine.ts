@@ -54,7 +54,7 @@ function collectDebugLogs(evidenceBase: string): string[] {
     for (const iter of iterations) {
       const debugLogsDir = path.join(iterationsDir, iter, 'debug-logs');
       if (fs.existsSync(debugLogsDir)) {
-        const logFiles = fs.readdirSync(debugLogsDir).filter(f => f.endsWith('.md')).sort();
+        const logFiles = fs.readdirSync(debugLogsDir).filter((f: string) => f.endsWith('.md')).sort();
         for (const logFile of logFiles) {
           try {
             logs.push(fs.readFileSync(path.join(debugLogsDir, logFile), 'utf-8'));

@@ -15,8 +15,8 @@ const identityQueryPattern = /\b(who are you|what are you|what model|which model
 export function createChatMessageHook(): Hooks['chat.message'] {
   return async (input, output) => {
     if (!input) return;
-    const ctx = input as { agentName?: string; sessionID?: string; agent?: string };
-    const agent = ctx.agentName || ctx.agent || '';
+    const ctx = input as { agent?: string; nodeId?: string };
+    const agent = ctx.agent || '';
 
     const outputKeys = Object.keys(output || {});
     const msgObj = (output as any)?.message;
@@ -29,9 +29,9 @@ export function createChatMessageHook(): Hooks['chat.message'] {
     const isThisSharkAgent = isSharkAgent(agent);
 
     if (isThisSharkAgent) {
-      setCurrentAgent(agent, ctx.sessionID, userMessage);
+      setCurrentAgent(agent, ctx.nodeId, userMessage);
     } else if (agent) {
-      setCurrentAgent(undefined, ctx.sessionID, userMessage);
+      setCurrentAgent(undefined, ctx.nodeId, userMessage);
     }
 
     if (isThisSharkAgent && identityQueryPattern.test(userMessage)) {

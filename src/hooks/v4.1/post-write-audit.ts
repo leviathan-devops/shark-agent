@@ -23,7 +23,7 @@ export function createPostWriteAudit(firewall: SemanticFirewall, quarantineDir: 
     const args = (input as Record<string, unknown>)?.args || (output as Record<string, unknown>)?.args || {};
     const filePath = typeof args.filePath === 'string' ? args.filePath : '';
     const result = firewall.analyze('post-write' as AnalysisPhase, POST_WRITE_RULES);
-    const critical = result.diagnostics.filter(d => d.severity === 'CRITICAL');
+    const critical = result.diagnostics.filter((d: { severity: string }) => d.severity === 'CRITICAL');
     for (const diag of critical) {
       if (filePath) {
         try {
@@ -43,7 +43,7 @@ export function createPostWriteAudit(firewall: SemanticFirewall, quarantineDir: 
         fs.writeFileSync(logPath, JSON.stringify({ timestamp: new Date().toISOString(), toolName, filePath, phase: 'post-write', total: result.diagnostics.length, critical: critical.length, diagnostics: result.diagnostics }, null, 2));
       } catch (logErr) { console.warn('[PostWriteAudit] log failed:', logErr); }
     }
-    const warnings = result.diagnostics.filter(d => d.severity === 'MEDIUM');
+    const warnings = result.diagnostics.filter((d: { severity: string }) => d.severity === 'MEDIUM');
     if (warnings.length > 0 && output) {
       for (const w of warnings) {
         if (!output.system) output.system = [];

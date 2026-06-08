@@ -36,7 +36,7 @@ const DERAILMENT_PATTERNS: Array<{ pattern: RegExp; name: string; severity: 'CRI
 const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: string) => string[] }> = [
   {
     id: 'P1', label: 'Defensive Import',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const imports = content.match(/import\s+\{[^}]+\}\s+from\s+['"]\.\.?\/[^'"]+/g) || [];
       for (const imp of imports) {
@@ -53,11 +53,11 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P2', label: 'Type Certainty',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const stdModules = ['fs', 'path', 'crypto', 'os', 'net', 'http', 'stream', 'util', 'events', 'buffer', 'child_process'];
       const casts = content.match(/\bas\s+(\w+)/g) || [];
-      const nonStdCasts = casts.filter(c => {
+      const nonStdCasts = casts.filter((c: string) => {
         const typeName = c.replace('as ', '');
         return !stdModules.includes(typeName);
       });
@@ -69,10 +69,10 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P3', label: 'Error Completeness',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const emptyCatches = content.match(/catch\s*\([^)]*\)\s*\{\s*\}/g) || [];
-      const dangerous = emptyCatches.filter(c => {
+      const dangerous = emptyCatches.filter((c: string) => {
         const varMatch = c.match(/catch\s*\((\w+)\)/);
         return varMatch && !varMatch[1].startsWith('_');
       });
@@ -84,7 +84,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P4', label: 'Resource Lifecycle',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const intervals = content.match(/setInterval\s*\(/g) || [];
       if (intervals.length > 0) {
@@ -98,7 +98,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P5', label: 'Atomic State',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const moduleMutations = content.match(/(?:this\.\w+|session\.\w+|state\.\w+|web\.\w+|config\.\w+)\.(?:push|set|delete|add|splice)\s*\(/g) || [];
       if (moduleMutations.length > 5) {
@@ -109,7 +109,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P6', label: 'Dependency Check',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const apiCalls = content.match(/\.\w+\(/g) || [];
       if (apiCalls.length > 20 && !content.includes('typeof') && !content.includes('existsSync')) {
@@ -120,7 +120,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P7', label: 'Path Resolution',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const hardcoded = content.match(/['"`](\/home\/\w+|\/root\/|\/opt\/|\/etc\/|\/var\/)/g);
       if (hardcoded) {
@@ -131,7 +131,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P8', label: 'Config Validation',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const configAccesses = content.match(/(?:config|options|settings|args)\??\.\w+/g) || [];
       const validations = content.match(/if\s*\([^)]*[\?!]==\s*(?:null|undefined|''|0)/g) || [];
@@ -143,7 +143,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P9', label: 'Async Discipline',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const awaits = content.match(/await\s+\w+/g) || [];
       const tryBlocks = content.match(/try\s*\{/g) || [];
@@ -156,7 +156,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P10', label: 'Output Contract',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const returnMatches = content.match(/return\s+(?!this|new|JSON|JSON\.stringify|undefined|null)(\w+)/g);
       const returns: string[] = returnMatches ? [...returnMatches] : [];
@@ -174,7 +174,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P11', label: 'Output Is The Work',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const successReturns = content.match(/return\s+\{[\s\S]{0,100}success[\s\S]{0,100}\}/g) || [];
       for (const ret of successReturns) {
@@ -189,7 +189,7 @@ const P1_P12_CHECKS: Array<{ id: string; label: string; checker: (fileContent: s
   },
   {
     id: 'P12', label: 'Project Boundaries',
-    checker: (content) => {
+    checker: (content: string) => {
       const violations: string[] = [];
       const writeOps = content.match(/(?:writeFileSync|mkdirSync|copyFileSync|appendFileSync)\s*\(/g) || [];
       if (writeOps.length > 0 && !content.includes('process.cwd()') && !content.includes('__dirname') && !content.includes('getContextDir')) {
@@ -245,7 +245,7 @@ export class SlopRemovalEngine {
 
   private computePassRate(verdicts: DeliverableVerdict[]): number {
     if (verdicts.length === 0) return 0;
-    const passed = verdicts.filter(v => v.passed).length;
+    const passed = verdicts.filter((v: DeliverableVerdict) => v.passed).length;
     return passed / verdicts.length;
   }
 
@@ -541,7 +541,7 @@ export class SlopRemovalEngine {
     }
 
     return {
-      passed: violations.filter(v => v.severity === 'FAILURE').length === 0,
+      passed: violations.filter((v: SideEffectViolation) => v.severity === 'FAILURE').length === 0,
       violations,
       before,
       after,
@@ -565,7 +565,7 @@ export class SlopRemovalEngine {
         passed: false,
         principlesPassed: 0,
         totalPrinciples: 12,
-        principleResults: P1_P12_CHECKS.map(p => ({
+        principleResults: P1_P12_CHECKS.map((p: { id: string; label: string; checker: (fileContent: string) => string[] }) => ({
           name: p.id, label: p.label, pass: false, violations: [`Cannot read ${targetFile}`],
         })),
       };
@@ -586,7 +586,7 @@ export class SlopRemovalEngine {
       });
     }
 
-    const passed = results.filter(r => r.pass).length;
+    const passed = results.filter((r: PrincipleResult) => r.pass).length;
     return {
       passed: passed >= 11,
       principlesPassed: passed,
@@ -649,7 +649,7 @@ export class SlopRemovalEngine {
 
   measureMechanicalRatio(records?: CheckRecord[]): RatioReport {
     this.addCheckRecord('[ENGINE] 90/10: ratio measurement', 'mechanical');
-    const recs = records || this.checkRecords.filter(r => r.name.startsWith('[ENGINE]'));
+    const recs = records || this.checkRecords.filter((r: CheckRecord) => r.name.startsWith('[ENGINE]'));
     let mechanicalScore = 0;
     let textualScore = 0;
     for (const rec of recs) {

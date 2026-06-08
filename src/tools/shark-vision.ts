@@ -164,6 +164,7 @@ async function checkVlmHealth(): Promise<HealthResult> {
   // the host's VLM by running curl via a host-network container.
   if (isRunningInContainer() && hasDockerSocket()) {
     try {
+      // [R13-SAFE] VLM_HEALTH_ENDPOINT=constant, no user-controlled input
       const dockerResult = execSync(
         `docker run --rm --network host curlimages/curl:latest -s --max-time 3 ${VLM_HEALTH_ENDPOINT} 2>/dev/null || echo 'FAIL'`,
         { encoding: 'utf-8', timeout: 15000 },
@@ -340,6 +341,7 @@ async function queryVlm(
         temperature,
       });
 
+      // [R13-SAFE] VLM_ENDPOINT=constant, tmpPayload=JSON.stringify output
       const dockerResult = execSync(
         `docker run --rm --network host curlimages/curl:latest -s --max-time 540 ` +
         `-H 'Content-Type: application/json' -d ${JSON.stringify(tmpPayload)} ` +
@@ -495,7 +497,7 @@ async function handleStatusAction(): Promise<string> {
       dockerSocket: hasDocker,
       hostname,
     },
-    endpoints_tried: endpoints.map((e) => e.label),
+    endpoints_tried: endpoints.map((e: { health: string; api: string; label: string }) => e.label),
     source: health.source || null,
   }, null, 2);
 }

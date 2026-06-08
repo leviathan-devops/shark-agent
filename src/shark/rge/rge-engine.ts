@@ -154,7 +154,7 @@ export class RuntimeGradeEngine {
 
     const report = this.auditInMemory(files);
 
-    if (!report.overallPassed && report.semanticFindings.some(f => f.severity === 'CRITICAL')) {
+    if (!report.overallPassed && report.semanticFindings.some((f: SemanticFinding) => f.severity === 'CRITICAL')) {
       return { allowed: false, report };
     }
 
@@ -291,7 +291,7 @@ export class RuntimeGradeEngine {
     }
 
     for (const layer of LAYER_NAMES) {
-      const hasCritical = layers[layer].findings.some(f => f.startsWith('[CRITICAL]'));
+      const hasCritical = layers[layer].findings.some((f: string) => f.startsWith('[CRITICAL]'));
       layers[layer].passed = !hasCritical;
     }
 
@@ -330,8 +330,8 @@ export class RuntimeGradeEngine {
   private generateFixInstructions(findings: SemanticFinding[]): string[] {
     const instructions: string[] = [];
 
-    const criticalFindings = findings.filter(f => f.severity === 'CRITICAL');
-    const highFindings = findings.filter(f => f.severity === 'HIGH');
+    const criticalFindings = findings.filter((f: SemanticFinding) => f.severity === 'CRITICAL');
+    const highFindings = findings.filter((f: SemanticFinding) => f.severity === 'HIGH');
 
     for (const finding of criticalFindings) {
       instructions.push(`[CRITICAL] ${finding.file}:${finding.line} - ${finding.message}`);

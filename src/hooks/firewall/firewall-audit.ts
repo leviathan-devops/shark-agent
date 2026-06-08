@@ -35,7 +35,7 @@ export class FirewallAudit {
         return [];
       }
       const raw = fs.readFileSync(this.auditPath, 'utf-8');
-      const lines = raw.split('\n').filter((line) => line.trim().length > 0);
+      const lines = raw.split('\n').filter((line: string) => line.trim().length > 0);
       return lines
         .map((line) => {
           try {

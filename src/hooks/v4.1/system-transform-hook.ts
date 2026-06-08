@@ -137,7 +137,7 @@ export function createSystemTransformHook(
 
       if (fs.existsSync(testEvidencePath)) {
         try {
-          const testResult = JSON.parse(fs.readFileSync(testEvidencePath, 'utf-8'));
+          const testResult = JSON.parse(fs.readFileSync(testEvidencePath, 'utf-8')) as Record<string, unknown>;
           testStatus = testResult.overallPassed ? 'PASSED' : 'FAILED';
           testPassed = testResult.overallPassed;
         } catch {

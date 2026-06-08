@@ -507,7 +507,7 @@ export class IntentClassifier {
       return null;
     }
     try {
-      const words = sentence.split(/\s+/).filter(w => w.length > 0);
+      const words = sentence.split(/\s+/).filter((w: string) => w.length > 0);
       if (words.length === 0) return null;
 
       for (let i = 0; i < words.length; i++) {

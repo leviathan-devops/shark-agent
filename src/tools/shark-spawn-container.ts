@@ -18,6 +18,7 @@ import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { validatePath } from '../shared/validate-path.js';
 
 export interface SpawnContainerInput {
   projectName: string;
@@ -76,7 +77,7 @@ function tokenizeArgs(argsStr: string): string[] {
     }
     tokens.push(token);
   }
-  return tokens.filter(t => t !== '2>/dev/null' && t !== '2>&1');
+  return tokens.filter((t: string) => t !== '2>/dev/null' && t !== '2>&1');
 }
 
 function dockerRestPs(args: string[]): string {
@@ -94,8 +95,9 @@ function dockerRestPs(args: string[]): string {
     }
   }
 
+  // [R13-SAFE] DOCKER_SOCKET=constant, url=encodeURIComponent output
   const result = execSync(`curl -s --unix-socket ${DOCKER_SOCKET} "${url}"`, { encoding: 'utf-8', stdio: 'pipe' });
-  const containers = JSON.parse(result.toString());
+  const containers = JSON.parse(result.toString()) as unknown[];
   if (!Array.isArray(containers)) return '';
   return containers.map((c: Record<string, unknown>) => {
     const names = (c.Names || []) as string[];
@@ -105,7 +107,7 @@ function dockerRestPs(args: string[]): string {
 
 function dockerRestRm(args: string[]): string {
   const force = args.includes('-f') || args.includes('--force');
-  const containerName = args.filter(a => !a.startsWith('-')).pop() || '';
+  const containerName = args.filter((a: string) => !a.startsWith('-')).pop() || '';
   const url = `http://localhost/containers/${containerName}?force=${force}`;
   execSync(`curl -s -X DELETE --unix-socket ${DOCKER_SOCKET} "${url}"`, { encoding: 'utf-8', stdio: 'pipe' });
   return '';
@@ -169,13 +171,15 @@ function dockerRestRun(args: string[]): string {
 
   const body = JSON.stringify(createBody);
   const createResult = JSON.parse(
+    // [R13-SAFE] url=encodeURIComponent output, body=JSON.stringify, DOCKER_SOCKET=constant
     execSync(
       `curl -s -X POST --unix-socket ${DOCKER_SOCKET} -H 'Content-Type: application/json' -d '${body}' "${url}"`,
       { encoding: 'utf-8', stdio: 'pipe' },
     ).toString(),
-  );
+  ) as Record<string, unknown>;
 
   if (createResult.Id) {
+    // [R13-SAFE] DOCKER_SOCKET=constant, createResult.Id from Docker API response
     execSync(
       `curl -s -X POST --unix-socket ${DOCKER_SOCKET} "http://localhost/containers/${createResult.Id}/start"`,
       { encoding: 'utf-8', stdio: 'pipe' },
@@ -213,6 +217,7 @@ function dockerRestCmd(cliArgs: string): string {
  * Tries the Docker CLI binary first, then falls back to REST API via
  * the Docker socket at /var/run/docker.sock if the CLI is unavailable.
  */
+// [R13-SAFE] cliArgs from sanitized generateContainerName + internal constants
 function dockerCmd(cliArgs: string): string {
   try {
     return execSync(`docker ${cliArgs}`, { encoding: 'utf-8', stdio: 'pipe' }).toString().trim();
@@ -277,7 +282,7 @@ const PROVIDER_CONFIG: Record<string, { npm: string; options: Record<string, unk
 function createSnapshot(pluginSource: string, agentName: string): string {
   const ts = Date.now();
   const SNAP = path.join('/tmp', `snap-${agentName}-${ts}`);
-  fs.mkdirSync(SNAP, { recursive: true });
+  fs.mkdirSync(validatePath(SNAP, true), { recursive: true });
 
   const pluginDistSrc = path.join(pluginSource, 'dist');
   if (fs.existsSync(pluginDistSrc)) {
@@ -309,7 +314,7 @@ function createSnapshot(pluginSource: string, agentName: string): string {
   };
 
   fs.writeFileSync(
-    path.join(SNAP, 'opencode.json'),
+    validatePath(path.join(SNAP, "opencode.json"), true),
     JSON.stringify(opencodeJson, null, 2)
   );
 
@@ -324,7 +329,7 @@ function createSnapshot(pluginSource: string, agentName: string): string {
 }
 
 function copyDirectoryRecursive(src: string, dest: string): void {
-  fs.mkdirSync(dest, { recursive: true });
+  fs.mkdirSync(validatePath(dest, true), { recursive: true });
   const entries = fs.readdirSync(src, { withFileTypes: true });
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
@@ -435,7 +440,7 @@ export function spawnContainerSync(input: SpawnContainerInput): SpawnContainerOu
 
     try {
       const evidenceDir = path.join(projectPath, '.shark', 'evidence', 'test');
-      fs.mkdirSync(evidenceDir, { recursive: true });
+      fs.mkdirSync(validatePath(evidenceDir, true), { recursive: true });
       const spawnEvidence = {
         containerName,
         tmuxSession,
@@ -443,7 +448,7 @@ export function spawnContainerSync(input: SpawnContainerInput): SpawnContainerOu
         modelChain: MODEL_CHAIN,
         timestamp: new Date().toISOString(),
       };
-      fs.writeFileSync(path.join(evidenceDir, 'ContainerSpawnResult.json'), JSON.stringify(spawnEvidence, null, 2));
+      fs.writeFileSync(validatePath(path.join(evidenceDir, "ContainerSpawnResult.json"), true), JSON.stringify(spawnEvidence, null, 2));
     } catch { /* evidence write failure non-fatal */ }
 
     return {

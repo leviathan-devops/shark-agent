@@ -19,11 +19,11 @@ export function snapshotDirectory(rootDir: string, exclude: string[] = ['node_mo
     }
   }
   walk(path.resolve(rootDir));
-  return snapshots.sort((a, b) => a.path.localeCompare(b.path));
+  return snapshots.sort((a: FileSnapshot, b: FileSnapshot) => a.path.localeCompare(b.path));
 }
 export function diffSnapshots(before: FileSnapshot[], after: FileSnapshot[], allowedScope: string[]): ScopeViolation[] {
   const violations: ScopeViolation[] = [];
-  const beforeMap = new Map(before.map(s => [s.path, s]));
+  const beforeMap = new Map(before.map((s: FileSnapshot) => [s.path, s]));
   for (const afterSnap of after) {
     const beforeSnap = beforeMap.get(afterSnap.path);
     if (beforeSnap && beforeSnap.hash !== afterSnap.hash) {

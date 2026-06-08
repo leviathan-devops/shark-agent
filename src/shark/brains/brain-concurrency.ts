@@ -2,7 +2,7 @@ import type { ExecutionBrain } from './execution-brain.js';
 import type { ReasoningBrain } from './reasoning-brain.js';
 import type { SystemBrain } from './system-brain.js';
 import type { BrainMessenger } from './brain-messenger.js';
-import type { CodeContext } from '../../shared/injectables/index.js';
+import type { CodeContext, EnforcementRule } from '../../shared/injectables/index.js';
 
 export interface BrainConcurrencyConfig {
   executionBrain: ExecutionBrain;
@@ -179,7 +179,7 @@ export function createBrainConcurrencyManager(config: BrainConcurrencyConfig): B
 
         const auditResult = systemBrain.selfAudit(executionState.state.context.buildOutput, enforcementContext);
         if (!auditResult.passed) {
-          const criticalCount = auditResult.violations.filter(v => v.detector.severity === 'critical').length;
+          const criticalCount = auditResult.violations.filter((v: EnforcementRule) => v.detector.severity === 'critical').length;
           if (criticalCount > 0) {
             messenger.send({
               from: 'shark-system',

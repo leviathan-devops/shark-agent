@@ -4,7 +4,7 @@ export interface EvidenceFile { suite?: string; timestamp?: number | string; res
 export function validateEvidence(evidence: EvidenceFile): ValidationResult {
   const issues: string[] = [];
   const results = evidence.results || [];
-  const hasRawOutput = results.some(r => !!r.rawOutput && r.rawOutput.length > 20);
+  const hasRawOutput = results.some((r: { name: string; passed: boolean; machineEvidence?: string; rawOutput?: string }) => !!r.rawOutput && r.rawOutput.length > 20);
   if (!hasRawOutput) issues.push('No rawOutput fields found');
   for (const r of results) {
     const me = r.machineEvidence || '';

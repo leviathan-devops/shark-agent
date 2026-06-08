@@ -169915,10 +169915,6 @@ class GateManager {
     this.save();
     return true;
   }
-  blockCurrentGate() {
-    this.gateStatus[this.currentGate] = "blocked";
-    this.save();
-  }
   passCurrentGate() {
     this.gateStatus[this.currentGate] = "passed";
     this.save();
@@ -186900,15 +186896,15 @@ function createChatMessageHook() {
     if (!input)
       return;
     const ctx = input;
-    const agent = ctx.agentName || ctx.agent || "";
+    const agent = ctx.agent || "";
     const outputKeys = Object.keys(output || {});
     const msgObj = output?.message;
     const userMessage = msgObj?.content || msgObj?.text || output?.content || output?.text || "";
     const isThisSharkAgent = isSharkAgent(agent);
     if (isThisSharkAgent) {
-      setCurrentAgent(agent, ctx.sessionID, userMessage);
+      setCurrentAgent(agent, ctx.nodeId, userMessage);
     } else if (agent) {
-      setCurrentAgent(undefined, ctx.sessionID, userMessage);
+      setCurrentAgent(undefined, ctx.nodeId, userMessage);
     }
     if (isThisSharkAgent && identityQueryPattern.test(userMessage)) {
       const systemOutput = output;
@@ -188150,60 +188146,26 @@ class StreamingBuffer {
     this.buffer.splice(0, extractedTokens.length);
   }
   getFlushEvidence() {
-    try {
-      return [...this.flushEvidence];
-    } catch (error45) {
-      const msg = error45 instanceof Error ? error45.message : String(error45);
-      console.error(`StreamingBuffer.getFlushEvidence P3 error: ${msg}`);
-      return [];
-    }
+    return [...this.flushEvidence];
   }
   clearFlushEvidence() {
-    try {
-      this.flushEvidence = [];
-      this.chunkIndex = 0;
-    } catch (error45) {
-      const msg = error45 instanceof Error ? error45.message : String(error45);
-      console.error(`StreamingBuffer.clearFlushEvidence P3 error: ${msg}`);
-    }
+    this.flushEvidence = [];
+    this.chunkIndex = 0;
   }
   getPending() {
-    try {
-      return this.pending;
-    } catch (error45) {
-      const msg = error45 instanceof Error ? error45.message : String(error45);
-      console.error(`StreamingBuffer.getPending P3 error: ${msg}`);
-      return "";
-    }
+    return this.pending;
   }
   clear() {
-    try {
-      this.buffer = [];
-      this.pending = "";
-      this.flushEvidence = [];
-      this.chunkIndex = 0;
-    } catch (error45) {
-      const msg = error45 instanceof Error ? error45.message : String(error45);
-      console.error(`StreamingBuffer.clear P3 error: ${msg}`);
-    }
+    this.buffer = [];
+    this.pending = "";
+    this.flushEvidence = [];
+    this.chunkIndex = 0;
   }
   get size() {
-    try {
-      return this.buffer.length;
-    } catch (error45) {
-      const msg = error45 instanceof Error ? error45.message : String(error45);
-      console.error(`StreamingBuffer.size P3 error: ${msg}`);
-      return 0;
-    }
+    return this.buffer.length;
   }
   getConfig() {
-    try {
-      return { ...this.config };
-    } catch (error45) {
-      const msg = error45 instanceof Error ? error45.message : String(error45);
-      console.error(`StreamingBuffer.getConfig P3 error: ${msg}`);
-      return { ...DEFAULT_CONFIG };
-    }
+    return { ...this.config };
   }
 }
 
@@ -189773,79 +189735,6 @@ class RGEStateMachine {
 
 // src/shark/rge/evidence-validator.ts
 class EvidenceValidator {
-  validateReport(report) {
-    const errors3 = [];
-    if (report === null || typeof report !== "object") {
-      if (!report || typeof report !== "object") {
-        errors3.push({ field: "report", message: "Report must be an object" });
-        return { valid: false, errors: errors3 };
-      }
-      errors3.push({ field: "report", message: "Report must be an object" });
-      return { valid: false, errors: errors3 };
-    }
-    if (typeof report === "object" && report !== null) {
-      const r = report;
-      this.validateReportFields(r, errors3);
-    }
-    return { valid: errors3.length === 0, errors: errors3 };
-  }
-  validateReportFields(r, errors3) {
-    if (typeof r.overallPassed !== "boolean") {
-      errors3.push({ field: "overallPassed", message: "Must be a boolean" });
-    }
-    if (typeof r.passRate !== "number") {
-      errors3.push({ field: "passRate", message: "Must be a number" });
-    } else if (typeof r.passRate === "number") {
-      if (r.passRate < 0 || r.passRate > 1) {
-        errors3.push({ field: "passRate", message: "Must be between 0 and 1" });
-      }
-    }
-    if (r.layers !== null && typeof r.layers === "object") {
-      const layers = r.layers;
-      const expectedLayers = ["l0_syntactic", "l1_type_contract", "l2_control_flow", "l3_architecture", "l4_side_effect_truth", "l5_pattern_db"];
-      for (const expected of expectedLayers) {
-        if (!layers[expected]) {
-          errors3.push({ field: `layers.${expected}`, message: "Missing required layer" });
-        } else if (layers[expected] !== null && typeof layers[expected] === "object") {
-          const layer = layers[expected];
-          if (typeof layer.passed !== "boolean") {
-            errors3.push({ field: `layers.${expected}.passed`, message: "Must be a boolean" });
-          }
-          if (!Array.isArray(layer.findings)) {
-            errors3.push({ field: `layers.${expected}.findings`, message: "Must be an array" });
-          }
-        }
-      }
-    }
-    if (Array.isArray(r.semanticFindings)) {
-      for (let i = 0;i < r.semanticFindings.length; i++) {
-        if (r.semanticFindings[i] !== null && typeof r.semanticFindings[i] === "object") {
-          const finding = r.semanticFindings[i];
-          if (!finding.ruleId) {
-            errors3.push({ field: `semanticFindings[${i}].ruleId`, message: "Missing ruleId" });
-          }
-          const severity = finding.severity;
-          if (typeof severity !== "string" || !["CRITICAL", "HIGH", "MEDIUM", "LOW"].includes(severity)) {
-            errors3.push({ field: `semanticFindings[${i}].severity`, message: `Invalid severity: ${finding.severity}` });
-          }
-        }
-      }
-    } else if (r.semanticFinding !== undefined) {
-      errors3.push({ field: "semanticFindings", message: "Must be an array" });
-    }
-    if (r.returnTo !== undefined) {
-      const returnTo = r.returnTo;
-      if (typeof returnTo !== "string" || !["coder", "reviewer", "test_engineer"].includes(returnTo)) {
-        errors3.push({ field: "returnTo", message: "Must be coder, reviewer, or test_engineer" });
-      }
-    }
-    if (r.fixInstructions !== undefined && !Array.isArray(r.fixInstructions)) {
-      errors3.push({ field: "fixInstructions", message: "Must be an array of strings" });
-    }
-    if (r.evidencePath !== undefined && typeof r.evidencePath !== "string") {
-      errors3.push({ field: "evidencePath", message: "Must be a string path" });
-    }
-  }
 }
 
 // src/shark/rge/rules/p1-defensive-import.ts
@@ -193222,7 +193111,7 @@ var BRAIN_STATES_DIR = "brain-states";
 function ensureDirectories(basePath) {
   const brainStatesPath = path25.join(basePath, STATE_DIR, BRAIN_STATES_DIR);
   if (!fs24.existsSync(brainStatesPath)) {
-    fs24.mkdirSync(brainStatesPath, { recursive: true });
+    fs24.mkdirSync(validatePath(brainStatesPath, true), { recursive: true });
   }
 }
 function createStateStore2(basePath = process.cwd()) {
@@ -196090,67 +195979,6 @@ function createExecutionBrain(config2) {
       return {};
     }
   }
-  function validateEngineeringChecklist(checklist, code, context) {
-    let merged;
-    if (code && context) {
-      try {
-        const autoResult = evaluateCodeAgainstChecklist(code, context);
-        merged = { ...DEFAULT_CHECKLIST, ...checklist, ...autoResult };
-      } catch {
-        merged = { ...DEFAULT_CHECKLIST, ...checklist };
-      }
-    } else {
-      merged = { ...DEFAULT_CHECKLIST, ...checklist };
-    }
-    const violations = [];
-    if (!merged.returnTypeCorrect)
-      violations.push("Return type not verified in all paths");
-    if (!merged.nullSafetyHandled)
-      violations.push("Null/undefined input not handled");
-    if (!merged.errorPathsComplete)
-      violations.push("Error paths incomplete \u2014 catch {} without handling");
-    if (!merged.resourceCleanupAllPaths)
-      violations.push("Resource cleanup missing in error paths");
-    if (!merged.concurrentSafety)
-      violations.push("Concurrent call safety not verified");
-    if (!merged.importValidity)
-      violations.push("Import validity not verified");
-    if (!merged.pathResolution)
-      violations.push("Path resolution may fail in different environments");
-    if (!merged.configValidated)
-      violations.push("Configuration values not validated");
-    if (!merged.typeAssertionsGuarded)
-      violations.push("Type assertions (as) not guarded by runtime checks");
-    if (!merged.asyncDiscipline)
-      violations.push("Async operations missing error handling");
-    if (!merged.crossSystemDataContractsValidated)
-      violations.push("Cross-system data contracts not validated \u2014 data shape at integration boundaries not verified");
-    if (!merged.coupledDataConsistencyVerified)
-      violations.push("Coupled data consistency not verified \u2014 cross-referenced values may be inconsistent");
-    if (!merged.gridDataIntegrityVerified)
-      violations.push("Grid/map data integrity not verified \u2014 ragged rows, missing tiles, or invalid warp targets");
-    return { passed: violations.length === 0, violations };
-  }
-  function checkPoint(phase, completedFiles) {
-    updateState({ progress: `${completedFiles} files completed` });
-    messenger.send({
-      from: "shark-execution",
-      to: "shark-system",
-      type: "checkpoint",
-      priority: "normal",
-      payload: { phase, completedFiles },
-      requiresAck: false
-    });
-    const state = getState();
-    if (state?.state.context?.buildOutput && typeof state.state.context.buildOutput === "string") {
-      autoScanGeneratedCode(state.state.context.buildOutput, {
-        filePath: basePath,
-        toolName: "checkpoint",
-        gate: state.gate,
-        surroundingCode: ""
-      });
-    }
-  }
   function reportRuntimeViolation(violation) {
     const current = getState();
     const existing = current?.state.context?.runtimeViolations ?? [];
@@ -196198,12 +196026,10 @@ function createExecutionBrain(config2) {
   return {
     getState,
     updateState,
-    checkPoint,
     readPlanState,
     readThinkingState,
     setGate,
     setIteration,
-    validateEngineeringChecklist,
     reportRuntimeViolation,
     autoScanGeneratedCode,
     blockTheatricalCode,
@@ -197216,7 +197042,6 @@ var TEST_SUITE = [
           "getCurrentIteration",
           "canTransition",
           "transitionTo",
-          "blockCurrentGate",
           "passCurrentGate",
           "failCurrentGate",
           "getCriteria",
@@ -198089,7 +197914,7 @@ var PROVIDER_CONFIG = {
 function createSnapshot(pluginSource, agentName) {
   const ts20 = Date.now();
   const SNAP = path28.join("/tmp", `snap-${agentName}-${ts20}`);
-  fs27.mkdirSync(SNAP, { recursive: true });
+  fs27.mkdirSync(validatePath(SNAP, true), { recursive: true });
   const pluginDistSrc = path28.join(pluginSource, "dist");
   if (fs27.existsSync(pluginDistSrc)) {
     const indexJs = path28.join(pluginDistSrc, "index.js");
@@ -198116,7 +197941,7 @@ function createSnapshot(pluginSource, agentName) {
       }
     }
   };
-  fs27.writeFileSync(path28.join(SNAP, "opencode.json"), JSON.stringify(opencodeJson, null, 2));
+  fs27.writeFileSync(validatePath(path28.join(SNAP, "opencode.json"), true), JSON.stringify(opencodeJson, null, 2));
   try {
     execSync("npm init -y", { cwd: SNAP, stdio: "pipe" });
     execSync("npm install zod", { cwd: SNAP, stdio: "pipe" });
@@ -198124,7 +197949,7 @@ function createSnapshot(pluginSource, agentName) {
   return SNAP;
 }
 function copyDirectoryRecursive(src, dest) {
-  fs27.mkdirSync(dest, { recursive: true });
+  fs27.mkdirSync(validatePath(dest, true), { recursive: true });
   const entries = fs27.readdirSync(src, { withFileTypes: true });
   for (const entry of entries) {
     const srcPath = path28.join(src, entry.name);
@@ -198213,7 +198038,7 @@ ${logs}`
     } catch {}
     try {
       const evidenceDir = path28.join(projectPath, ".shark", "evidence", "test");
-      fs27.mkdirSync(evidenceDir, { recursive: true });
+      fs27.mkdirSync(validatePath(evidenceDir, true), { recursive: true });
       const spawnEvidence = {
         containerName,
         tmuxSession,
@@ -198221,7 +198046,7 @@ ${logs}`
         modelChain: MODEL_CHAIN,
         timestamp: new Date().toISOString()
       };
-      fs27.writeFileSync(path28.join(evidenceDir, "ContainerSpawnResult.json"), JSON.stringify(spawnEvidence, null, 2));
+      fs27.writeFileSync(validatePath(path28.join(evidenceDir, "ContainerSpawnResult.json"), true), JSON.stringify(spawnEvidence, null, 2));
     } catch {}
     return {
       containerName,
@@ -200132,7 +199957,7 @@ function createSharkBrowserTestTool() {
           };
           const origConsoleError = console.error;
           console.error = function(...args) {
-            window.__testErrors.push(args.map(a => String(a)).join(' '));
+            window.__testErrors.push(args.map((a: unknown) => String(a)).join(' '));
             origConsoleError.apply(console, args);
           };
           JSON.stringify({ready: true, url: window.location.href});

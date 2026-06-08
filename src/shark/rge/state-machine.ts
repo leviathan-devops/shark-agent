@@ -26,11 +26,11 @@ export class RGEStateMachine {
   }
 
   canTransitionTo(target: TestEngineerState): boolean {
-    return this.transitions.some(t => t.from === this.state && t.to === target);
+    return this.transitions.some((t: StateTransition) => t.from === this.state && t.to === target);
   }
 
   transition(target: TestEngineerState): { success: boolean; error?: string } {
-    const validTransition = this.transitions.find(t => t.from === this.state && t.to === target);
+    const validTransition = this.transitions.find((t: StateTransition) => t.from === this.state && t.to === target);
     if (!validTransition) {
       return {
         success: false,
@@ -69,6 +69,6 @@ export class RGEStateMachine {
   }
 
   getValidTransitions(): StateTransition[] {
-    return this.transitions.filter(t => t.from === this.state);
+    return this.transitions.filter((t: StateTransition) => t.from === this.state);
   }
 }

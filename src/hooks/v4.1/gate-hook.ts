@@ -112,7 +112,7 @@ export function createGateHook(
           const blockResult = executionBrainRef.blockTheatricalCode(codeContent, context);
           if (blockResult.blocked) {
             const violationSummary = blockResult.violations
-              .map(v => `[${v.detector.id}] ${v.detector.description}`)
+              .map((v: { detector: { id: string; severity: string; description: string } }) => `[${v.detector.id}] ${v.detector.description}`)
               .join('; ');
 
             const evidenceDir = getGateEvidenceDir(currentGate);
@@ -124,7 +124,7 @@ export function createGateHook(
                   tool,
                   filePath,
                   blocked: true,
-                  violations: blockResult.violations.map(v => ({
+                  violations: blockResult.violations.map((v: { detector: { id: string; severity: string; description: string } }) => ({
                     id: v.detector.id,
                     severity: v.detector.severity,
                     description: v.detector.description,
@@ -161,7 +161,7 @@ export function createGateHook(
                     tool,
                     filePath,
                     violationCount: violations.length,
-                    violations: violations.map(v => ({
+                    violations: violations.map((v: { id: string; category: string; description: string; severity: string }) => ({
                       id: v.id,
                       category: v.category,
                       description: v.description,
@@ -369,7 +369,7 @@ function checkGateAdvance(currentGate: GateName): GateName | null {
             state.state.context.buildOutput,
             context,
           );
-          const allPass = Object.values(checklistResult).every(v => v === true);
+          const allPass = Object.values(checklistResult).every((v: unknown) => v === true);
           if (!allPass) {
             return null;
           }
@@ -429,7 +429,7 @@ function checkGateAdvance(currentGate: GateName): GateName | null {
 
 function parseTridentResultFindings(result: unknown): { critical: number; high: number } | null {
   try {
-    const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+    const parsed = (typeof result === "string" ? JSON.parse(result) : result) as Record<string, unknown>;
     if (parsed && typeof parsed === 'object') {
       const findings = (parsed as Record<string, unknown>).findings;
       if (findings && typeof (findings as Record<string, unknown>).critical === 'number' && typeof (findings as Record<string, unknown>).high === 'number') {
@@ -446,7 +446,7 @@ function parseTestRunnerResult(result: unknown): { suite: string; overallPassed:
   if (!result) return null;
 
   try {
-    const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+    const parsed = (typeof result === "string" ? JSON.parse(result) : result) as Record<string, unknown>;
     if (parsed && typeof parsed === 'object') {
       return {
         suite: parsed.suite || 'shark-e2e',
@@ -467,7 +467,7 @@ function checkDeliveryGateBlocked(): boolean {
 
   try {
     const content = fs.readFileSync(evidencePath, 'utf-8');
-    const testResult = JSON.parse(content);
+    const testResult = JSON.parse(content) as Record<string, unknown>;
     return !testResult.overallPassed;
   } catch (err) {
     console.error("[ERROR] gate-hook.checkDeliveryGateBlocked:", err instanceof Error ? err.message : String(err));

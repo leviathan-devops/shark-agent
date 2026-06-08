@@ -40,7 +40,7 @@ const BRAIN_STATES_DIR = 'brain-states';
 function ensureDirectories(basePath: string): void {
   const brainStatesPath = path.join(basePath, STATE_DIR, BRAIN_STATES_DIR);
   if (!fs.existsSync(brainStatesPath)) {
-    fs.mkdirSync(brainStatesPath, { recursive: true });
+    fs.mkdirSync(validatePath(brainStatesPath, true), { recursive: true });
   }
 }
 

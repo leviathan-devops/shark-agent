@@ -66,14 +66,14 @@ function detectPipeChain(command: string): { hasPipe: boolean; pipeChain: string
       const redirectParts = command.split(/>+/);
       return {
         hasPipe: true,
-        pipeChain: redirectParts.map((p) => p.trim()).filter(Boolean),
+        pipeChain: redirectParts.map((p: string) => p.trim()).filter(Boolean),
       };
     }
     return { hasPipe: false, pipeChain: [] };
   }
   return {
     hasPipe: true,
-    pipeChain: parts.map((p) => p.trim()).filter(Boolean),
+    pipeChain: parts.map((p: string) => p.trim()).filter(Boolean),
   };
 }
 

@@ -349,7 +349,7 @@ export class CompactionManager {
 ## Token Estimation
 | Tier | Threshold | Status |
 |------|-----------|--------|
-${TOKEN_TIERS.map(t => `| ${t.tier === tokenInfo.tier ? '→' : ''} ${t.tier} | ${(t.threshold * 100).toFixed(0)}% | ${t.tier === tokenInfo.tier ? 'ACTIVE' : '-'} |`).join('\n')}
+${TOKEN_TIERS.map((t: { tier: TokenTier; threshold: number; action: string }) => `| ${t.tier === tokenInfo.tier ? '→' : ''} ${t.tier} | ${(t.threshold * 100).toFixed(0)}% | ${t.tier === tokenInfo.tier ? 'ACTIVE' : '-'} |`).join('\n')}
 
 ## Gate State
 - Current: ${state.currentGate}

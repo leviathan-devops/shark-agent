@@ -108,14 +108,14 @@ export class SemanticFirewall {
     this.refresh();
     const maxOrder = phase === 'write-time' ? 2 : 5;
     const diagnostics: FirewallDiag[] = [];
-    const activeRules = rules.filter(r => r.enabled && r.orders <= maxOrder);
+    const activeRules = rules.filter((r: RuleConfig) => r.enabled && r.orders <= maxOrder);
     for (const rule of activeRules) {
       const ruleResults = this.evaluateRule(rule);
       for (const result of ruleResults) {
         diagnostics.push({ ...result, phase });
       }
     }
-    const errors = diagnostics.filter(d => d.severity === 'CRITICAL' || d.severity === 'HIGH');
+    const errors = diagnostics.filter((d: FirewallDiag) => d.severity === 'CRITICAL' || d.severity === 'HIGH');
     return { passed: errors.length === 0, diagnostics, phase };
   }
 
@@ -141,7 +141,7 @@ export class SemanticFirewall {
     }
     if (visitors.length === 0 || this.sourceFiles.size === 0) return [];
     const results: ASTVisitResult[] = walkAST(this.sourceFiles, visitors);
-    return results.map((r): FirewallDiag => ({
+    return results.map((r: ASTVisitResult): FirewallDiag => ({
       rule: r.rule,
       severity: r.severity === 'error' ? rule.severity : 'MEDIUM' as Severity,
       file: r.file,
@@ -161,7 +161,7 @@ export class SemanticFirewall {
       const before = this.previousScopeSnapshot.length > 0 ? this.previousScopeSnapshot : [];
       const violations = diffSnapshots(before, snapshot, allowedScope);
       this.previousScopeSnapshot = snapshot;
-      return violations.map(v => ({
+      return violations.map((v: ScopeViolation) => ({
         rule: 'scope-violation', severity: 'HIGH' as Severity, phase: 'post-write' as AnalysisPhase,
         file: v.file, line: 0, column: 0,
         message: 'Scope violation: ' + v.reason + ' -- ' + v.actual,
@@ -179,7 +179,7 @@ export class SemanticFirewall {
     }
     try {
       const dead = findDeadExports(this.program, this.checker);
-      return dead.map(d => ({
+      return dead.map((d: DeadExport) => ({
         rule: 'dead-export', severity: 'MEDIUM' as Severity, phase: 'post-write' as AnalysisPhase,
         file: d.file, line: d.line, column: 0,
         message: "Dead export: '" + d.exportName + "' is exported but never imported",

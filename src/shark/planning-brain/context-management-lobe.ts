@@ -141,22 +141,22 @@ export class ContextManagementLobe {
   detectDrift(): { detected: boolean; expected: string; actual: string; context: string; severity: 'info' | 'warn' | 'drift' } | null {
     try {
       const taskQueue = fs.readFileSync(this.taskQueuePath, 'utf-8');
-      const taskLines = taskQueue.split('\n').filter(l =>
+      const taskLines = taskQueue.split('\n').filter((l: string) =>
         l.includes('**Current Focus:**') || l.includes('[x]') || l.includes('[ ]'));
       const currentTask = taskLines.length > 0 ? taskLines[taskLines.length - 1] : 'No active task';
 
       const thoughtStream = fs.readFileSync(this.thoughtStreamPath, 'utf-8');
-      const toolEntries = thoughtStream.split('\n').filter(l => l.includes('tool='));
-      const lastTools = toolEntries.slice(-5).map(l => {
+      const toolEntries = thoughtStream.split('\n').filter((l: string) => l.includes('tool='));
+      const lastTools = toolEntries.slice(-5).map((l: string) => {
         const m = l.match(/tool=(\w+)/);
         return m ? m[1] : 'unknown';
       });
 
-      const hasImplement = lastTools.some(t => IMPLEMENT_TOOLS.has(t));
-      const hasTest = lastTools.some(t => TEST_TOOLS.has(t));
-      const hasExploreOnly = lastTools.every(t => EXPLORE_TOOLS.has(t));
+      const hasImplement = lastTools.some((t: string) => IMPLEMENT_TOOLS.has(t));
+      const hasTest = lastTools.some((t: string) => TEST_TOOLS.has(t));
+      const hasExploreOnly = lastTools.every((t: string) => EXPLORE_TOOLS.has(t));
 
-      const pendingTasks = taskLines.filter(l => l.includes('[ ]'));
+      const pendingTasks = taskLines.filter((l: string) => l.includes('[ ]'));
       let drift = false;
       let context = '';
 

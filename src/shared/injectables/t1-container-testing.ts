@@ -105,7 +105,7 @@ export const CT01_PREFLIGHT_WRONG_PROJECT_DIR: ViolationDetector = {
   detect(code: string, ctx: CodeContext): boolean {
     const cleaned = stripComments(code);
     const knownAgents = ['shark', 'manta', 'spider', 'kraken', 'trident', 'hydra'];
-    const thisAgent = ctx.filePath.split('/').find(p => knownAgents.some(a => p.toLowerCase().includes(a))) || '';
+    const thisAgent = ctx.filePath.split('/').find((p: string) => knownAgents.some((a: string) => p.toLowerCase().includes(a))) || '';
     const thisAgentLower = thisAgent.toLowerCase();
     if (!thisAgentLower) return false;
 
@@ -207,14 +207,14 @@ export const CT03_PREFLIGHT_AGENT_NAME_MISMATCH: ViolationDetector = {
 
     const knownAgents = ['shark', 'manta', 'spider', 'kraken', 'trident', 'hydra'];
     const pathSegments = ctx.filePath.toLowerCase().split('/');
-    const projectAgent = knownAgents.find(a => pathSegments.some(s => s.includes(a)));
+    const projectAgent = knownAgents.find((a: string) => pathSegments.some((s: string) => s.includes(a)));
 
     if (!projectAgent) return false;
 
     for (const name of registeredNames) {
       const isCorrectAgent = name.includes(projectAgent) || projectAgent.includes(name);
       if (!isCorrectAgent) {
-        const isForeignAgent = knownAgents.some(a => a !== projectAgent && name.includes(a));
+        const isForeignAgent = knownAgents.some((a: string) => a !== projectAgent && name.includes(a));
         if (isForeignAgent) return true;
       }
     }
@@ -646,7 +646,7 @@ export const CT14_GAP_PRESERVED_FILE_VIOLATION: ViolationDetector = {
     if (!preservedMarker) return false;
 
     const preservedList = preservedMarker[1].match(/['"`]([^'"`]+)['"`]/g) || [];
-    const preservedFiles = preservedList.map(f => f.replace(/^['"`]|['"`]$/g, ''));
+    const preservedFiles = preservedList.map((f: string) => f.replace(/^['"`]|['"`]$/g, ''));
 
     const hasDiffCheck = /diff\s*\(|diff.*baseline|byte.?for.?byte|hashMatch|checksum|compareFile/i.test(cleaned);
     if (preservedFiles.length > 0 && hasDiffCheck) return false;
@@ -923,10 +923,10 @@ export function detectContainerTestingViolations(
     }
   }
 
-  const critical = violations.filter(v => v.severity === 'critical').length;
-  const high = violations.filter(v => v.severity === 'high').length;
-  const medium = violations.filter(v => v.severity === 'medium').length;
-  const blocked = violations.some(v => v.enforcementAction === 'block');
+  const critical = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'critical').length;
+  const high = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'high').length;
+  const medium = violations.filter((v: { severity: string; enforcementAction: string }) => v.severity === 'medium').length;
+  const blocked = violations.some((v: { severity: string; enforcementAction: string }) => v.enforcementAction === 'block');
 
   const byCategory: Record<string, number> = {};
   for (const v of violations) {

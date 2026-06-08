@@ -108,7 +108,7 @@ export function createExecutionBrain(config: ExecutionBrainConfig) {
       allViolations.push(...t1Violations);
 
       const criticalOrHigh = allViolations.filter(
-        v => v.detector.severity === 'critical' || v.detector.severity === 'high'
+        (v: EnforcementRule) => v.detector.severity === 'critical' || v.detector.severity === 'high'
       );
 
       return {
@@ -151,60 +151,6 @@ export function createExecutionBrain(config: ExecutionBrainConfig) {
     }
   }
 
-  function validateEngineeringChecklist(checklist: Partial<EngineeringChecklist>, code?: string, context?: CodeContext): { passed: boolean; violations: string[] } {
-    let merged: EngineeringChecklist;
-
-    if (code && context) {
-      try {
-        const autoResult = evaluateCodeAgainstChecklist(code, context);
-        merged = { ...DEFAULT_CHECKLIST, ...checklist, ...autoResult as Partial<EngineeringChecklist> };
-      } catch {
-        merged = { ...DEFAULT_CHECKLIST, ...checklist };
-      }
-    } else {
-      merged = { ...DEFAULT_CHECKLIST, ...checklist };
-    }
-
-    const violations: string[] = [];
-
-    if (!merged.returnTypeCorrect) violations.push('Return type not verified in all paths');
-    if (!merged.nullSafetyHandled) violations.push('Null/undefined input not handled');
-    if (!merged.errorPathsComplete) violations.push('Error paths incomplete — catch {} without handling');
-    if (!merged.resourceCleanupAllPaths) violations.push('Resource cleanup missing in error paths');
-    if (!merged.concurrentSafety) violations.push('Concurrent call safety not verified');
-    if (!merged.importValidity) violations.push('Import validity not verified');
-    if (!merged.pathResolution) violations.push('Path resolution may fail in different environments');
-    if (!merged.configValidated) violations.push('Configuration values not validated');
-    if (!merged.typeAssertionsGuarded) violations.push('Type assertions (as) not guarded by runtime checks');
-    if (!merged.asyncDiscipline) violations.push('Async operations missing error handling');
-    if (!merged.crossSystemDataContractsValidated) violations.push('Cross-system data contracts not validated — data shape at integration boundaries not verified');
-    if (!merged.coupledDataConsistencyVerified) violations.push('Coupled data consistency not verified — cross-referenced values may be inconsistent');
-    if (!merged.gridDataIntegrityVerified) violations.push('Grid/map data integrity not verified — ragged rows, missing tiles, or invalid warp targets');
-
-    return { passed: violations.length === 0, violations };
-  }
-
-  function checkPoint(phase: string, completedFiles: number): void {
-    updateState({ progress: `${completedFiles} files completed` });
-    messenger.send({
-      from: 'shark-execution',
-      to: 'shark-system',
-      type: 'checkpoint',
-      priority: 'normal',
-      payload: { phase, completedFiles },
-      requiresAck: false,
-    });
-
-    const state = getState();
-    if (state?.state.context?.buildOutput && typeof state.state.context.buildOutput === 'string') {
-      autoScanGeneratedCode(state.state.context.buildOutput, {
-        filePath: basePath,
-        toolName: 'checkpoint',
-        gate: state.gate,
-        surroundingCode: '',
-      });
-    }
-  }
 
   function reportRuntimeViolation(violation: string): void {
     const current = getState();
@@ -258,12 +204,10 @@ export function createExecutionBrain(config: ExecutionBrainConfig) {
   return {
     getState,
     updateState,
-    checkPoint,
     readPlanState,
     readThinkingState,
     setGate,
     setIteration,
-    validateEngineeringChecklist,
     reportRuntimeViolation,
     autoScanGeneratedCode,
     blockTheatricalCode,

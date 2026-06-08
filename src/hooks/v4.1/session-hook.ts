@@ -35,7 +35,7 @@ export function createSessionHook(
   messenger: SharkMessenger,
   concurrencyManager?: BrainConcurrencyManager
 ): Hooks['event'] {
-  return async (input) => {
+  return async (input: { event?: unknown }) => {
     if (!input) return;
     const event = input.event as { type?: string; sessionId?: string; agent?: string };
 
@@ -114,13 +114,13 @@ function handleSessionCreated(
     const checkpointsDir = path.join(process.cwd(), '.shark', 'checkpoints');
     if (fs.existsSync(checkpointsDir)) {
       const files = fs.readdirSync(checkpointsDir)
-        .filter(f => f.endsWith('.json'))
-        .map(f => ({
+        .filter((f: string) => f.endsWith('.json'))
+        .map((f: string) => ({
           name: f,
           path: path.join(checkpointsDir, f),
           mtime: fs.statSync(path.join(checkpointsDir, f)).mtimeMs,
         }))
-        .sort((a, b) => b.mtime - a.mtime);
+        .sort((a: { name: string; path: string; mtime: number }, b: { name: string; path: string; mtime: number }) => b.mtime - a.mtime);
 
       if (files.length > 0) {
         const latest = files[0];

@@ -110,19 +110,19 @@ function walkDir(dirPath: string, relativeRoot?: string): string[] {
 
 function generateBasicReview(reviewPath: string, safeContext: string, codePath: string, dateStr: string, errorMsg: string): void {
   const files = walkDir(codePath);
-  const tsCount = files.filter(f => f.endsWith('.ts')).length;
-  const jsCount = files.filter(f => f.endsWith('.js')).length;
+  const tsCount = files.filter((f: string) => f.endsWith('.ts')).length;
+  const jsCount = files.filter((f: string) => f.endsWith('.js')).length;
 
   let complexityNote = '';
-  const allCode = files.filter(f => f.endsWith('.ts') || f.endsWith('.js'));
+  const allCode = files.filter((f: string) => f.endsWith('.ts') || f.endsWith('.js'));
   if (allCode.length > 50) {
     complexityNote = 'High complexity target detected (>50 source files). Manual review recommended.';
   } else if (allCode.length > 20) {
     complexityNote = 'Moderate complexity target detected (21-50 source files).';
   }
 
-  const hasTests = files.some(f => /(?:\.test\.|\.spec\.|__tests__)/.test(f));
-  const hasConfig = files.some(f => /(?:\.config\.|tsconfig|package\.json|eslint)/.test(f));
+  const hasTests = files.some((f: string) => /(?:\.test\.|\.spec\.|__tests__)/.test(f));
+  const hasConfig = files.some((f: string) => /(?:\.config\.|tsconfig|package\.json|eslint)/.test(f));
 
   const lines = [
     `# TRIDENT CODE REVIEW — ${safeContext} (BASIC FALLBACK)`,
@@ -159,13 +159,13 @@ function generateBasicReview(reviewPath: string, safeContext: string, codePath: 
 
 function writeBuildReport(buildReportPath: string, safeContext: string, codePath: string, dateStr: string): void {
   const targetFiles = walkDir(codePath);
-  const fileEntries = targetFiles.map(f => {
+  const fileEntries = targetFiles.map((f: string) => {
     const stat = fs.statSync(path.join(codePath, f));
     return { name: f, size: stat.size, sizeKB: (stat.size / 1024).toFixed(1) };
   });
-  const tsCount = fileEntries.filter(f => f.name.endsWith('.ts')).length;
-  const jsCount = fileEntries.filter(f => f.name.endsWith('.js')).length;
-  const totalSizeKB = (fileEntries.reduce((sum, f) => sum + f.size, 0) / 1024).toFixed(1);
+  const tsCount = fileEntries.filter((f: { name: string; size: number; sizeKB: string }) => f.name.endsWith('.ts')).length;
+  const jsCount = fileEntries.filter((f: { name: string; size: number; sizeKB: string }) => f.name.endsWith('.js')).length;
+  const totalSizeKB = (fileEntries.reduce((sum: number, f: { name: string; size: number; sizeKB: string }) => sum + f.size, 0) / 1024).toFixed(1);
 
   const reportLines = [
     `# TRIDENT BUILD REPORT — ${safeContext}`,
@@ -186,7 +186,7 @@ function writeBuildReport(buildReportPath: string, safeContext: string, codePath
     `| File | Size (KB) |`,
     `|------|-----------|`,
   ];
-  for (const entry of fileEntries.sort((a, b) => a.name.localeCompare(b.name))) {
+  for (const entry of fileEntries.sort((a: { name: string; size: number; sizeKB: string }, b: { name: string; size: number; sizeKB: string }) => a.name.localeCompare(b.name))) {
     reportLines.push(`| ${entry.name} | ${entry.sizeKB} |`);
   }
   reportLines.push('', `## Date`, `${dateStr}`);

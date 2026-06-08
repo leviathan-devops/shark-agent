@@ -36,35 +36,11 @@ export class MerkleChain {
   }
 
   search(key: string, value: unknown): EvidenceBlock[] {
-    return this.blocks.filter(b => b.data[key] === value);
+    return this.blocks.filter((b: EvidenceBlock) => b.data[key] === value);
   }
 
   recent(n: number): EvidenceBlock[] { return this.blocks.slice(-n); }
 
-  validate(): { valid: boolean; errors: Array<{ blockIndex: number; expected: string; computed: string; type: 'hash' | 'chain' }> } {
-    const errors: Array<{ blockIndex: number; expected: string; computed: string; type: 'hash' | 'chain' }> = [];
-
-    for (let i = 0; i < this.blocks.length; i++) {
-      const block = this.blocks[i];
-      const computed = this.computeHash({ ...block, hash: '' });
-      if (computed !== block.hash) {
-        errors.push({ blockIndex: i, expected: block.hash, computed, type: 'hash' });
-      }
-
-      if (i === 0) {
-        if (block.previousHash !== '0'.repeat(64)) {
-          errors.push({ blockIndex: i, expected: '0'.repeat(64), computed: block.previousHash, type: 'chain' });
-        }
-      } else {
-        const expectedPrev = this.blocks[i - 1].hash;
-        if (block.previousHash !== expectedPrev) {
-          errors.push({ blockIndex: i, expected: expectedPrev, computed: block.previousHash, type: 'chain' });
-        }
-      }
-    }
-
-    return { valid: errors.length === 0, errors };
-  }
 
   private computeHash(block: EvidenceBlock): string {
     return createHash('sha256').update(block.index.toString()).update(block.timestamp).update(JSON.stringify(block.data)).update(block.previousHash).digest('hex');
@@ -76,9 +52,9 @@ export class MerkleChain {
 
   private loadChain(): void {
     try {
-      const files = fs.readdirSync(this.chainPath).filter(f => f.startsWith('block-')).sort();
+      const files = fs.readdirSync(this.chainPath).filter((f: string) => f.startsWith('block-')).sort();
       for (const file of files) {
-        try { this.blocks.push(JSON.parse(fs.readFileSync(path.join(this.chainPath, file), 'utf-8'))); } catch (e) { console.warn('[MerkleChain] parse failed:', e); }
+        try { this.blocks.push(JSON.parse(fs.readFileSync(path.join(this.chainPath, file), 'utf-8')) as EvidenceBlock); } catch (e) { console.warn('[MerkleChain] parse failed:', e); }
       }
     } catch { this.blocks = []; }
   }

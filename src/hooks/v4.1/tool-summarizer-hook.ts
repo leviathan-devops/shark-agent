@@ -16,7 +16,7 @@ const MAX_OUTPUT_LINES = 100;
 const MAX_LS_ENTRIES = 20;
 
 export function createToolSummarizerHook(): Hooks['tool.execute.after'] {
-  return async (input, output) => {
+  return async (input: { tool: string }, output: { output: string }) => {
     if (!isSharkAgent(getCurrentAgent())) return;
 
     const tool = input.tool;
@@ -37,7 +37,7 @@ export function createToolSummarizerHook(): Hooks['tool.execute.after'] {
 }
 
 function summarizeGrep(output: string): string {
-  const lines = output.split('\n').filter(l => l.trim());
+  const lines = output.split('\n').filter((l: string) => l.trim());
   const matchCount = lines.length;
   const fileSet = new Set<string>();
   
@@ -52,7 +52,7 @@ function summarizeGrep(output: string): string {
 }
 
 function summarizeLs(output: string): string {
-  const lines = output.split('\n').filter(l => l.trim());
+  const lines = output.split('\n').filter((l: string) => l.trim());
   const total = lines.length;
   
   if (total <= MAX_LS_ENTRIES) {

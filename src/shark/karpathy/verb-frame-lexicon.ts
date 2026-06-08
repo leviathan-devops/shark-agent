@@ -564,7 +564,7 @@ export class VerbFrameLexicon {
       });
 
       // Try to fill each slot from the sentence
-      const words = trimmedSentence.split(/\s+/).filter(w => w.length > 0);
+      const words = trimmedSentence.split(/\s+/).filter((w: string) => w.length > 0);
       let requiredFilled = 0;
       let totalRequired = 0;
 
@@ -574,7 +574,7 @@ export class VerbFrameLexicon {
         if (slot.preposition) {
           // Look for preposition pattern: preposition + noun phrase
           const prepIndex = words.findIndex(
-            w => w.toLowerCase() === slot.preposition
+            (w: string) => w.toLowerCase() === slot.preposition
           );
           if (prepIndex >= 0 && prepIndex + 1 < words.length) {
             const fillerWords: string[] = [];
@@ -602,11 +602,11 @@ export class VerbFrameLexicon {
         } else if (slot.role === 'patient' && words.length > 0) {
           // Patient is typically the noun phrase after the verb
           const verbIndex = words.findIndex(
-            w => w.toLowerCase() === validatedVerb
+            (w: string) => w.toLowerCase() === validatedVerb
           );
           if (verbIndex >= 0 && verbIndex + 1 < words.length) {
             const afterVerb = words.slice(verbIndex + 1).filter(
-              w => !['from', 'to', 'with', 'by', 'in', 'at'].includes(w.toLowerCase())
+              (w: string) => !['from', 'to', 'with', 'by', 'in', 'at'].includes(w.toLowerCase())
             );
             if (afterVerb.length > 0) {
               const filler = afterVerb[0];
@@ -695,7 +695,7 @@ export class VerbFrameLexicon {
    */
   getAllVerbFrames(): VerbFrame[] {
     try {
-      return Array.from(this.verbFrames.values()).map(vf => ({
+      return Array.from(this.verbFrames.values()).map((vf: VerbFrame) => ({
         ...vf,
         slots: vf.slots.map(s => ({ ...s })),
       }));

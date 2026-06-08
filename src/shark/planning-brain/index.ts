@@ -115,7 +115,7 @@ export class PlanningBrain {
     if (!this._enabled) return [];
     const injections: string[] = [];
     const matrix = this.matrix || [];
-    const untested = matrix.filter(r => r.status !== 'behavioral-pass');
+    const untested = matrix.filter((r: VerificationMatrix[number]) => r.status !== 'behavioral-pass');
     for (const req of untested) {
       injections.push(`[VERIFY] ${req.id}:${req.status}. Test: ${req.behavioralTest.action}. Pass: ${req.behavioralTest.passCondition}.`);
     }

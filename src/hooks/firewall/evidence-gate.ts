@@ -28,7 +28,7 @@ export class EvidenceGate {
       }
 
       const raw = fs.readFileSync(evidencePath, 'utf-8');
-      const data: unknown = JSON.parse(raw);
+      const data = JSON.parse(raw) as Record<string, unknown>;
 
       const threshold = data as Threshold;
       return (

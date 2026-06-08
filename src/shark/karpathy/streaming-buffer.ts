@@ -133,7 +133,7 @@ export class StreamingBuffer {
       const validated = this.validateInput(input);
 
       // Split on whitespace to get tokens; filter empty strings
-      const tokens = validated.split(/\s+/).filter(t => t.length > 0);
+      const tokens = validated.split(/\s+/).filter((t: string) => t.length > 0);
       this.buffer.push(...tokens);
 
       // Append raw text to pending accumulator
@@ -299,8 +299,8 @@ export class StreamingBuffer {
    * Estimate how many tokens were processed in a given chunk.
    */
   private getProcessedTokenCount(sentences: string[], chunk: string): number {
-    const sentenceTokens = sentences.join(' ').split(/\s+/).filter(t => t.length > 0).length;
-    const chunkTokens = chunk.split(/\s+/).filter(t => t.length > 0).length;
+    const sentenceTokens = sentences.join(' ').split(/\s+/).filter((t: string) => t.length > 0).length;
+    const chunkTokens = chunk.split(/\s+/).filter((t: string) => t.length > 0).length;
     return Math.max(sentenceTokens, chunkTokens);
   }
 
@@ -338,7 +338,7 @@ export class StreamingBuffer {
     const extractedTrimmed = extracted.trim();
     if (extractedTrimmed.length === 0) return;
 
-    const extractedTokens = extractedTrimmed.split(/\s+/).filter(t => t.length > 0);
+    const extractedTokens = extractedTrimmed.split(/\s+/).filter((t: string) => t.length > 0);
     if (extractedTokens.length === 0) return;
 
     this.buffer.splice(0, extractedTokens.length);
@@ -354,13 +354,7 @@ export class StreamingBuffer {
    * @returns A new array containing all BufferFlushEvidence records.
    */
   getFlushEvidence(): BufferFlushEvidence[] {
-    try {
-      return [...this.flushEvidence];
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`StreamingBuffer.getFlushEvidence P3 error: ${msg}`);
-      return [];
-    }
+    return [...this.flushEvidence];
   }
 
   /**
@@ -369,13 +363,8 @@ export class StreamingBuffer {
    * P3: wraps in try/catch. P10: guarantees void return.
    */
   clearFlushEvidence(): void {
-    try {
-      this.flushEvidence = [];
-      this.chunkIndex = 0;
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`StreamingBuffer.clearFlushEvidence P3 error: ${msg}`);
-    }
+    this.flushEvidence = [];
+    this.chunkIndex = 0;
   }
 
   // ─── State Management API ────────────────────────────────────────────────
@@ -388,13 +377,7 @@ export class StreamingBuffer {
    * @returns The pending partial sentence (may be empty string).
    */
   getPending(): string {
-    try {
-      return this.pending;
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`StreamingBuffer.getPending P3 error: ${msg}`);
-      return '';
-    }
+    return this.pending;
   }
 
   /**
@@ -404,15 +387,10 @@ export class StreamingBuffer {
    * P3: wraps in try/catch. P10: guarantees void return.
    */
   clear(): void {
-    try {
-      this.buffer = [];
-      this.pending = '';
-      this.flushEvidence = [];
-      this.chunkIndex = 0;
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`StreamingBuffer.clear P3 error: ${msg}`);
-    }
+    this.buffer = [];
+    this.pending = '';
+    this.flushEvidence = [];
+    this.chunkIndex = 0;
   }
 
   /**
@@ -423,13 +401,7 @@ export class StreamingBuffer {
    * @returns The number of tokens in the buffer (0 or positive integer).
    */
   get size(): number {
-    try {
-      return this.buffer.length;
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`StreamingBuffer.size P3 error: ${msg}`);
-      return 0;
-    }
+    return this.buffer.length;
   }
 
   /**
@@ -440,12 +412,6 @@ export class StreamingBuffer {
    * @returns A copy of the current StreamBufferConfig.
    */
   getConfig(): StreamBufferConfig {
-    try {
-      return { ...this.config };
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`StreamingBuffer.getConfig P3 error: ${msg}`);
-      return { ...DEFAULT_CONFIG };
-    }
+    return { ...this.config };
   }
 }

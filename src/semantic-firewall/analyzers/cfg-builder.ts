@@ -199,7 +199,7 @@ export function computeDominators(blocks: BasicBlock[]): Map<number, number> {
     for (let i = 1; i < blocks.length; i++) {
       const block = blocks[i];
       const preds = block.predecessors
-        .map(id => blocks.find(b => b.id === id))
+        .map(id => blocks.find((b: BasicBlock) => b.id === id))
         .filter((b): b is BasicBlock => b !== undefined);
 
       if (preds.length === 0) continue;

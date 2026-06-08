@@ -69,7 +69,7 @@ function countReferences(
   for (const file of allFiles) {
     if (file.fileName === sourceFile.fileName) {
       const exports = collectExports(sourceFile);
-      const isExportedFromSelf = exports.some(e => e.name === exportName);
+      const isExportedFromSelf = exports.some((e: ExportRecord) => e.name === exportName);
       if (isExportedFromSelf) continue;
     }
 

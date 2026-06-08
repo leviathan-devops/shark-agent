@@ -45,7 +45,7 @@ export function createWriteTimeGate(firewall: SemanticFirewall, context: Executi
     if (context.shouldAllowEngineeringOperation(toolName, args)) return;
     const result = firewall.analyze('write-time' as AnalysisPhase, WRITE_TIME_RULES);
     if (!result.passed) {
-      const critical = result.diagnostics.filter(d => d.severity === 'CRITICAL' || d.severity === 'HIGH');
+      const critical = result.diagnostics.filter((d: { severity: string }) => d.severity === 'CRITICAL' || d.severity === 'HIGH');
       if (critical.length > 0) {
         const first = critical[0];
         throw new StructuredBlockError({ level: 'BLOCK', lobe: 'semantic-firewall', findingId: 'SF-' + first.rule.toUpperCase(), message: '[' + first.severity + '] ' + first.message, correction: first.message });

@@ -111,7 +111,7 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
   initLogger(directory || workspacePath);
 
   // Log hook registration for runtime verification (T2 Bible §Checklist)
-  const hookList = Object.keys(hooks).filter(k => k !== 'tool' && k !== 'config');
+  const hookList = Object.keys(hooks).filter((k: string) => k !== 'tool' && k !== 'config');
   const toolList = Object.keys(hooks.tool || {});
   logInfo(`Plugin v4.9.9 initialized: ${hookList.length} hooks, ${toolList.length} tools`);
   logInfo(`Hooks: ${hookList.join(', ')}`);
