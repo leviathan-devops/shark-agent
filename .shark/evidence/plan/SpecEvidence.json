@@ -1,7 +1,0 @@
-{
-  "gate": "plan",
-  "passed": true,
-  "timestamp": "2026-06-05T05:00:00.000Z",
-  "evidence": ["SPEC.md"],
-  "artifacts": ["SUPERSEDED.md", "V7_5_BUILD_SPEC.md", "V4_9_8_BUILD_SPEC.md"]
-}

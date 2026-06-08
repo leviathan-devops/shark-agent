@@ -1,57 +1,18 @@
 {
-  "suite": "shark-overhaul-runtime-test",
-  "overallPassed": true,
-  "passedTests": 8,
-  "totalTests": 8,
-  "passRate": 1.0,
-  "generatedAt": "2026-06-05T14:15:00Z",
-  "generatedBy": "machine-generated from live container test-shark-143",
-  "container": {
-    "image": "opencode-test:1.14.43",
-    "name": "test-shark-143",
-    "model": "opencode-zen/deepseek-v4-flash (working API key)",
-    "plugin": "shark-agent v4.9.8"
-  },
-  "results": [
-    {
-      "name": "plugin-loads-on-1.14.43",
-      "passed": true,
-      "machineEvidence": "Plugin v4.9.8 initialized: 8 hooks, 0 tools. Confirmed in container log."
-    },
-    {
-      "name": "t1-warheads-injected",
-      "passed": true,
-      "machineEvidence": "experimental.chat.system.transform: agent=shark, injecting T1 warheads logged in container"
-    },
-    {
-      "name": "7-protocols-in-warhead",
-      "passed": true,
-      "machineEvidence": "bibleProtocol, todoProtocol, contextDocProtocol, e10Enforcement, tier4Only, identityAudit, evidenceProtocol all present in dist buildRuntimeGradeEngineerWarhead function"
-    },
-    {
-      "name": "handleAgentSwitch-wired",
-      "passed": true,
-      "machineEvidence": "handleAgentSwitch function defined in agent-state.ts, imported in session-hook.ts, called on session events"
-    },
-    {
-      "name": "context-dir-path-unified",
-      "passed": true,
-      "machineEvidence": "resolveContextDir() canonical function used by both getContextDir() and initializeContextManager()"
-    },
-    {
-      "name": "catch-blocks-logged",
-      "passed": true,
-      "machineEvidence": "console.error logging in enforcement catch, auto-ctx catch, gate-hook fallback catch. No silent swallows."
-    },
-    {
-      "name": "hooks-fire-for-tools",
-      "passed": true,
-      "machineEvidence": "tool.execute.after confirmed firing for shark-status tool in test-shark-143 container"
-    },
-    {
-      "name": "context-docs-auto-update",
-      "passed": true,
-      "machineEvidence": "COMPACTION_SURVIVAL.md updated with 'Current State of Mind' at 14:10:27Z, THOUGHT_STREAM.md has enforcement+auto-ctx entries, POST-COMPACTION_PROMPT.md has recovery chain"
-    }
-  ]
+  "suite": "shark-v499-planning-brain",
+  "timestamp": 1780720000000,
+  "buildId": "shark-v4.9.9-2026-06-06",
+  "tests": [
+    {"name": "BIBLE_PROTOCOL", "passed": true, "output": "Model cites all 6 E10 conditions, 12-step protocol, opencode run banned, Tier 4 TUI requirement"},
+    {"name": "TODO_PROTOCOL", "passed": false, "output": "Model completed task without calling todowrite. Warhead text present but ignored. Warhead tuning needed."},
+    {"name": "CONTEXT_DOC_PROTOCOL", "passed": true, "output": "All 9 context docs updated during session. Timestamps verified."},
+    {"name": "E10_ENFORCEMENT", "passed": true, "output": "Model denies runtime grade claim, cites in progress/testing, requires mechanical verification"},
+    {"name": "TIER_4_ONLY", "passed": true, "output": "C-FIREWALL and Guardian L2 active. Standard test runners blocked."},
+    {"name": "IDENTITY_AUDIT", "passed": true, "output": "v4.9.9 consistent across all identity injection points"},
+    {"name": "EVIDENCE_PROTOCOL", "passed": true, "output": "ContainerTestResult.json with per-test evidence structure"}
+  ],
+  "overallPassed": false,
+  "totalTests": 7,
+  "passedTests": 6,
+  "note": "TODO_PROTOCOL fails: model ignores warhead. 6/7 behavioral pass. Warhead text needs stronger prompting."
 }

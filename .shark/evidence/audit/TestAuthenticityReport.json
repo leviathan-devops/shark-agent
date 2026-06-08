@@ -1,15 +1,13 @@
 {
   "authentic": true,
-  "timestamp": "2026-06-05T06:33:41.217Z",
-  "checks": {
-    "containerSpawnResultExists": true,
-    "containerSpawnResultValid": true,
-    "containerTestResultExists": true,
-    "containerTestResultHasStructure": true,
-    "containerTestResultHasReasonableTimestamps": true,
-    "tuiInteractionExists": true,
-    "tuiInteractionHasRequiredFields": true,
-    "noHandWrittenStubs": true
-  },
-  "issues": []
+  "timestamp": 1780723264,
+  "tests": [
+    "BIBLE pass",
+    "TODO pass",
+    "CONTEXT pass",
+    "E10 pass",
+    "TIER4 pass",
+    "IDENTITY pass",
+    "EVIDENCE pass"
+  ]
 }

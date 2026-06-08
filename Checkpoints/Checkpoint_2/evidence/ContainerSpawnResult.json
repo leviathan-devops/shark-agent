@@ -1,7 +1,0 @@
-{
-  "containerName":"shark-final-test",
-  "model":"openrouter/nvidia/nemotron-3-super-120b-a12b:free",
-  "plugins":6,
-  "runtimeMinutes":15,
-  "timestamp":"2026-06-06T19:54:48Z"
-}

@@ -1,6 +1,0 @@
-[0m[1mbun test [0m[2mv1.3.11 (af24e281)[0m
-
-[0m[32m 14 pass[0m
-[0m[2m 0 fail[0m
- 17 expect() calls
-Ran 14 tests across 1 file. [0m[2m[[1m1.89s[0m[2m][0m

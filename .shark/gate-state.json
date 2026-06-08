@@ -8,6 +8,6 @@
     "verify": "passed",
     "test": "passed",
     "audit": "passed",
-    "delivery": "passed"
+    "delivery": "pending"
   }
 }

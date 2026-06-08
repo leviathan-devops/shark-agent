@@ -1,5 +1,5 @@
 /**
- * Shark Agent v4.9.9 — Standalone Linear Execution Plugin
+ * Shark Agent v4.9.9 — 3-Lobe Planning Brain Architecture
  *
  * Triple-Brain Parallel Architecture: Execution + Reasoning + System brains
  * running concurrently, synchronized only at workflow gates.
@@ -37,8 +37,7 @@ import { synthesizeT1Injectables, getT1TotalSize, setSynthesizerPluginDirectory 
 import { initLogger, logInfo } from './shared/shark-logger.js';
 import { EnforcementBrain } from './shark/enforcement-brain/index.js';
 import { initializeContextManager } from './shared/context-manager.js';
-import { SemanticFirewall } from './semantic-firewall/semantic-firewall.js';
-import { ExecutionContext } from './semantic-firewall/execution-context.js';
+import { createPlanningBrain, getPlanningBrain } from './shark/planning-brain/index.js';
 
 const sharkColor = '#228B22';
 
@@ -82,10 +81,16 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
   const contextDir = initializeContextManager(workspacePath);
   logInfo(`ContextManager: ${contextDir}`);
 
-  const executionContext = new ExecutionContext(workspacePath);
-  const semanticFirewall = new SemanticFirewall(workspacePath, executionContext);
-  const sfInitialized = semanticFirewall.initialize();
-  logInfo(`SemanticFirewall initialized: ${sfInitialized}`);
+  // Initialize Planning Brain — 3-lobe intelligence (disabled unless SHARK_PLANNING_BRAIN=enabled)
+  const planningBrain = createPlanningBrain({
+    basePath: workspacePath,
+    contextDir: contextDir,
+  });
+  if (planningBrain.enabled) {
+    logInfo('PlanningBrain: enabled (3-lobe: CommonSense + ContextMgmt + Frontal PSM)');
+  } else {
+    logInfo('PlanningBrain: disabled (set SHARK_PLANNING_BRAIN=enabled to activate)');
+  }
 
   // Linear hooks setup with identity injection + enforcement brain
   const hooks = createSharkHooks(
@@ -99,9 +104,7 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
     concurrencyManager,
     executionBrain,
     systemBrain,
-    enforcementBrain,
-    semanticFirewall,
-    executionContext
+    enforcementBrain
   );
 
   // Start triple-brain concurrency (200ms/200ms/500ms polling loops)
@@ -111,7 +114,7 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
   initLogger(directory || workspacePath);
 
   // Log hook registration for runtime verification (T2 Bible §Checklist)
-  const hookList = Object.keys(hooks).filter((k: string) => k !== 'tool' && k !== 'config');
+  const hookList = Object.keys(hooks).filter(k => k !== 'tool' && k !== 'config');
   const toolList = Object.keys(hooks.tool || {});
   logInfo(`Plugin v4.9.9 initialized: ${hookList.length} hooks, ${toolList.length} tools`);
   logInfo(`Hooks: ${hookList.join(', ')}`);
@@ -148,12 +151,12 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
       'shark-vision': createSharkVisionTool(),
       'shark-browser-test': createSharkBrowserTestTool(),
     },
-    config: async (cfg: { agent?: Record<string, unknown>; [key: string]: unknown }) => {
+    config: async (cfg: any) => {
       if (!cfg) return;
       if (!cfg.agent) cfg.agent = {};
       cfg.agent['shark'] = {
         name: 'shark',
-        description: 'SHARK v4.9.9 — Triple-Brain Parallel Architecture — Plan with Trident. Execute the plan. Never yield.',
+        description: 'SHARK v4.9.9 — 3-Lobe Planning Brain — Common Sense + Context Management + Frontal PSM. Execute autonomously.',
         instructions: getSharkInstructions(),
         mode: 'primary',
         permission: { task: 'allow', tool: 'allow' },

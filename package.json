@@ -1,7 +1,7 @@
 {
   "name": "shark-agent-v4.9.9",
   "version": "4.9.9",
-  "description": "SHARK Agent v4.9.9 - Triple-Brain Parallel Architecture, Compaction Survival, Container Testing. Plan with Trident. Execute the plan. Never yield.",
+  "description": "SHARK Agent v4.9.9 - 3-Lobe Planning Brain Architecture: Common Sense + Context Management + Frontal PSM",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -35,10 +35,12 @@
     "opencode",
     "agent",
     "shark",
-    "triple-brain",
-    "gate-enforcement",
-    "execution-brain"
+    "planning-brain",
+    "common-sense",
+    "context-management",
+    "verification-matrix",
+    "drift-detection"
   ],
-  "author": "Shark Agent",
+  "author": "Shark Agent v4.9.9",
   "license": "MIT"
 }
