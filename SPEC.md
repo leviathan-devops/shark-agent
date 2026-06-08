@@ -1,9 +1,9 @@
-# SHARK v4.9.8 — BUILD SPECIFICATION
+# SHARK v4.9.9 — BUILD SPECIFICATION
 
 ## Project Overview
 
 **Name:** Shark Agent  
-**Version:** 4.9.8  
+**Version:** 4.9.9  
 **Type:** OpenCode standalone linear execution plugin  
 **Entry Point:** `src/index.ts`  
 **Build System:** Bun (v1.3.13)  
@@ -139,7 +139,7 @@ All testing is done via **tmux + docker exec -it** in an opencode-test:1.14.34 c
 
 **Required test categories:**
 1. Plugin load & init verification (docker logs)
-2. Identity activation (TUI: "I am SHARK v4.9.8")
+2. Identity activation (TUI: "I am SHARK v4.9.9")
 3. Tool wiring (17 shark-* tools, 0 foreign)
 4. Gate system (chain renders correctly)
 5. Enforcement brain (3 lobes active on every tool call)
@@ -178,6 +178,6 @@ Required for TEST gate:
 
 ## Delivery
 
-Ship package includes: dist/index.js, src/, identity/, .shark/evidence/, compaction_survival/, package.json, SPEC.md, V4_9_8_BUILD_SPEC.md, CHECKSUM.txt
+Ship package includes: dist/index.js, src/, identity/, .shark/evidence/, compaction_survival/, package.json, SPEC.md, V4_9_9_BUILD_SPEC.md, CHECKSUM.txt
 
 **Target path:** `Shared Workspace Context/Shark Agent/SHIP APPROVED/`

@@ -117,26 +117,6 @@ export function createSystemBrain(config: SystemBrainConfig) {
     updateState({ activeDerailments: updated });
   }
 
-  function evaluateGate(criteria: GateCriteria): boolean {
-    let allPassed = true;
-    const results: Record<string, boolean> = {};
-
-    for (const criterion of criteria.criteria) {
-      let passed = true;
-      for (const req of criterion.required) {
-        if (!req) passed = false;
-      }
-      results[criterion.description] = passed;
-      if (!passed) allPassed = false;
-    }
-
-    updateState({
-      gateCriteria: results,
-      lastEvaluation: new Date().toISOString(),
-    });
-
-    return allPassed;
-  }
 
   function escalate(issue: string, severity: 'critical' | 'high' | 'medium' | 'low'): void {
     const current = getState();
@@ -339,7 +319,6 @@ export function createSystemBrain(config: SystemBrainConfig) {
     updateState,
     detectDerailment,
     clearDerailment,
-    evaluateGate,
     escalate,
     readExecutionState,
     readThinkingState,

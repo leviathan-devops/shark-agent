@@ -1,0 +1,39 @@
+{
+  "test": 6,
+  "name": "Verification Matrix Real-Time Update",
+  "description": "Verification matrix must update in real-time with lastChecked and lastUpdated timestamps",
+  "result": "PASS",
+  "timestamp": "2026-06-06T11:35:30Z",
+  "evidence": {
+    "matrixPath": ".shark/verification-matrix.json",
+    "entries": 7,
+    "lastCheckedPresent": true,
+    "lastUpdatedPresent": true,
+    "lastUpdatedAdded": true,
+    "lastUpdatedOnlyChangesOnStatusChange": true,
+    "fixesApplied": [
+      "Added lastUpdated field to BehavioralRequirement interface",
+      "updateRequirementStatus now sets lastUpdated only on status change",
+      "CommonSenseLobe sets lastUpdated when updating matrix status",
+      "All 7 default matrix entries include lastUpdated field"
+    ],
+    "realTimeUpdateBehavior": {
+      "onToolBefore": "Checks requirements, injects bullet if not behavioral-pass",
+      "onToolAfter": "Runs detectors, updates status + lastChecked + lastUpdated",
+      "stalenessDetection": "Compare lastChecked vs lastUpdated to detect staleness"
+    },
+    "currentMatrixStatus": {
+      "BIBLE_PROTOCOL": "untested",
+      "TODO_PROTOCOL": "plumbing-only",
+      "CONTEXT_DOC_PROTOCOL": "plumbing-only",
+      "E10_ENFORCEMENT": "untested",
+      "TIER_4_ONLY": "untested",
+      "IDENTITY_AUDIT": "untested",
+      "EVIDENCE_PROTOCOL": "untested"
+    }
+  },
+  "criteria": {
+    "passCondition": "Matrix has both lastChecked and lastUpdated timestamps, updates on tool execution",
+    "failCondition": "Matrix lacks lastUpdated, timestamps don't change on tool execution"
+  }
+}

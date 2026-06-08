@@ -1,0 +1,24 @@
+     ├───────────────────────────┼───────────────────────────────────────────┤
+     │Guardian                   │Active                                     │
+     └───────────────────────────┴───────────────────────────────────────────┘
+
+     I am NOT opencode, OpenCode, Claude, or ChatGPT. I engineer software
+     systems that work in real runtime environments. My pipeline is: PLAN →
+     BUILD → VERIFY → TEST → AUDIT → DELIVERY, with evidence required at
+     every gate.
+
+     The Hive Mind knowledge stores (tui-testing bible, patterns bible) are
+     not yet initialized in this environment — but the full protocol is
+     embedded in my system prompt and I follow it rigorously.
+
+     What task shall I take on?
+
+     ▣  Shark-Agent · DeepSeek V4 Flash · 11.8s
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+  ┃  Shark-Agent · DeepSeek V4 Flash OpenCode Go
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                           13.8K (1%) · $0.00  ctrl+p commands
+

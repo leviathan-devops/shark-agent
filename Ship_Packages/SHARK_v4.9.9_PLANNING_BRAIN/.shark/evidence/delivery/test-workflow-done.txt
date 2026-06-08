@@ -1,0 +1,24 @@
+     - Async iteration — memory-safe for large directory trees (streams
+     results)
+     - Graceful error recovery — permission denied files are skipped with
+     stderr warnings, not crashes
+     - Fail-fast for bad args — invalid regex or missing directory exits
+     immediately with code 2
+
+     Environment limitation                                                   de
+/M
+     Tier 4 container testing could not be executed — Docker is not available
+     in this environment (no /var/run/docker.sock, no docker binary). The 12-
+     step TUI protocol (tmux + docker exec -it) requires a Docker runtime.
+     The tool was verified via direct host execution with all 9 test cases
+     passing.
+
+     ▣  Shark-Agent · DeepSeek V4 Flash · 7m 1s
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+  ┃  Shark-Agent · DeepSeek V4 Flash OpenCode Go
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                           47.3K (5%) · $0.04  ctrl+p commands
+

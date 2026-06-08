@@ -1,7 +1,7 @@
 /**
  * System Transform Hook — T1 warhead injection via identity synthesis pipeline
  *
- * v4.9.8: T2->T1->T0 identity pipeline replaces raw T2 identity dumps.
+ * v4.9.9: T2->T1->T0 identity pipeline replaces raw T2 identity dumps.
  * Instead of injecting 8-50KB of raw identity text on every transform,
  * injects T1 precision warheads (~1.8KB total) synthesized from T2.
  *

@@ -265,6 +265,9 @@ function runTridentContainer(codePath: string, contextName: string, dryRun: bool
       const cliOutput = execSync(`${cliPath} target="${codePath}" 2>&1`, {
         timeout: 60000, encoding: 'utf-8', maxBuffer: 1024 * 1024,
       });
+      if (!cliOutput || cliOutput.trim().length === 0) {
+        return { codeReviewPath, buildReportPath, success: false, error: 'Trident CLI produced empty output' };
+      }
       fs.writeFileSync(codeReviewPath, cliOutput);
       writeBuildReport(buildReportPath, safeContext, codePath, dateStr);
       return { codeReviewPath, buildReportPath, success: true };
@@ -276,6 +279,10 @@ function runTridentContainer(codePath: string, contextName: string, dryRun: bool
   if (!fs.existsSync(tridentIndex)) {
     generateBasicReview(codeReviewPath, safeContext, codePath, dateStr, 'Trident source not available — static analysis fallback');
     writeBuildReport(buildReportPath, safeContext, codePath, dateStr);
+    const reviewContent = fs.readFileSync(codeReviewPath, 'utf-8');
+    if (reviewContent.trim().length === 0) {
+      return { codeReviewPath, buildReportPath, success: false, error: 'Basic review generation produced empty output' };
+    }
     return { codeReviewPath, buildReportPath, success: true };
   }
 
@@ -306,6 +313,10 @@ function runTridentContainer(codePath: string, contextName: string, dryRun: bool
     fs.writeFileSync(codeReviewPath, dryRunLines.join('\n'));
     // Generate tiny build report for dry run too
     fs.writeFileSync(buildReportPath, `# TRIDENT BUILD REPORT — ${safeContext} (DRY RUN)\n\n## Target\n${codePath}\n\n## Status\nTrident source verified. No build executed.\n\n## Date\n${dateStr}\n`);
+    const dryRunReview = fs.existsSync(codeReviewPath) ? fs.readFileSync(codeReviewPath, 'utf-8') : '';
+    if (dryRunReview.trim().length === 0) {
+      return { codeReviewPath, buildReportPath, success: false, error: 'Dry run verification file is empty' };
+    }
     return { codeReviewPath, buildReportPath, success: true };
   }
 
@@ -339,6 +350,10 @@ function runTridentContainer(codePath: string, contextName: string, dryRun: bool
 
     writeBuildReport(buildReportPath, safeContext, codePath, dateStr);
 
+    const reviewContent = fs.readFileSync(codeReviewPath, 'utf-8');
+    if (reviewContent.trim().length === 0) {
+      return { codeReviewPath, buildReportPath, success: false, error: 'Trident execution produced empty review' };
+    }
     return { codeReviewPath, buildReportPath, success: true };
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
@@ -388,6 +403,18 @@ export function runTrident(input: RunTridentInput): RunTridentOutput {
       JSON.stringify({ approved, findings, codeReviewPath, buildReportPath })
     );
   } catch { /* evidence dir not writable */ }
+
+  const reviewContent = fs.existsSync(codeReviewPath) ? fs.readFileSync(codeReviewPath, 'utf-8') : '';
+  if (reviewContent.trim().length === 0) {
+    return {
+      codeReviewPath,
+      buildReportPath,
+      findings: { critical: 0, high: 0, medium: 0, low: 0 },
+      approved: false,
+      success: false,
+      error: 'Code review artifact is empty',
+    };
+  }
 
   return {
     codeReviewPath,

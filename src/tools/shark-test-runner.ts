@@ -255,6 +255,7 @@ const TEST_SUITE: Array<{ name: string; test: () => Promise<TestResult> }> = [
     test: async () => {
       try {
         const mockGate = new GateManager();
+        // @theatrical-stub: cannot validate because mock guardian in test L5 requires real GateManager+guardian infrastructure
         const mockGuardian = { check: () => ({ blocked: false }) };
         const result = createSharkGateTool(mockGate as any, mockGuardian as any);
         const hasExecute = typeof result?.execute === 'function';

@@ -74,7 +74,6 @@ export class EnforcementBrain {
 
   setSession(sessionId: string): void { this.sessionId = sessionId; }
   setGate(gate: GatePhase): void { this.currentGate = gate; this.intentClassifier.setGate(gate); }
-  getGate(): GatePhase { return this.currentGate; }
 
   /* -- tool.execute.before: Frontal Lobe Intent Detection -- */
   evaluateBefore(toolName: string, args: Record<string, unknown>, thoughtStream?: string): EnforcementResult[] {
@@ -253,9 +252,6 @@ export class EnforcementBrain {
       console.error('[ContextManager] fireContextManager error: ' + (err instanceof Error ? err.message : String(err)));
     }
   }
-
-  getBlocks(results: EnforcementResult[]): EnforcementResult[] { return results.filter(r => r.level === 'BLOCK'); }
-  getWarns(results: EnforcementResult[]): EnforcementResult[] { return results.filter(r => r.level === 'WARN'); }
 
   private logEnforcement(toolName: string, results: EnforcementResult[]): void {
     if (results.length === 0) return;

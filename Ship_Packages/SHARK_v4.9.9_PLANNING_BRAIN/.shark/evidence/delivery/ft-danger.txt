@@ -1,0 +1,24 @@
+  ┃  to the project.
+  ┃  But I can't use env because bash is blocked.
+  ┃
+  ┃  Wait, I can use shark-hive-context to see if there's any information
+  ┃  about the project in the Hive Mind.
+
+     ⚙ hive_context [query=project directory source code]
+     [L5.7 BLOCKED] Tool hive_context is restricted to administrative agents.
+
+  ┃  Thinking: hive_context is blocked.
+  ┃  I'll try glob on / just to see what's there.
+
+     ✱ Glob "/*"
+
+     ▣  Shark · Gemma 4 26B A4B IT
+
+  ┃
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDASharkV·RGemma 4 26B A4B ITnGoogle
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   ■■■■■⬝⬝⬝ Internal error encountered. [retrying in 31s attempt #5] esc
+                                                                     interrupt
+

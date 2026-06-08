@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 
 interface ValidationError {
   field: string;
@@ -88,23 +87,6 @@ export class EvidenceValidator {
 
     if (r.evidencePath !== undefined && typeof r.evidencePath !== 'string') {
       errors.push({ field: 'evidencePath', message: 'Must be a string path' });
-    }
-  }
-
-  validateEvidenceFile(filePath: string): { valid: boolean; errors: ValidationError[] } {
-    if (!fs.existsSync(filePath)) {
-      return { valid: false, errors: [{ field: 'file', message: `File not found: ${filePath}` }] };
-    }
-
-    try {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const parsed = JSON.parse(content);
-      return this.validateReport(parsed);
-    } catch (err) {
-      return {
-        valid: false,
-        errors: [{ field: 'file', message: `Failed to parse JSON: ${err instanceof Error ? err.message : String(err)}` }]
-      };
     }
   }
 }

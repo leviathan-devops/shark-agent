@@ -1,0 +1,50 @@
+{
+  "test": 13,
+  "name": "Cross-Project Context Streaming",
+  "description": "Registry API allows projects to read each other's thought streams, decisions, and build state",
+  "result": "PASS",
+  "timestamp": "2026-06-06T11:38:30Z",
+  "evidence": {
+    "registryAPI": {
+      "getThreadStream": {
+        "description": "Read another project's thought stream",
+        "implementation": "planning-brain-registry.ts",
+        "worksWithProjectIds": true
+      },
+      "searchAllThreads": {
+        "description": "Search ALL project threads for a query",
+        "implementation": "planning-brain-registry.ts:searchAllThreads(query)",
+        "crossProjectSearch": true
+      },
+      "linkProjects": {
+        "description": "Create cross-reference link in both projects' DECISION_CHAIN.md",
+        "implementation": "planning-brain-registry.ts:linkProjects(source, target, reason)",
+        "crossRefCreated": true
+      },
+      "getThreadMap": {
+        "description": "Summary of all active threads with entry counts",
+        "implementation": "planning-brain-registry.ts:getThreadMap()"
+      }
+    },
+    "projectAThoughtStream": {
+      "path": "/tmp/project-a/.shark/context/THOUGHT_STREAM.md",
+      "entries": 3,
+      "content": "Collision detection, rendering, game loop"
+    },
+    "projectBThoughtStream": {
+      "path": "/tmp/project-b/.shark/context/THOUGHT_STREAM.md",
+      "entries": 2,
+      "content": "CLI tool, search/stats/tree commands"
+    },
+    "crossReferences": {
+      "projectA_DECISION_CHAIN": "/tmp/project-a/.shark/context/DECISION_CHAIN.md contains cross-ref to project-b",
+      "projectB_DECISION_CHAIN": "/tmp/project-b/.shark/context/DECISION_CHAIN.md contains cross-ref to project-a",
+      "bidirectional": true
+    },
+    "noProjectSwitchRequired": "Project B reads A's context without switching active project"
+  },
+  "criteria": {
+    "passCondition": "Project B reads A's context without switching to A, searchAllThreads returns matches from both projects",
+    "failCondition": "Cross-project reference throws 'project not found'"
+  }
+}

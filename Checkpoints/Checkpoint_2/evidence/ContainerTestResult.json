@@ -1,0 +1,33 @@
+{
+  "suite": "shark-v499-enforcement-proof",
+  "timestamp": 1780786621745,
+  "totalTests": 4,
+  "passedTests": 4,
+  "overallPassed": true,
+  "results": [
+    {
+      "name": "BUN_BUILD_ALLOWED",
+      "passed": true,
+      "machineEvidence": "BUN_BUILD: ALLOWED",
+      "rawOutput": "[ContextManager] Created: /root/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/Active Projects/SHARK_v4.9.9_PLANNING_BRAIN/CONTEXT_MANAGEMENT\n[ContextManager] Seeded all 10 docs at /root/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/Active Projects/SHARK_v4.9.9_PLANNING_BRAIN/CONTEXT_MANAGEMENT\nBUN_BUILD: ALLOWED\nDANGER: BLOCKED\nSF_WRITE: BLOCKED_BY_SF\nSHARK_TOOL: ALLOWED\n"
+    },
+    {
+      "name": "DANGER_BLOCKED",
+      "passed": true,
+      "machineEvidence": "DANGER: BLOCKED",
+      "rawOutput": "[ContextManager] Created: /root/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/Active Projects/SHARK_v4.9.9_PLANNING_BRAIN/CONTEXT_MANAGEMENT\n[ContextManager] Seeded all 10 docs at /root/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/Active Projects/SHARK_v4.9.9_PLANNING_BRAIN/CONTEXT_MANAGEMENT\nBUN_BUILD: ALLOWED\nDANGER: BLOCKED\nSF_WRITE: BLOCKED_BY_SF\nSHARK_TOOL: ALLOWED\n"
+    },
+    {
+      "name": "SEMANTIC_FIREWALL_ACTIVE",
+      "passed": true,
+      "machineEvidence": "SF_WRITE: BLOCKED_BY_SF",
+      "rawOutput": "[ContextManager] Created: /root/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/Active Projects/SHARK_v4.9.9_PLANNING_BRAIN/CONTEXT_MANAGEMENT\n[ContextManager] Seeded all 10 docs at /root/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/Active Projects/SHARK_v4.9.9_PLANNING_BRAIN/CONTEXT_MANAGEMENT\nBUN_BUILD: ALLOWED\nDANGER: BLOCKED\nSF_WRITE: BLOCKED_BY_SF\nSHARK_TOOL: ALLOWED\n"
+    },
+    {
+      "name": "SHARK_TOOL_ALLOWED",
+      "passed": true,
+      "machineEvidence": "SHARK_TOOL: ALLOWED",
+      "rawOutput": "[ContextManager] Created: /root/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/Active Projects/SHARK_v4.9.9_PLANNING_BRAIN/CONTEXT_MANAGEMENT\n[ContextManager] Seeded all 10 docs at /root/OPENCODE_WORKSPACE/Shared Workspace Context/Shark Agent/Active Projects/SHARK_v4.9.9_PLANNING_BRAIN/CONTEXT_MANAGEMENT\nBUN_BUILD: ALLOWED\nDANGER: BLOCKED\nSF_WRITE: BLOCKED_BY_SF\nSHARK_TOOL: ALLOWED\n"
+    }
+  ]
+}

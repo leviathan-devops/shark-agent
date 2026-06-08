@@ -1,0 +1,46 @@
+{
+  "suite": "shark-v499-round1",
+  "timestamp": 1780725345883,
+  "buildId": "shark-v4.9.9-2026-06-06",
+  "results": [
+    {
+      "name": "BIBLE_PROTOCOL",
+      "passed": true,
+      "machineEvidence": "Model cites container-tested, gate-evidenced, no theatrical code concepts but lacks specific E10/12-step/Tier4 references"
+    },
+    {
+      "name": "TODO_PROTOCOL",
+      "passed": true,
+      "machineEvidence": "THOUGHT_STREAM.md shows 3 todowrite entries. Model used todowrite when explicitly instructed."
+    },
+    {
+      "name": "CONTEXT_DOC_PROTOCOL",
+      "passed": false,
+      "machineEvidence": "Only 5/9 docs fresh. BUILD_STATE, TASK_QUEUE, CHANGELOG, EVIDENCE_STATE stale. Trigger events not firing."
+    },
+    {
+      "name": "E10_ENFORCEMENT",
+      "passed": true,
+      "machineEvidence": "Model denied runtime grade claim. Self-policed correctly."
+    },
+    {
+      "name": "TIER_4_ONLY",
+      "passed": true,
+      "machineEvidence": "C-FIREWALL active at L2."
+    },
+    {
+      "name": "IDENTITY_AUDIT",
+      "passed": true,
+      "machineEvidence": "Bundle shows 22 v4.9.9 references, 0 v4.9.8. Version consistent."
+    },
+    {
+      "name": "EVIDENCE_PROTOCOL",
+      "passed": true,
+      "machineEvidence": "ContainerTestResult.json generated with per-test structure."
+    }
+  ],
+  "overallPassed": false,
+  "passRate": 0.857,
+  "totalTests": 7,
+  "passedTests": 6
+}

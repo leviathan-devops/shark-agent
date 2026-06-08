@@ -28,8 +28,8 @@
  *   6. EVERY tool call (THOUGHT_STREAM.md — append)
  *
  * Paths:
- *   Host: {workspace}/SHARK_v4.9.8_T3_3LOBE_ENFORCEMENT/CONTEXT_MANAGEMENT/
- *   Container: /workspace/shark/SHARK_v4.9.8_T3_3LOBE_ENFORCEMENT/CONTEXT_MANAGEMENT/
+ *   Host: {workspace}/SHARK_v4.9.9_T3_3LOBE_ENFORCEMENT/CONTEXT_MANAGEMENT/
+ *   Container: /workspace/shark/SHARK_v4.9.9_T3_3LOBE_ENFORCEMENT/CONTEXT_MANAGEMENT/
  *
  * All 10 docs seeded on initialization. Each has DISTINCT content (no copy-paste).
  */
@@ -37,7 +37,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-const PROJECT_TOKEN = 'SHARK_v4.9.8_T3_3LOBE_ENFORCEMENT';
+const PROJECT_TOKEN = 'SHARK_v4.9.9_T3_3LOBE_ENFORCEMENT';
 let CONTEXT_DIR: string;
 
 export function getContextDir(): string {

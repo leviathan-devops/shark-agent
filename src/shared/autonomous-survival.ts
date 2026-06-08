@@ -113,10 +113,12 @@ export class CompactionManager {
               if (entry.isDirectory()) {
                 if (!entry.name.startsWith('.')) walkDir(fullPath);
               } else if (entry.name.endsWith('.json') || entry.name.endsWith('.md')) {
-                try { totalBytes += fs.statSync(fullPath).size; } catch {}
+                try { totalBytes += fs.statSync(fullPath).size; } catch (err) { console.error('[ERROR] autonomous-survival.estimateTokenUsage:', err instanceof Error ? err.message : String(err)); }
               }
             }
-          } catch {}
+          } catch (err) {
+            console.error("[ERROR] autonomous-survival.walkDir:", err instanceof Error ? err.message : String(err));
+          }
         };
         walkDir(sharkDir);
       }
@@ -126,11 +128,13 @@ export class CompactionManager {
         for (const entry of entries) {
           const fullPath = path.join(survivalDir, entry.name);
           if (entry.isFile() && entry.name.endsWith('.md')) {
-            try { totalBytes += fs.statSync(fullPath).size; } catch {}
+            try { totalBytes += fs.statSync(fullPath).size; } catch (err) { console.error("[ERROR] autonomous-survival.estimateTokenUsage:", err instanceof Error ? err.message : String(err)); }
           }
         }
       }
-    } catch {}
+    } catch (err) {
+      console.error("[ERROR] autonomous-survival.estimateTokenUsage:", err instanceof Error ? err.message : String(err));
+    }
 
     // Rough estimate: 1 byte ≈ 0.25 tokens, context window is ~200K tokens
     const estimatedTokens = totalBytes * 0.25;
@@ -321,7 +325,7 @@ export class CompactionManager {
   private updateCompactionSurvival(cp: SurvivalCheckpoint): void {
     const tokenInfo = this.estimateTokenUsage();
     const state = this.gateManager?.getState() ?? {};
-    this.writeAnchor('COMPACTION_SURVIVAL.md', `${this.formatHeader()}# SHARK v4.9.8 — Compaction Survival Context
+    this.writeAnchor('COMPACTION_SURVIVAL.md', `${this.formatHeader()}# SHARK v4.9.9 — Compaction Survival Context
 
 ## Latest Checkpoint
 - **Label**: ${cp.label}
@@ -411,7 +415,9 @@ ${tokenInfo.tier === 'RED' || tokenInfo.tier === 'CRITICAL' || tokenInfo.tier ==
           }
         }
       }
-    } catch {}
+    } catch (err) {
+      console.error("[ERROR] autonomous-survival.updateEvidenceState:", err instanceof Error ? err.message : String(err));
+    }
     if (!evidenceSummary) evidenceSummary = '- No evidence files found\n';
 
     this.writeAnchor('EVIDENCE_STATE.md', `${this.formatHeader()}# EVIDENCE STATE — ${cp.gate} Gate
@@ -450,7 +456,7 @@ ${cp.artifacts.map(a => `- ${a}`).join('\n')}
 - **Bundle**: ${cp.bundleMD5.slice(0, 12)}...
 `;
     if (!existing.includes(cp.id)) {
-      const header = existing || `# CHANGELOG\n\n_Shark v4.9.8 — Build Milestones_\n`;
+      const header = existing || `# CHANGELOG\n\n_Shark v4.9.9 — Build Milestones_\n`;
       this.writeAnchor('CHANGELOG.md', header + entry);
     }
   }
@@ -463,14 +469,14 @@ ${cp.artifacts.map(a => `- ${a}`).join('\n')}
 - **Files**: ${cp.filesModified.join(', ') || 'none'}
 `;
     if (!existing.includes(cp.id)) {
-      const header = existing || `# DEBUG LOG\n\n_Shark v4.9.8 — Engineering Record_\n`;
+      const header = existing || `# DEBUG LOG\n\n_Shark v4.9.9 — Engineering Record_\n`;
       this.writeAnchor('DEBUG_LOG.md', header + entry);
     }
   }
 
   private updateSoCPreservation(cp: SurvivalCheckpoint): void {
     const existing = this.readAnchor('SoC_PRESERVATION.md');
-    const header = existing || `# SoC PRESERVATION\n\n_Shark v4.9.8 — Separation of Concerns Tracking_\n`;
+    const header = existing || `# SoC PRESERVATION\n\n_Shark v4.9.9 — Separation of Concerns Tracking_\n`;
     const line = `| ${cp.timestamp.split('T')[0]} | ${cp.label} | ${cp.filesModified.length} files | verified |\n`;
     if (!existing.includes(cp.id)) {
       if (!existing.includes('| --- |')) {

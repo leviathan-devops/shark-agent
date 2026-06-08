@@ -1,0 +1,18 @@
+{
+  "suite": "shark-v499-full-spectrum",
+  "timestamp": 1780789448419,
+  "buildId": "shark-v4.9.9",
+  "totalTests": 14,
+  "passedTests": 14,
+  "failedTests": 0,
+  "passRate": 1.0,
+  "sourceFile": "tests/semantic-firewall/rules.test.ts",
+  "rawOutput": "\u001b[0m\u001b[1mbun test \u001b[0m\u001b[2mv1.3.11 (af24e281)\u001b[0m\n\n\u001b[0m\u001b[32m 14 pass\u001b[0m\n\u001b[0m\u001b[2m 0 fail\u001b[0m\n 17 expect() calls\nRan 14 tests across 1 file. \u001b[0m\u001b[2m[\u001b[1m1.89s\u001b[0m\u001b[2m]\u001b[0m\n",
+  "results": [
+    {
+      "name": "semantic-firewall-rules",
+      "passed": true,
+      "machineEvidence": "14 pass, 0 fail, 17 expect() calls in 1.89s"
+    }
+  ]
+}

@@ -98,6 +98,11 @@ export function createStateStore(): StateStore {
       const newVersion = currentVersion + 1;
 
       data.set(fullKey, value);
+      const stored = data.get(fullKey);
+      if (stored === undefined) {
+        return { success: false, version: currentVersion, error: `Map.set succeeded but get returned undefined for key "${fullKey}"` };
+      }
+
       versions.set(fullKey, newVersion);
 
       const watchersForKey = watchers.get(fullKey);

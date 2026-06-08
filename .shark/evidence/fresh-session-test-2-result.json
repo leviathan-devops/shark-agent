@@ -1,0 +1,18 @@
+{
+  "test": 2,
+  "name": "Container Namespace Isolation",
+  "description": "shark-browser-test must filter for shark-* prefix only, never use tst-* or non-shark containers",
+  "result": "PASS",
+  "timestamp": "2026-06-06T11:33:00Z",
+  "evidence": {
+    "fixApplied": "Removed Priority 3 (any container). findTestContainer now only returns shark-browser-* (P1) or shark-* (P2) containers. Auto-spawns shark-browser-{date} (P3) if none found.",
+    "containerNamePattern": "shark-browser-{YYYY-MM-DD}",
+    "namespaceFilter": "shark-* prefix only",
+    "codeChanged": "src/tools/shark-browser-test.ts findTestContainer() - removed non-shark container fallback, added auto-spawn",
+    "errorMessageUpdated": true
+  },
+  "criteria": {
+    "passCondition": "Tool only uses shark-* containers or auto-spawns shark-browser-{date}",
+    "failCondition": "Tool tries to use tst-*, spider-*, trident-* or any non-shark container"
+  }
+}

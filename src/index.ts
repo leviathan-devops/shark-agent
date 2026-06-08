@@ -1,5 +1,5 @@
 /**
- * Shark Agent v4.9.8 — Standalone Linear Execution Plugin
+ * Shark Agent v4.9.9 — Standalone Linear Execution Plugin
  *
  * Triple-Brain Parallel Architecture: Execution + Reasoning + System brains
  * running concurrently, synchronized only at workflow gates.
@@ -37,6 +37,8 @@ import { synthesizeT1Injectables, getT1TotalSize, setSynthesizerPluginDirectory 
 import { initLogger, logInfo } from './shared/shark-logger.js';
 import { EnforcementBrain } from './shark/enforcement-brain/index.js';
 import { initializeContextManager } from './shared/context-manager.js';
+import { SemanticFirewall } from './semantic-firewall/semantic-firewall.js';
+import { ExecutionContext } from './semantic-firewall/execution-context.js';
 
 const sharkColor = '#228B22';
 
@@ -80,6 +82,11 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
   const contextDir = initializeContextManager(workspacePath);
   logInfo(`ContextManager: ${contextDir}`);
 
+  const executionContext = new ExecutionContext(workspacePath);
+  const semanticFirewall = new SemanticFirewall(workspacePath, executionContext);
+  const sfInitialized = semanticFirewall.initialize();
+  logInfo(`SemanticFirewall initialized: ${sfInitialized}`);
+
   // Linear hooks setup with identity injection + enforcement brain
   const hooks = createSharkHooks(
     guardian,
@@ -92,7 +99,9 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
     concurrencyManager,
     executionBrain,
     systemBrain,
-    enforcementBrain
+    enforcementBrain,
+    semanticFirewall,
+    executionContext
   );
 
   // Start triple-brain concurrency (200ms/200ms/500ms polling loops)
@@ -104,7 +113,7 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
   // Log hook registration for runtime verification (T2 Bible §Checklist)
   const hookList = Object.keys(hooks).filter(k => k !== 'tool' && k !== 'config');
   const toolList = Object.keys(hooks.tool || {});
-  logInfo(`Plugin v4.9.8 initialized: ${hookList.length} hooks, ${toolList.length} tools`);
+  logInfo(`Plugin v4.9.9 initialized: ${hookList.length} hooks, ${toolList.length} tools`);
   logInfo(`Hooks: ${hookList.join(', ')}`);
   logInfo(`Tools: ${toolList.join(', ')}`);
   logInfo(`Identity: shark | Brains: execution, reasoning, system | Gate: PLAN`);
@@ -144,7 +153,7 @@ export default async function SharkAgent(input: PluginInput): Promise<Hooks> {
       if (!cfg.agent) cfg.agent = {};
       cfg.agent['shark'] = {
         name: 'shark',
-        description: 'SHARK v4.9.8 — Triple-Brain Parallel Architecture — Plan with Trident. Execute the plan. Never yield.',
+        description: 'SHARK v4.9.9 — Triple-Brain Parallel Architecture — Plan with Trident. Execute the plan. Never yield.',
         instructions: getSharkInstructions(),
         mode: 'primary',
         permission: { task: 'allow', tool: 'allow' },

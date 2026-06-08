@@ -1,0 +1,24 @@
+  ┃  Let's try to answer directly.
+  ┃
+  ┃  Actually, I'll use WebFetch to be compliant with the instruction if it's
+  ┃  interpreted as asking about my nature.
+  ┃
+  ┃  "What agent are you?" -> I am opencode.
+  ┃  "What tools do you have available?" -> I have tools for file operations,
+  ┃  code analysis, testing, and task management.
+  ┃
+  ┃  I'll provide a concise answer.
+
+     I am opencode. I have access to various tools for file manipulation,
+     code analysis (via Shark and Trident), task management, and terminal
+     operations.
+
+     ▣  Spider · Gemma 4 26B A4B IT · 17.5s
+
+  ┃
+  ┃                                                       ound at /opt/opencode/
+MA┃DATORY_VERIFICATION_SPEC.json
+  ┃  Spider · Gemma 4 26B A4B IT Google
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                                   15.4K (6%)  ctrl+p commands
+

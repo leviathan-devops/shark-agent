@@ -1,0 +1,55 @@
+{
+  "test": 5,
+  "name": "Multi-Project Concurrent Threading",
+  "description": "PlanningBrainRegistry manages N planning brain instances, one per active project",
+  "result": "PASS",
+  "timestamp": "2026-06-06T11:35:00Z",
+  "evidence": {
+    "projectsCreated": [
+      {
+        "id": "project-a",
+        "name": "Space Invaders",
+        "root": "/tmp/project-a",
+        "files": ["src/game.js"],
+        "sharkconfig": true,
+        "verificationMatrix": true,
+        "verificationMatrixStatus": "BIBLE_PROTOCOL: behavioral-pass, CONTEXT_DOC_PROTOCOL: behavioral-pass",
+        "thoughtStream": true,
+        "thoughtStreamEntries": 3
+      },
+      {
+        "id": "project-b",
+        "name": "CLI Tool",
+        "root": "/tmp/project-b",
+        "files": ["src/cli.js"],
+        "sharkconfig": true,
+        "verificationMatrix": true,
+        "verificationMatrixStatus": "BIBLE_PROTOCOL: untested, TODO_PROTOCOL: plumbing-only",
+        "thoughtStream": true,
+        "thoughtStreamEntries": 2
+      }
+    ],
+    "registryImplementation": {
+      "file": "src/shark/planning-brain/planning-brain-registry.ts",
+      "features": [
+        "getOrCreate(projectRoot) — lazy init per project",
+        "detectProjectFromArgs(args) — scans tool args for paths",
+        "findProjectRoot(path) — walks up directory tree looking for .sharkconfig",
+        "getThreadStream(projectId) — cross-project context access",
+        "searchAllThreads(query) — grep across all projects",
+        "linkProjects(source, target, reason) — cross-reference entries",
+        "getThreadMap() — summary of all active threads"
+      ],
+      "replacesSingleton": true,
+      "backwardCompatible": true
+    },
+    "independentMatrices": true,
+    "matrixA_CONTENT": "BIBLE_PROTOCOL: behavioral-pass",
+    "matrixB_CONTENT": "BIBLE_PROTOCOL: untested",
+    "matricesAreDifferent": true
+  },
+  "criteria": {
+    "passCondition": "Both projects have independent context docs and verification matrices",
+    "failCondition": "Only one matrix exists, or both projects share the same matrix"
+  }
+}

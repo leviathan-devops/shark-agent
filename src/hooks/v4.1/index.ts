@@ -1,11 +1,5 @@
-/**
- * Shark Hooks v4.9 — Triple-Brain Parallel Architecture
- * WITH 3-Lobe Enforcement Brain integration.
- *
- * Enforcement pipeline:
- *   BEFORE: Frontal Lobe (Karpathy) intent detection -> BLOCK | WARN | PASS
- *   AFTER:  RGE (code quality) + SRE (mechanical verification) -> REJECT | ACCEPT
- */
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import type { Hooks } from '@opencode-ai/plugin';
 import { Guardian } from '../../shared/guardian.js';
 import { GateManager } from '../../shared/gates.js';
@@ -29,6 +23,16 @@ import type { ExecutionBrain } from '../../shark/brains/execution-brain.js';
 import type { SystemBrain } from '../../shark/brains/system-brain.js';
 import { EnforcementBrain, StructuredBlockError } from '../../shark/enforcement-brain/index.js';
 import type { EnforcementResult } from '../../shark/enforcement-brain/types.js';
+import { createWriteTimeGate } from './write-time-gate.js';
+import { createPostWriteAudit } from './post-write-audit.js';
+import { SemanticFirewall } from '../../semantic-firewall/semantic-firewall.js';
+import { ExecutionContext } from '../../semantic-firewall/execution-context.js';
+import { getCurrentAgent } from './agent-state.js';
+import { isSharkAgent } from '../../shared/agent-identity.js';
+import {
+  updateThoughtStream, updateCompactionSurvival, updatePostCompactionPrompt,
+  updateBuildStateOnTaskComplete, updateEvidenceState, updateDecisionChain, updateTaskQueue
+} from '../../shared/context-manager.js';
 
 export function createSharkHooks(
   guardian: Guardian,
@@ -41,7 +45,9 @@ export function createSharkHooks(
   concurrencyManager?: BrainConcurrencyManager,
   executionBrain?: ExecutionBrain,
   systemBrain?: SystemBrain,
-  enforcementBrain?: EnforcementBrain
+  enforcementBrain?: EnforcementBrain,
+  semanticFirewall?: SemanticFirewall,
+  executionContext?: ExecutionContext
 ): Hooks {
   if (executionBrain && systemBrain) {
     setGateHookBrains(executionBrain, systemBrain);
@@ -53,61 +59,91 @@ export function createSharkHooks(
     orchestratorName: 'shark',
   };
 
+  const writeTimeHandler = semanticFirewall && executionContext
+    ? createWriteTimeGate(semanticFirewall, executionContext)
+    : null;
+  const postWriteHandler = semanticFirewall
+    ? createPostWriteAudit(semanticFirewall, path.join(process.cwd(), '.shark'))
+    : null;
+
   return {
     'event': createSessionHook(gateManager, evidenceCollector, undefined, stateStore, messenger, concurrencyManager),
     'chat.message': createChatMessageHook(),
     'command.execute.before': safeHook(createCommandExecuteHook(), hookOptions),
     'experimental.chat.messages.transform': safeHook(createMessagesTransformHook(), hookOptions),
 
-    /* tool.execute.before: Frontal Lobe intent detection + Guardian protection */
+    /* tool.execute.before: Frontal Lobe + Guardian */
     'tool.execute.before': async (input: any, output: any) => {
-      // 1. Run Enforcement Brain (Frontal Lobe)
-      if (enforcementBrain) {
-        const toolName = input?.tool || '';
-        const toolArgs = (output as any)?.args || {};
-        const results = enforcementBrain.evaluateBefore(toolName, toolArgs);
-        const blocks = results.filter((r: EnforcementResult) => r.level === 'BLOCK');
-        if (blocks.length > 0) {
-          throw new StructuredBlockError(blocks[0]);
-        }
-        const warns = results.filter((r: EnforcementResult) => r.level === 'WARN');
-        if (warns.length > 0) {
-          output.system = output.system || [];
-          output.system.push(`[ENFORCEMENT] ${warns[0].message}`);
-        }
+      const currentAgent = getCurrentAgent(input.sessionID) || input?.agent || '';
+      if (typeof currentAgent === 'string' && currentAgent !== '' && !isSharkAgent(currentAgent)) return;
+
+      if (executionContext && typeof currentAgent === 'string' && currentAgent !== '') {
+        executionContext.setAgent(currentAgent);
       }
-      // 2. Run Guardian hook (existing)
-      const guardianHandler = createGuardianHook(guardian, gateManager);
-      if (guardianHandler) {
-        await guardianHandler(input, output);
+
+      try {
+        if (enforcementBrain) {
+          const toolName = input?.tool || '';
+          const toolArgs = (input as any)?.args || (output as any)?.args || {};
+          const thoughtStream = (input as any)?.thoughtStream || (output as any)?.thoughtStream || '';
+          const results = enforcementBrain.evaluateBefore(toolName, toolArgs, thoughtStream);
+          const blocks = results.filter((r: EnforcementResult) => r.level === 'BLOCK');
+          if (blocks.length > 0) throw new StructuredBlockError(blocks[0]);
+          const warns = results.filter((r: EnforcementResult) => r.level === 'WARN');
+          if (warns.length > 0) {
+            output.system = output.system || [];
+            output.system.push(`[ENFORCEMENT] ${warns[0].message}`);
+          }
+        }
+        if (writeTimeHandler) {
+          await writeTimeHandler(input, output);
+        }
+        const guardianHandler = createGuardianHook(guardian, gateManager);
+        if (guardianHandler) await guardianHandler(input, output);
+      } catch (err) {
+        try {
+          const { updateDebugLog, updateSoCPreservation } = await import('../../shared/context-manager.js');
+          const toolName = input?.tool || '';
+          const errMsg = err instanceof Error ? err.message : String(err);
+          updateDebugLog('enforcement-block', `Blocked: ${toolName}`, errMsg, `Layer: guardian-hook`, `Enforcement block: ${toolName} - ${errMsg}`);
+          updateSoCPreservation([{ pattern: `Enforcement block: ${toolName}`, context: errMsg, source: 'guardian-hook' }]);
+        } catch (logErr) {
+          console.error(`[EnforcementCatch] Failed to log: ${logErr instanceof Error ? logErr.message : String(logErr)}`);
+        }
+        throw err;
       }
     },
 
-    /* tool.execute.after: RGE code quality + SRE mechanical verification */
+    /* tool.execute.after: RGE + SRE + context doc updates */
     'tool.execute.after': async (input: any, output: any) => {
-      const toolName = input?.tool || '';
-      const toolArgs = (output as any)?.args || {};
+      const afterAgent = getCurrentAgent(input.sessionID) || input?.agent || '';
+      if (typeof afterAgent === 'string' && afterAgent !== '' && !isSharkAgent(afterAgent)) return;
 
-      // 1. Run Enforcement Brain (RGE + SRE)
+      const toolName = input?.tool || '';
+      const toolArgs = (input as any)?.args || (output as any)?.args || {};
+
       if (enforcementBrain) {
         const results = await enforcementBrain.evaluateAfter(toolName, toolArgs, output);
         const blocks = results.filter((r: EnforcementResult) => r.level === 'BLOCK');
         if (blocks.length > 0) {
           output.system = output.system || [];
           output.system.push(`[ENFORCEMENT BLOCKED] ${blocks[0].message}`);
-          // Log the violation but don't crash — the write already happened
-          // In a future iteration, we'd auto-revert the write
         }
         const warns = results.filter((r: EnforcementResult) => r.level === 'WARN');
         if (warns.length > 0) {
           output.system = output.system || [];
-          for (const w of warns) {
-            output.system.push(`[ENFORCEMENT] ${w.message}`);
-          }
+          for (const w of warns) output.system.push(`[ENFORCEMENT] ${w.message}`);
         }
       }
 
-      // 1b. Todowrite tool → context focus update via fireContextUpdate
+      if (postWriteHandler) {
+        try {
+          await postWriteHandler(input, output);
+        } catch (e) {
+          console.warn('[PostWriteAudit] handler failed:', e instanceof Error ? e.message : String(e));
+        }
+      }
+
       if (enforcementBrain && toolName === 'todowrite') {
         const todos = toolArgs?.todos || [];
         if (Array.isArray(todos)) {
@@ -124,15 +160,38 @@ export function createSharkHooks(
         }
       }
 
-      // 2. Run existing tool summarizer + gate hook
+      // Context doc updates
+      try {
+        const gateState = gateManager.getState() as { currentGate: string };
+        const gateStr = gateState.currentGate || 'plan';
+        updateThoughtStream(`tool=${toolName} gate=${gateStr}`);
+        updateCompactionSurvival(gateStr.toUpperCase(), 0, 0, `Tool: ${toolName}`);
+        updatePostCompactionPrompt(toolName, gateStr, 0, 0);
+
+        if (toolName === 'todowrite') {
+          const todos = toolArgs?.todos || [];
+          if (Array.isArray(todos)) {
+            for (const todo of todos) {
+              if (todo?.content && todo?.status) {
+                updateBuildStateOnTaskComplete(todo.content, todo.status, todo.content);
+                updateTaskQueue(todo.content, todo.content, todo.status === 'completed' ? 'COMPLETE' : todo.status === 'in_progress' ? 'PENDING' : 'COMPLETE', todo.content);
+                updateDecisionChain(todo.content, `Task ${todo.status}`, `gate=${gateStr}`);
+              }
+            }
+          }
+        }
+
+        if (toolName === 'shark-test-runner' || toolName === 'shark-run-trident' || toolName === 'shark-spawn-container') {
+          updateEvidenceState(0, `${toolName} completed at ${gateStr} gate`, 'pending verification');
+        }
+      } catch (ctxErr) {
+        console.error(`[AutoCtx] Context doc update failed: ${ctxErr instanceof Error ? ctxErr.message : String(ctxErr)}`);
+      }
+
       const summarizerHook = createToolSummarizerHook();
-      if (summarizerHook) {
-        await summarizerHook(input, output).catch(() => {});
-      }
-      const gateHookFn = createGateHook(gateManager, evidenceCollector, undefined);
-      if (gateHookFn) {
-        await gateHookFn(input, output).catch(() => {});
-      }
+      if (summarizerHook) await summarizerHook(input, output).catch(() => {});
+      const gateHookFn = createGateHook(gateManager, evidenceCollector, undefined, executionContext);
+      if (gateHookFn) await gateHookFn(input, output).catch(() => {});
     },
 
     'experimental.session.compacting': safeHook(createCompactingHook(gateManager), hookOptions),

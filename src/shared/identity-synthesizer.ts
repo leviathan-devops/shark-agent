@@ -31,7 +31,7 @@ import * as path from 'node:path';
  * dumping raw identity tokens into the context window.
  */
 export interface T1Warheads {
-  /** Identity binding -- "SHARK v4.9.8 -- runtime-grade software engineering agent" (~200B) */
+  /** Identity binding -- "SHARK v4.9.9 -- runtime-grade software engineering agent" (~200B) */
   identityWarhead: string;
   /** Gate chain -- current gate and progression chain (~200B) */
   gateWarhead: string;
@@ -127,7 +127,7 @@ function buildIdentityWarhead(t2: Record<string, string>): string {
   const whoMatch = identityContent.match(/SHARK\s+v?\d[\w.]+\s*[\u2014\u2013-]\s*.+/);
   const whoLine = whoMatch
     ? whoMatch[0].trim()
-    : 'SHARK v4.9.8 -- runtime-grade software engineering agent';
+    : 'SHARK v4.9.9 -- runtime-grade software engineering agent';
 
   // Pull out anti-identity markers (what it is NOT)
   let notLine = 'NOT opencode. NOT OpenCode. NOT Claude. NOT ChatGPT.';
@@ -137,14 +137,14 @@ function buildIdentityWarhead(t2: Record<string, string>): string {
   }
 
   // Pull out the response protocol
-  let responseLine = 'whoami: "I am SHARK v4.9.8, a runtime-grade software engineering agent."';
+  let responseLine = 'whoami: "I am SHARK v4.9.9, a runtime-grade software engineering agent."';
   const responseMatch = archContent.match(/WHEN ASKED[^"]*"([^"]+)"/);
   if (responseMatch) {
     responseLine = 'whoami: "' + responseMatch[1] + '"';
   }
 
   return [
-    '[SHARK v4.9.8 IDENTITY]',
+    '[SHARK v4.9.9 IDENTITY]',
     whoLine,
     'You are ' + notLine,
     'You ENGINEER software systems that work in real runtime environments.',

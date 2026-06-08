@@ -281,10 +281,14 @@ export function createSharkBrowserTool() {
             if (!fs.existsSync(path.dirname(file)) && file.startsWith('/')) {
               try {
                 fs.mkdirSync(path.dirname(file), { recursive: true });
-              } catch {}
+              } catch (err) {
+                console.error('[ERROR] shark-browser.createSharkBrowserTool.screenshot:', err instanceof Error ? err.message : String(err));
+              }
               try {
                 result += '\n' + dockerExec(container, `cat "${file}" | base64`);
-              } catch {}
+              } catch (err) {
+                console.error('[ERROR] shark-browser.createSharkBrowserTool.screenshot:', err instanceof Error ? err.message : String(err));
+              }
             }
             break;
 

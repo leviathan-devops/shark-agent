@@ -56,14 +56,18 @@ function verifyIdentity(): SubsystemDetail {
       if (parent === currentDir) break;
       currentDir = parent;
     }
-  } catch {}
+  } catch (err) {
+    console.error('[ERROR] shark-diagnose.verifyIdentity:', err instanceof Error ? err.message : String(err));
+  }
 
   try {
     const identityBase = path.resolve(process.cwd(), 'identity', 'shark');
     searchPaths.push(identityBase);
     const pluginIdentity = path.join(process.env.HOME || '/root', '.config', 'opencode', 'plugins', 'shark-agent', 'identity', 'shark');
     searchPaths.push(pluginIdentity);
-  } catch {}
+  } catch (err) {
+    console.error('[ERROR] shark-diagnose.verifyIdentity:', err instanceof Error ? err.message : String(err));
+  }
 
   const seen = new Set<string>();
   const uniquePaths: string[] = [];
@@ -101,7 +105,9 @@ function verifyIdentity(): SubsystemDetail {
           };
         }
       }
-    } catch {}
+    } catch (err) {
+      console.error('[ERROR] shark-diagnose.verifyIdentity:', err instanceof Error ? err.message : String(err));
+    }
   }
 
   return {

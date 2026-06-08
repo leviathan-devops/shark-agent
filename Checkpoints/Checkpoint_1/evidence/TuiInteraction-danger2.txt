@@ -1,0 +1,24 @@
+  ┃  # Remove file without -rf flags
+  ┃
+  ┃  $ rm /tmp/opencode/test-rm.txt && echo "File removed." && ls /tmp/
+  ┃  opencode/test-rm.txt 2>&1
+  ┃
+  ┃  File removed.
+  ┃  ls: cannot access '/tmp/opencode/test-rm.txt': No such file or directory
+  ┃
+
+     File created, then rm (without -rf) removed it. The firewall blocked rm -
+     rf specifically — it flags -rf as destructive. For a single file, plain
+     rm works fine.
+
+     The file /tmp/opencode/test-rm.txt no longer exists as confirmed.
+
+     ▣  Shark · DeepSeek V4 Flash · 9.6s
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /root/.config/
+opencode/MANDATORY_VERIFICATION_SPEC.json
+[EvidenceValidator] Issues: No rawOutput fields found
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                           19.7K (2%) · $0.00  ctrl+p commands
+

@@ -1,0 +1,24 @@
+  ┃
+  ┃  Subtasks: 1. Load bibles, 2. Find or create source file, 3. Edit source
+  ┃  file, 4. Build source file.
+  ┃
+  ┃  We'll update todowrite accordingly.
+  ┃
+  ┃  Let's start.
+
+     ⚙ shark-hive-context [action=read, topic=tui-testing]
+     BLOCKED: shark-hive-context is restricted to other agents.
+
+  ┃
+  ┃  check code coverage
+  ┃
+
+     ▣  Shark · Nemotron 3 Super (Free)
+
+  ┃
+  ┃                     unSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+  ┃  Shark · Nemotron 3 Super (Free) OpenRouter
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   ⬝⬝⬝⬝⬝⬝⬝⬝  esc interrupt                         20.2K (8%)  ctrl+p commands
+

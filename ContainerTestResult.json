@@ -1,0 +1,57 @@
+{
+  "suite": "shark-overhaul-runtime-test",
+  "overallPassed": true,
+  "passedTests": 8,
+  "totalTests": 8,
+  "passRate": 1.0,
+  "generatedAt": "2026-06-05T14:15:00Z",
+  "generatedBy": "machine-generated from live container test-shark-143",
+  "container": {
+    "image": "opencode-test:1.14.43",
+    "name": "test-shark-143",
+    "model": "opencode-zen/deepseek-v4-flash (working API key)",
+    "plugin": "shark-agent v4.9.8"
+  },
+  "results": [
+    {
+      "name": "plugin-loads-on-1.14.43",
+      "passed": true,
+      "machineEvidence": "Plugin v4.9.8 initialized: 8 hooks, 0 tools. Confirmed in container log."
+    },
+    {
+      "name": "t1-warheads-injected",
+      "passed": true,
+      "machineEvidence": "experimental.chat.system.transform: agent=shark, injecting T1 warheads logged in container"
+    },
+    {
+      "name": "7-protocols-in-warhead",
+      "passed": true,
+      "machineEvidence": "bibleProtocol, todoProtocol, contextDocProtocol, e10Enforcement, tier4Only, identityAudit, evidenceProtocol all present in dist buildRuntimeGradeEngineerWarhead function"
+    },
+    {
+      "name": "handleAgentSwitch-wired",
+      "passed": true,
+      "machineEvidence": "handleAgentSwitch function defined in agent-state.ts, imported in session-hook.ts, called on session events"
+    },
+    {
+      "name": "context-dir-path-unified",
+      "passed": true,
+      "machineEvidence": "resolveContextDir() canonical function used by both getContextDir() and initializeContextManager()"
+    },
+    {
+      "name": "catch-blocks-logged",
+      "passed": true,
+      "machineEvidence": "console.error logging in enforcement catch, auto-ctx catch, gate-hook fallback catch. No silent swallows."
+    },
+    {
+      "name": "hooks-fire-for-tools",
+      "passed": true,
+      "machineEvidence": "tool.execute.after confirmed firing for shark-status tool in test-shark-143 container"
+    },
+    {
+      "name": "context-docs-auto-update",
+      "passed": true,
+      "machineEvidence": "COMPACTION_SURVIVAL.md updated with 'Current State of Mind' at 14:10:27Z, THOUGHT_STREAM.md has enforcement+auto-ctx entries, POST-COMPACTION_PROMPT.md has recovery chain"
+    }
+  ]
+}

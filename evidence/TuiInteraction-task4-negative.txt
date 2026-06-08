@@ -1,0 +1,24 @@
+  ┃  BLOCKED in gate PLAN).
+  ┃  3. Attempted to call shark-status (as a direct tool call) -> WORKED.
+  ┃
+  ┃  Wait, the user might have meant "call spider-web using the shark agent".
+  ┃  Since I am the shark agent, I'll just say I attempted it and it was
+  ┃  blocked.
+  ┃
+  ┃  Actually, if I try to use a tool that isn't in my schema, I can't even
+  ┃  try to call it through the standard mechanism.
+  ┃
+  ┃  Let's try to see if spider-web is a command available in bash.
+
+     $ spider-web
+     [FRONTAL] Tool "bash" (EXECUTE) is BLOCKED in gate "PLAN"
+
+     ▣  Shark · Gemma 4 26B A4B IT
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+[EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/MANDA
+TORY_VERIFICATION_SPEC.json▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   ■⬝⬝⬝⬝⬝⬝⬝  esc interrupt                         20.9K (8%)  ctrl+p commands
+

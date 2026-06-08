@@ -1,0 +1,24 @@
+  ┃  diagnose, shark-health, shark-status, shark-firewall-status, shark-
+  ┃  firewall-audit, shark-gate, shark-checkpoint, shark-checkpoint-history,
+  ┃  shark-evidence, shark-audit, shark-run-trident, shark-spawn-container,
+  ┃  shark-test-runner, shark-hive-context, shark-hive-remember, shark-hive-
+  ┃  restore, shark-hive-trash-list, shark-hive-trash-status, shark-hive-scan,
+  ┃   shark-hive-forget, shark-hive-purge, shark-memlink_parent, shark-
+  ┃  memread_session, `shark-
+
+     ▣  Shark · Gemma 4 26B A4B IT
+
+  ┃
+  ┃  Read the file /root/.config/opencode/opencode.json and tell me: what
+  ┃  model is configured, how many plugins are loaded, and what agents are
+  ┃  registered?
+  ┃   QUEUED
+  ┃
+
+  ┃
+  ┃
+  ┃
+  ┃  Shark · Gemma 4 26B A4B IT Google
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   ■⬝⬝⬝⬝⬝⬝⬝  esc interrupt                         12.2K (5%)  ctrl+p commands
+

@@ -127,7 +127,7 @@ export function formatIdentityForSystemPrompt(): SharkIdentityPrompt {
     '## Workflow',
     identity.WORKFLOW,
     '',
-    '*Shark v4.9.8 — Plan with Trident. Execute the plan. Never yield.*',
+    '*Shark v4.9.9 — Plan with Trident. Execute the plan. Never yield.*',
   ];
 
   const full = sections.join('\n');

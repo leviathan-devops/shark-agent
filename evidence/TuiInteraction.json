@@ -1,0 +1,24 @@
+     │agent-    │agent-vision                                                │
+     │vision/   │                                                            │
+     ├──────────┼────────────────────────────────────────────────────────────┤
+     │hive-mind/│hive-mind                                                   │
+     ├──────────┼────────────────────────────────────────────────────────────┤
+     │shark-    │shark                                                       │
+     │agent/    │                                                            │
+     ├──────────┼────────────────────────────────────────────────────────────┤
+     │spider-   │spider (and sub-agents: spider_explorer, spider_architect,  │
+     │agent-v2. │spider_coder, spider_reviewer, spider_test_engineer,        │
+     │2.2/      │spider_critic)                                              │
+     ├──────────┼────────────────────────────────────────────────────────────┤
+     │trident/  │trident                                                     │
+     └──────────┴────────────────────────────────────────────────────────────┘
+
+     ▣  Shark · Gemma 4 26B A4B IT · 2m 22s
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+  ┃  Shark · Gemma 4 26B A4B IT Google
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                                  73.0K (28%)  ctrl+p commands
+

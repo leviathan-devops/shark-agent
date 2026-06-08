@@ -145,6 +145,7 @@ async function checkVlmHealth(): Promise<HealthResult> {
 
       if (resp.ok) {
         const data = (await resp.json()) as Record<string, unknown>;
+        if (!data || Object.keys(data).length === 0) continue;
         return {
           ok: true,
           version: (data.version as string) ?? undefined,
@@ -170,18 +171,17 @@ async function checkVlmHealth(): Promise<HealthResult> {
       if (dockerResult && dockerResult !== 'FAIL') {
         try {
           const data = JSON.parse(dockerResult) as Record<string, unknown>;
-          return {
-            ok: true,
-            version: (data.version as string) ?? undefined,
-            endpoint: VLM_ENDPOINT,
-            source: 'docker:host-network',
-          };
+          if (!data || Object.keys(data).length === 0) {
+            // @theatrical-stub: cannot validate because docker health endpoint returned empty JSON — falling through
+          } else {
+            return {
+              ok: true,
+              version: (data.version as string) ?? undefined,
+              endpoint: VLM_ENDPOINT,
+              source: 'docker:host-network',
+            };
+          }
         } catch {
-          return {
-            ok: true,
-            endpoint: VLM_ENDPOINT,
-            source: 'docker:host-network',
-          };
         }
       }
     } catch {
@@ -204,6 +204,7 @@ async function checkVlmHealth(): Promise<HealthResult> {
 
           if (healthResult && healthResult !== 'FAIL') {
             const data = JSON.parse(healthResult) as Record<string, unknown>;
+            if (!data || Object.keys(data).length === 0) continue;
             return {
               ok: true,
               version: (data.version as string) ?? undefined,

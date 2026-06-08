@@ -53,12 +53,6 @@
  *     - Invalid gate value → silently ignored (state unchanged)
  *     - Undefined/null → silently ignored
  *
- * ### `getGate(): GatePhase`
- *   Returns the current gate phase.
- *   - **Input:** none
- *   - **Output:** `GatePhase`
- *   - **Error states:** none (always returns valid GatePhase)
- *
  * ### `getPending(): string`
  *   Returns unprocessed input remaining in the streaming buffer.
  *   - **Input:** none
@@ -90,6 +84,7 @@
 
 import { StreamingBuffer } from './streaming-buffer.js';
 import { VerbFrameLexicon, type IntentCategory } from './verb-frame-lexicon.js';
+import { isDangerousCommand, hasDestructiveArgs as sharedHasDestructiveArgs } from '../../shared/danger-commands.js';
 
 // ─── TYPE EXPORTS ───────────────────────────────────────────────────────────
 
@@ -346,7 +341,8 @@ export class IntentClassifier {
       const target = this.extractToolTarget(safeArgs);
       let enforcement = this.getGateEnforcement(category);
 
-      if (category === 'DESTRUCTIVE' || this.hasDestructiveArgs(normalizedTool, safeArgs)) {
+      const destructiveCheck = sharedHasDestructiveArgs(normalizedTool, safeArgs);
+      if (category === 'DESTRUCTIVE' || destructiveCheck.detected) {
         enforcement = 'BLOCK';
         return this.createEvidenceEntry(
           { intent: category, action, target, confidence: 0.95, enforcement, violation: `Tool "${toolName}" with destructive arguments is BLOCKED`, correction: 'Use a non-destructive approach or verify the target is safe' },
@@ -355,7 +351,10 @@ export class IntentClassifier {
       }
 
       if (normalizedTool === 'bash' && typeof safeArgs.command === 'string') {
-        const bashEnforcement = this.evaluateBashCommand(safeArgs.command);
+        const bashCheck = isDangerousCommand(safeArgs.command);
+        const bashEnforcement: EnforcementLevel = bashCheck.detected
+          ? (bashCheck.severity === 'CRITICAL' || bashCheck.severity === 'HIGH' ? 'BLOCK' : 'WARN')
+          : 'PASS';
         if (bashEnforcement !== 'PASS') {
           enforcement = bashEnforcement;
           return this.createEvidenceEntry(
@@ -414,9 +413,6 @@ export class IntentClassifier {
     this.currentGate = gate;
   }
 
-  getGate(): GatePhase {
-    return this.currentGate;
-  }
 
   getPending(): string {
     try {
@@ -597,58 +593,6 @@ export class IntentClassifier {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(`[IntentClassifier] extractToolTarget() error: ${errorMessage}`);
       return '';
-    }
-  }
-
-  private hasDestructiveArgs(tool: string, args: Record<string, unknown>): boolean {
-    if (typeof tool !== 'string') return false;
-    if (typeof args !== 'object' || args === null) return false;
-    try {
-      if (typeof args.command === 'string') {
-        const cmd = args.command.toLowerCase();
-        const destructivePatterns = ['rm -rf', 'rm -r', 'rm --recursive', 'mkfs', 'format', 'dd if=', '> /dev/', 'chmod 000', 'chown -R'];
-        for (const pattern of destructivePatterns) {
-          if (cmd.includes(pattern)) return true;
-        }
-      }
-      if (typeof args.filePath === 'string') {
-        const fp = args.filePath.toLowerCase();
-        const blockedPaths = ['/etc', '/boot', '/sys', '/proc', '/dev'];
-        for (const bp of blockedPaths) {
-          if (fp.startsWith(bp)) return true;
-        }
-      }
-      return false;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`[IntentClassifier] hasDestructiveArgs() error: ${errorMessage}`);
-      return false;
-    }
-  }
-
-  private evaluateBashCommand(command: string): EnforcementLevel {
-    if (typeof command !== 'string') {
-      console.error(`[IntentClassifier] evaluateBashCommand() received non-string: ${typeof command}`);
-      return 'PASS';
-    }
-    try {
-      const cmd = command.toLowerCase().trim();
-      if (cmd.length === 0) return 'PASS';
-
-      const blockPatterns = ['rm -rf /', 'rm -rf --no-preserve-root', ':(){ :|:& };:', '> /dev/sda', '> /dev/nvme', 'mkfs.', 'dd if=/dev/zero', 'chmod 000 /', 'chown -R 0:0 /', 'wget', 'curl'];
-      for (const pattern of blockPatterns) {
-        if (cmd.includes(pattern)) return 'BLOCK';
-      }
-
-      const warnPatterns = ['git push --force', 'git reset --hard', 'npm publish', 'npm run deploy', 'rm -rf', 'rm -r', 'kill -9', 'pkill', 'sudo', 'su ', '> ', '>> ', '| sh', '| bash', 'chmod', 'chown', 'docker rmi', 'docker rm', 'drop table', 'drop database'];
-      for (const pattern of warnPatterns) {
-        if (cmd.includes(pattern)) return 'WARN';
-      }
-      return 'PASS';
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`[IntentClassifier] evaluateBashCommand() error: ${errorMessage}`);
-      return 'PASS';
     }
   }
 

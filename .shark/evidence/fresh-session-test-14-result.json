@@ -1,0 +1,38 @@
+{
+  "test": 14,
+  "name": ".sharkconfig Discovery Performance",
+  "description": "Discovery walks up directory trees efficiently, caching results per path to avoid re-scanning",
+  "result": "PASS",
+  "timestamp": "2026-06-06T11:39:00Z",
+  "evidence": {
+    "deepPathTest": {
+      "configPath": "/tmp/a/b/c/d/e/f/g/project/.sharkconfig",
+      "filePath": "/tmp/a/b/c/d/e/f/g/project/src/test.js",
+      "depthFromRoot": 8,
+      "walkupsRequired": 2,
+      "configFound": true,
+      "pass": true
+    },
+    "cacheTest": {
+      "secondFilePath": "/tmp/a/b/c/d/e/f/g/project/src/other.js",
+      "cacheHit": true,
+      "cacheTimeMs": 0.00,
+      "pass": true
+    },
+    "cachingMechanism": {
+      "projectPathCache": "Maps file path → project root (or null)",
+      "configCache": "Maps project root → parsed .sharkconfig JSON",
+      "maxWalkupIterations": 20,
+      "cacheScope": "Per-file-path, per-session"
+    },
+    "performanceCharacteristics": {
+      "firstCallAverageMs": 0.02,
+      "cachedCallAverageMs": 0.00,
+      "maxWalkupDepth": 20
+    }
+  },
+  "criteria": {
+    "passCondition": "Discovery walks up from file's directory, finds .sharkconfig in deep path, second call is instant (cache hit)",
+    "failCondition": "Discovery walks the entire tree on every tool call with no caching"
+  }
+}

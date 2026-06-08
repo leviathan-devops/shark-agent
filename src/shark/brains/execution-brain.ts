@@ -116,6 +116,26 @@ export function createExecutionBrain(config: ExecutionBrainConfig) {
         violations: allViolations,
       };
     } catch {
+      const currentState = getState();
+      const activeBlocks = currentState?.state?.blocks ?? [];
+      if (activeBlocks.length > 0) {
+        return {
+          blocked: true,
+          violations: activeBlocks.map(b => ({
+            detector: {
+              id: 'enforcement-state-block',
+              category: 'enforcement',
+              description: b,
+              severity: 'high' as const,
+              detect: () => true,
+              fix: 'Resolve enforcement block before proceeding',
+            },
+            enforcementAction: 'block' as const,
+            escalationTarget: 'execution' as const,
+            autoFixable: false,
+          })),
+        };
+      }
       return { blocked: false, violations: [] };
     }
   }

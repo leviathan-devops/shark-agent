@@ -84,50 +84,6 @@ export class SharkPeerDispatch {
     });
   }
 
-  /**
-   * Handle gate transition — synchronize all brains
-   */
-  onGateTransition(fromGate: string, toGate: string): void {
-    
-    const state = this.getState();
-    
-    // Update phase based on gate
-    let newPhase: MacroBrainState['phase'] = 'execution';
-    if (toGate === 'verify') newPhase = 'verification';
-    else if (toGate === 'audit') newPhase = 'audit';
-    else if (toGate === 'delivery') newPhase = 'delivery';
-    
-    this.stateStore.set('shark-macro-state', {
-      ...state,
-      phase: newPhase,
-      contextInjected: false,
-      lastSyncAt: Date.now(),
-    }, 'shark-state');
-
-    // Notify all brains
-    this.messenger.send({
-      from: 'system',
-      to: 'all',
-      type: 'handoff',
-      priority: 'high',
-      payload: { from: fromGate, to: toGate, phase: newPhase, signal: 'gate-transition' },
-      requiresAck: false,
-    });
-  }
-
-  /**
-   * Handle verification failure — trigger Reasoning Brain auto-debug
-   */
-  onVerifyFailure(): void {
-    this.messenger.send({
-      from: 'system-brain',
-      to: 'reasoning-brain',
-      type: 'request',
-      priority: 'critical',
-      payload: { request: 'auto-debug', timestamp: Date.now() },
-      requiresAck: false,
-    });
-  }
 
   /**
    * Handle build completion — notify system brain

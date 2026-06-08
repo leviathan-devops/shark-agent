@@ -1,0 +1,24 @@
+
+  ┃  Thinking: Okay, so .shark has some directories.
+  ┃  brain-states/, enforcement/, evidence/.
+  ┃
+  ┃  Now, I need to find the user's code.
+  ┃  The user said "edit a source file then build it".
+  ┃  The user also said "grep something in dist to verify".
+  ┃
+  ┃  If the user is talking about a specific project, maybe it's not in /opt/
+  ┃  opencode.
+  ┃  But my glob(pattern="/*") returned nothing. This is very suspicious.
+  ┃  Usually, / has many things like bin, etc, home, opt, usr, var.
+  ┃  If glob(pattern="/*") returned "No files found", it means I can't even
+  ┃  see the
+
+     ▣  Shark · Gemma 4 26B A4B IT
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+  ┃  Shark · Gemma 4 26B A4B IT Google
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   ⬝⬝⬝⬝⬝⬝⬝⬝  esc interrupt                         19.0K (7%)  ctrl+p commands
+

@@ -13,6 +13,7 @@ import type { ExecutionBrain } from '../../shark/brains/execution-brain.js';
 import type { SystemBrain } from '../../shark/brains/system-brain.js';
 import type { CodeContext } from '../../shared/injectables/index.js';
 import { logInfo } from '../../shared/shark-logger.js';
+import type { ExecutionContext } from '../../semantic-firewall/execution-context.js';
 
 const CONTAINER_TEST_RESULT_FILE = 'ContainerTestResult.json';
 const CONTAINER_SPAWN_RESULT_FILE = 'ContainerSpawnResult.json';
@@ -77,7 +78,8 @@ function extractFilePathFromArgs(args: unknown): string {
 export function createGateHook(
   gateManager: GateManager,
   evidenceCollector: EvidenceCollector,
-  peerDispatch?: SharkPeerDispatch
+  peerDispatch?: SharkPeerDispatch,
+  executionContext?: ExecutionContext
 ): Hooks['tool.execute.after'] {
   return async (input, output) => {
     if (!input || !output) return;
@@ -263,6 +265,7 @@ export function createGateHook(
       const completedGate = gateManager.getCurrentGate();
       gateManager.passCurrentGate();
       gateManager.transitionTo(nextGate);
+      if (executionContext) executionContext.setGate(nextGate as any);
       createPhaseSnapshot(gateManager, completedGate);
       checkpointOnGateTransition(completedGate, gateManager);
 
@@ -466,7 +469,8 @@ function checkDeliveryGateBlocked(): boolean {
     const content = fs.readFileSync(evidencePath, 'utf-8');
     const testResult = JSON.parse(content);
     return !testResult.overallPassed;
-  } catch {
+  } catch (err) {
+    console.error("[ERROR] gate-hook.checkDeliveryGateBlocked:", err instanceof Error ? err.message : String(err));
     return true;
   }
 }

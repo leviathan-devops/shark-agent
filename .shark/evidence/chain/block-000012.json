@@ -1,0 +1,12 @@
+{
+  "index": 12,
+  "timestamp": "2026-06-06T23:39:58.161Z",
+  "data": {
+    "type": "sf-before",
+    "tool": "kraken-spawn",
+    "phase": "write-time",
+    "timestamp": 1780789198161
+  },
+  "previousHash": "05c0e784ac8ba20a82899647eac03f549312721d24fb141e65a093377d606780",
+  "hash": "d3ab0f850dce04754b19ae32f430c6efbd16fe9c1be691fc68c305f1b2bd7018"
+}

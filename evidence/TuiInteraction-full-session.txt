@@ -1,0 +1,24 @@
+                 audit: pending,
+                 delivery: pending
+               },
+               evidenceStatus: {
+                 plan: false,
+                 build: false,
+                 test: false,
+                 verify: false,
+                 audit: false,
+                 delivery: false
+               },
+               verifyAttempts: 0
+             }
+
+
+     ▣  Shark · Gemma 4 26B A4B IT · 1m 34s
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+[EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/MANDA
+TORY_VERIFICATION_SPEC.json▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                                   22.4K (9%)  ctrl+p commands
+

@@ -804,31 +804,6 @@ export class VerbFrameLexicon {
   }
 
   /**
-   * Check if a verb's action is allowed in the given gate phase.
-   *
-   * P2: validates verb and gate input. P3: wraps in try/catch.
-   *
-   * @param verb - The verb to check.
-   * @param gate - The gate phase.
-   * @returns True if the action is allowed in the gate.
-   */
-  isAllowedInGate(verb: unknown, gate: unknown): boolean {
-    try {
-      const validatedVerb = this.validateVerb(verb);
-      const validatedGate = this.validateGate(gate);
-
-      const frame = this.frames.get(validatedVerb);
-      if (!frame) return true;
-      if (!frame.allowedGates || frame.allowedGates.length === 0) return false;
-      return frame.allowedGates.includes(validatedGate);
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`VerbFrameLexicon.isAllowedInGate P3 error: ${msg}`);
-      return false;
-    }
-  }
-
-  /**
    * Register a custom verb-frame mapping at runtime.
    *
    * P2: validates verb and frame input. P3: wraps in try/catch.

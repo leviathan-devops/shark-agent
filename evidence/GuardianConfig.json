@@ -1,0 +1,7 @@
+{
+  "level": "BALANCED",
+  "workspacePath": "./",
+  "sandboxPath": "./",
+  "source": "src/shared/guardian.ts GuardianConfig interface",
+  "generatedAt": "from actual Guardian config in codebase"
+}

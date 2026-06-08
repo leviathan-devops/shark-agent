@@ -97,8 +97,8 @@ function dockerRestPs(args: string[]): string {
   const result = execSync(`curl -s --unix-socket ${DOCKER_SOCKET} "${url}"`, { encoding: 'utf-8', stdio: 'pipe' });
   const containers = JSON.parse(result.toString());
   if (!Array.isArray(containers)) return '';
-  return containers.map((c: any) => {
-    const names = c.Names || [];
+  return containers.map((c: Record<string, unknown>) => {
+    const names = (c.Names || []) as string[];
     return names[0] ? names[0].replace(/^\//, '') : '';
   }).filter(Boolean).join('\n');
 }
@@ -147,7 +147,7 @@ function dockerRestRun(args: string[]): string {
     }
   }
 
-  const createBody: any = {
+  const createBody: Record<string, unknown> = {
     Image: image,
     Cmd: cmd,
     HostConfig: {

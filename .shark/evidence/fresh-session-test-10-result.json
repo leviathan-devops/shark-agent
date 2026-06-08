@@ -1,0 +1,53 @@
+{
+  "test": 10,
+  "name": "Per-Project Planning Brain via .sharkconfig",
+  "description": ".sharkconfig discovery must activate planning brain per-project without modifying opencode.json",
+  "result": "PASS",
+  "timestamp": "2026-06-06T11:37:30Z",
+  "evidence": {
+    "projectA": {
+      "path": "/tmp/project-a",
+      "hasSharkconfig": true,
+      "sharkconfigContent": {
+        "project.id": "project-a",
+        "planningBrain.enabled": true,
+        "planningBrain.contextDir": ".shark/context"
+      },
+      "writesSuccessful": true,
+      "planningBrain": "active (via config)"
+    },
+    "projectB": {
+      "path": "/tmp/project-b",
+      "hasSharkconfig": false,
+      "writesSuccessful": true,
+      "planningBrain": "session default (no config, no error)"
+    },
+    "opencodeJsonNotModified": true,
+    "discoveryMechanism": {
+      "walkUpFromPath": true,
+      "cacheResults": true,
+      "noReScanOnEveryCall": true
+    },
+    "registryBacked": true,
+    "configSchema": {
+      "project": {
+        "id": "string",
+        "name": "string",
+        "root": "string"
+      },
+      "planningBrain": {
+        "enabled": "boolean",
+        "autoDetect": "boolean",
+        "contextDir": "string"
+      },
+      "identity": {
+        "dir": "string",
+        "agent": "string"
+      }
+    }
+  },
+  "criteria": {
+    "passCondition": "Planning brain activates for project-a via .sharkconfig, project-b uses session default without error",
+    "failCondition": "Planning brain errors because project B has no config"
+  }
+}

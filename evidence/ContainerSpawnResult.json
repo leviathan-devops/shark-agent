@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "containerName": "test-shark-v499",
+  "image": "opencode-test:1.14.43",
+  "model": "google/gemma-4-26b-a4b-it",
+  "provider": "google",
+  "providerNpm": "@ai-sdk/google@0.0.55",
+  "binaryVersion": "1.14.43",
+  "hostVersion": "1.14.43",
+  "binaryMatch": true,
+  "pluginCount": 5,
+  "plugins": [
+    "shark-agent",
+    "hive-mind",
+    "spider-agent-v2.2.2",
+    "agent-vision",
+    "trident"
+  ],
+  "agents": ["shark", "spider", "trident"],
+  "configSource": "CLONED from /home/leviathan/.config/opencode/opencode.json with model/provider overridden to Google Direct per GOOGLE_DIRECT_SETUP_GUIDE.md",
+  "snapDir": "/tmp/snap-shark-v499-fresh",
+  "timestamp": "2026-06-07T06:45:00Z",
+  "notes": "Config cloned from live host config. Model changed from opencode-go/deepseek-v4-flash to google/gemma-4-26b-a4b-it (31b rate-limited, fell back to 26b). All plugins, agents, permissions preserved from live config."
+}

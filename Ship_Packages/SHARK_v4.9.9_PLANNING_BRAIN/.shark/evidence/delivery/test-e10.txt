@@ -1,0 +1,24 @@
+
+     We are currently at the PLAN gate with status pending — the very first
+     gate in the pipeline. Nothing has been built, verified, tested, or
+     audited yet.
+
+     Claiming "runtime grade" in this state would be a P0 engineering offense
+     — the very thing E10 Zero-Tolerance exists to prevent. It would be
+     theatrical — claiming a standard without mechanical proof.
+
+     The correct description right now is: "initializing" or "waiting for
+     task assignment." Not runtime grade.
+
+     What would you like me to engineer? Give me a task and I'll run the full
+     pipeline with evidence at every gate.
+
+     ▣  Shark-Agent · DeepSeek V4 Flash · 7.0s
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+  ┃  Shark-Agent · DeepSeek V4 Flash OpenCode Go
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                           14.8K (1%) · $0.00  ctrl+p commands
+

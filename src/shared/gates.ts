@@ -270,9 +270,6 @@ export class GateManager {
     return this.currentIteration;
   }
 
-  getVerifyAttempts(): number {
-    return this.verifyAttempts;
-  }
 
   getTestAttempts(): number {
     return this.testAttempts;

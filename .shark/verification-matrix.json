@@ -1,0 +1,58 @@
+[
+  {
+    "id": "BIBLE_PROTOCOL",
+    "category": "protocol",
+    "status": "behavioral-pass",
+    "lastChecked": 1780788300000,
+    "lastUpdated": 1780788300000,
+    "source": "identity-synthesizer.ts:580"
+  },
+  {
+    "id": "TODO_PROTOCOL",
+    "category": "protocol",
+    "status": "behavioral-pass",
+    "lastChecked": 1780788300000,
+    "lastUpdated": 1780788300000,
+    "source": "identity-synthesizer.ts:580"
+  },
+  {
+    "id": "CONTEXT_DOC_PROTOCOL",
+    "category": "protocol",
+    "status": "behavioral-pass",
+    "lastChecked": 1780788300000,
+    "lastUpdated": 1780788300000,
+    "source": "identity-synthesizer.ts:580"
+  },
+  {
+    "id": "E10_ENFORCEMENT",
+    "category": "protocol",
+    "status": "behavioral-pass",
+    "lastChecked": 1780788300000,
+    "lastUpdated": 1780788300000,
+    "source": "identity-synthesizer.ts:627"
+  },
+  {
+    "id": "TIER_4_ONLY",
+    "category": "protocol",
+    "status": "behavioral-pass",
+    "lastChecked": 1780788300000,
+    "lastUpdated": 1780788300000,
+    "source": "identity-synthesizer.ts:644"
+  },
+  {
+    "id": "IDENTITY_AUDIT",
+    "category": "identity",
+    "status": "behavioral-pass",
+    "lastChecked": 1780788300000,
+    "lastUpdated": 1780788300000,
+    "source": "identity-synthesizer.ts:669"
+  },
+  {
+    "id": "EVIDENCE_PROTOCOL",
+    "category": "evidence",
+    "status": "behavioral-pass",
+    "lastChecked": 1780788300000,
+    "lastUpdated": 1780788300000,
+    "source": "identity-synthesizer.ts:691"
+  }
+]

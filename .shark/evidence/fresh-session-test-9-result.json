@@ -1,0 +1,38 @@
+{
+  "test": 9,
+  "name": "Context Doc Write/Edit Argument Extraction",
+  "description": "Context management lobe must provide warm context bullets for write/edit/read/glob/bash/shark-browser-test",
+  "result": "PASS",
+  "timestamp": "2026-06-06T11:37:00Z",
+  "evidence": {
+    "warmContextCoverageAdded": {
+      "write": "[CTX] Evidence: after write, run browser-test for HTML files. Capture raw output for evidence.",
+      "edit": "[CTX] Evidence: after write, run browser-test for HTML files. Capture raw output for evidence.",
+      "read": "[CTX] Bible: reading context files. Verify bible content was absorbed, not just file-opened.",
+      "glob": "[CTX] Bible: reading context files. Verify bible content was absorbed, not just file-opened.",
+      "bash": "[CTX] Container: commands run inside shark-* container only. Never --privileged, never host.",
+      "shark-browser-test": "[CTX] Browser test: expects container with agent-browser installed. Auto-spawns shark-browser-{date} if missing."
+    },
+    "preexistingCoverage": [
+      "shark-spawn-container",
+      "shark-test-runner",
+      "todowrite",
+      "shark-gate (advance)"
+    ],
+    "newCoverage": [
+      "write",
+      "edit",
+      "read",
+      "glob",
+      "bash",
+      "shark-browser-test"
+    ],
+    "bulletCount": 10,
+    "bulletTokenLimit": "Under 50 tokens each",
+    "argumentExtraction": "updateRelevantDocs extracts filePath from write/edit args for context doc updates"
+  },
+  "criteria": {
+    "passCondition": "All 6 missing tools now have warm context bullets (write, edit, read, glob, bash, shark-browser-test)",
+    "failCondition": "Any of the 6 missing tools still returns null from injectWarmContext"
+  }
+}

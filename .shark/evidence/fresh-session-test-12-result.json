@@ -1,0 +1,46 @@
+{
+  "test": 12,
+  "name": "Tool Argument Project Detection",
+  "description": "Planning brain must detect project from tool arguments by scanning file paths",
+  "result": "PASS",
+  "timestamp": "2026-06-06T11:38:30Z",
+  "evidence": {
+    "detectionMethod": "detectProjectFromArgs scans args JSON for path-like strings, walks up directory tree looking for .sharkconfig",
+    "testCases": [
+      {
+        "tool": "write",
+        "args": { "filePath": "/tmp/project-a/src/game.js" },
+        "expectedProject": "project-a",
+        "configFound": true,
+        "projectRoot": "/tmp/project-a",
+        "pass": true
+      },
+      {
+        "tool": "read",
+        "args": { "filePath": "/tmp/project-b/README.md" },
+        "expectedProject": "session-default",
+        "configFound": false,
+        "projectRoot": null,
+        "pass": true
+      },
+      {
+        "tool": "bash",
+        "args": { "command": "ls /tmp/project-a/" },
+        "expectedProject": "project-a",
+        "configFound": true,
+        "projectRoot": "/tmp/project-a",
+        "pass": true
+      }
+    ],
+    "allPassed": true,
+    "cacheBehavior": "Caches project root by file path to avoid re-scanning on every tool call",
+    "implementation": {
+      "file": "src/shark/planning-brain/planning-brain-registry.ts",
+      "methods": ["detectProjectFromArgs", "findProjectRoot"]
+    }
+  },
+  "criteria": {
+    "passCondition": "Planning brain detects project-a from /tmp/project-a paths, uses session default for /tmp/project-b paths",
+    "failCondition": "Planning brain uses cwd or session default for all tool calls regardless of path"
+  }
+}

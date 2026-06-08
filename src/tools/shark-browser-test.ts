@@ -147,11 +147,15 @@ export function createSharkBrowserTestTool() {
 
       try {
         fs.mkdirSync(browserTestDir, { recursive: true });
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       try {
         dockerExec(container, 'pkill -f "python3 -m http.server" 2>/dev/null; true');
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       try {
         dockerExec(container, `cd ${JSON.stringify(fileDir)} && python3 -m http.server ${port} --bind 127.0.0.1 &>/dev/null &`);
@@ -185,7 +189,9 @@ export function createSharkBrowserTestTool() {
           JSON.stringify({ready: true, url: window.location.href});
         " 2>&1`);
         result.syntaxPass = true;
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       await new Promise(r => setTimeout(r, 1000));
 
@@ -195,7 +201,9 @@ export function createSharkBrowserTestTool() {
         if (Array.isArray(parsed)) {
           result.runtimeErrors = parsed;
         }
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       try {
         const domResult = dockerExec(container, `agent-browser eval "
@@ -211,11 +219,15 @@ export function createSharkBrowserTestTool() {
         " 2>&1`);
         const domData = JSON.parse(domResult);
         result.domCheck = domData;
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       try {
         dockerExec(container, `agent-browser screenshot "${screenshotPath}" 2>&1`);
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       try {
         const screenshotB64 = dockerExec(container, `cat "${screenshotPath}" | base64 -w0 2>/dev/null || cat "${screenshotPath}" | base64 2>/dev/null`);
@@ -239,16 +251,24 @@ export function createSharkBrowserTestTool() {
             );
             const vlmData = JSON.parse(vlmResult);
             result.visualAnalysis = vlmData.choices?.[0]?.message?.content || '';
-          } catch {}
+          } catch (err) {
+            console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+          }
         }
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       try {
         dockerExec(container, 'agent-browser close 2>&1');
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
       try {
         dockerExec(container, 'pkill -f "python3 -m http.server" 2>/dev/null; true');
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       const hasFatalErrors = result.runtimeErrors.length > 0;
       const hasRequiredDom = result.domCheck && (result.domCheck as Record<string, unknown>).hasCanvas === true;
@@ -260,7 +280,9 @@ export function createSharkBrowserTestTool() {
           path.join(browserTestDir, 'BrowserTestResult.json'),
           JSON.stringify(result, null, 2),
         );
-      } catch {}
+      } catch (err) {
+        console.error('[ERROR] shark-browser-test: execute:', err instanceof Error ? err.message : String(err));
+      }
 
       return JSON.stringify({
         success: result.overallPassed,

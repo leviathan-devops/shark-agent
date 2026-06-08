@@ -51,13 +51,17 @@ export class RGEStateMachine {
       };
     }
 
-    if (report.overallPassed) {
-      this.state = 'audit-complete';
-      return { success: true, nextState: 'audit-complete' };
-    } else {
-      this.state = 'audit-failed';
-      return { success: true, nextState: 'audit-failed' };
+    const target: TestEngineerState = report.overallPassed ? 'audit-complete' : 'audit-failed';
+    if (!this.canTransitionTo(target)) {
+      return {
+        success: false,
+        nextState: this.state,
+        error: `Invalid transition from '${this.state}' to '${target}'`
+      };
     }
+
+    this.state = target;
+    return { success: true, nextState: target };
   }
 
   reset(): void {

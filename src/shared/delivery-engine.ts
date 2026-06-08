@@ -191,7 +191,7 @@ function generateBuildReport(config: DeliveryConfig): string {
     '',
     '## Architecture Overview',
     '',
-    'Shark v4.9.8 — Triple-Brain Parallel Architecture Plugin for OpenCode.',
+    'Shark v4.9.9 — Triple-Brain Parallel Architecture Plugin for OpenCode.',
     '',
     '### Gate Chain',
     '`PLAN → BUILD → VERIFY → TEST → AUDIT → DELIVERY`',
@@ -280,6 +280,46 @@ export function generateDelivery(config: DeliveryConfig): DeliveryResult {
     fs.writeFileSync(path.join(evidenceDir, 'BUILD_REPORT.md'), buildReport);
   } catch {
     // evidence write failure — non-fatal
+  }
+
+  const predecessorGates: GateName[] = ['plan', 'build', 'verify', 'test', 'audit'];
+  const evidenceBase = config.evidenceBase;
+  for (const gate of predecessorGates) {
+    const gateDir = path.join(evidenceBase, gate);
+    if (!fs.existsSync(gateDir)) {
+      return {
+        success: false,
+        shipDir,
+        changelogPath,
+        debugLogPath,
+        buildReportPath,
+        identityStripped: false,
+        error: 'Cannot deliver: predecessor gate "' + gate + '" has no evidence directory',
+      };
+    }
+    const entries = fs.readdirSync(gateDir);
+    let gatePassed = false;
+    for (const entry of entries) {
+      const evidencePath = path.join(gateDir, entry, 'evidence.json');
+      if (fs.existsSync(evidencePath)) {
+        try {
+          const raw = fs.readFileSync(evidencePath, 'utf-8');
+          const data = JSON.parse(raw);
+          if (data.passed === true) { gatePassed = true; break; }
+        } catch { /* skip invalid */ }
+      }
+    }
+    if (!gatePassed) {
+      return {
+        success: false,
+        shipDir,
+        changelogPath,
+        debugLogPath,
+        buildReportPath,
+        identityStripped: false,
+        error: 'Cannot deliver: predecessor gate "' + gate + '" has no passing evidence',
+      };
+    }
   }
 
   return {

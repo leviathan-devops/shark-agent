@@ -1,0 +1,24 @@
+  ┃  Wait, I see shark-agent.log in /opt/opencode/.shark/shark-agent.log.
+  ┃  So /opt/opencode/.shark/ exists.
+  ┃
+  ┃  What if the project is in /tmp?
+  ┃  I'll try glob(pattern="/tmp/**/*").
+
+     The codebase and dist directory are not appearing in the current
+     directory or the .shark directory. My previous search for source files
+     also yielded no results.
+
+     It is possible the project is located in another directory, such as /tmp.
+      I will attempt to search for source files in /tmp.
+
+     ✱ Glob "/tmp/**/*"
+
+     ▣  Shark · Gemma 4 26B A4B IT
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+  ┃  Shark · Gemma 4 26B A4B IT Google
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+   ■■■⬝⬝⬝⬝⬝ gemini is way too hot right now (click to expand) [retrying attempt
+

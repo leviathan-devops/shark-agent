@@ -1,0 +1,24 @@
+  ┃      4. file:///root/.config/opencode/plugins/agent-vision/dist/index.js
+  ┃      5. file:///root/.config/opencode/plugins/trident/dist/index.js
+  ┃  - Agents: There are 3 agents listed in the "agent" object.
+  ┃      1. shark
+  ┃      2. spider
+  ┃      3. trident
+  ┃
+  ┃  I will now provide the answer.
+
+     Based on /root/.config/opencode/opencode.json:
+
+     * Model: google/gemma-4-26b-a4b-it
+     * Plugins: 5
+     * Agents: 3 (shark, spider, trident)
+
+     ▣  Shark · Gemma 4 26B A4B IT · 12.0s
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /opt/opencode/
+MANDATORY_VERIFICATION_SPEC.json
+  ┃  Shark · Gemma 4 26B A4B IT Google
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                                   13.3K (5%)  ctrl+p commands
+

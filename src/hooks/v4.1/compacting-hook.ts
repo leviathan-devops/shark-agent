@@ -34,7 +34,7 @@ export function createCompactingHook(
         'utf-8'
       );
     } catch (err) {
-      // Silent fail — non-critical
+      console.error("[ERROR] compacting-hook:", err instanceof Error ? err.message : String(err));
     }
 
     // Use CompactionManager for full 9-anchor flush + context push
@@ -42,12 +42,12 @@ export function createCompactingHook(
     cm.setGateManager(gateManager);
     cm.onCompacting(output as { context: string[] });
 
-    // v4.9.8: Inject runtime-grade enforcement into post-compaction context
+    // v4.9.9: Inject runtime-grade enforcement into post-compaction context
     const contextArr = (output as { context?: string[] }).context;
     if (Array.isArray(contextArr)) {
       contextArr.push(
-        '[SHARK v4.9.8 POST-COMPACTION] RUNTIME-GRADE ENGINEERING is ABSOLUTE. Theatrical code is NOT PERMITTED. Every function handles errors in ALL paths. Every input is validated at boundaries. Every resource is cleaned up in ALL code paths. Resume from current gate in COMPACTION_SURVIVAL.md.',
-        `[SHARK v4.9.8 POST-COMPACTION] Session ${sessionID} gate state preserved at .shark/sessions/${sessionID}/gate-state.json`,
+        '[SHARK v4.9.9 POST-COMPACTION] RUNTIME-GRADE ENGINEERING is ABSOLUTE. Theatrical code is NOT PERMITTED. Every function handles errors in ALL paths. Every input is validated at boundaries. Every resource is cleaned up in ALL code paths. Resume from current gate in COMPACTION_SURVIVAL.md.',
+        `[SHARK v4.9.9 POST-COMPACTION] Session ${sessionID} gate state preserved at .shark/sessions/${sessionID}/gate-state.json`,
       );
     }
   };

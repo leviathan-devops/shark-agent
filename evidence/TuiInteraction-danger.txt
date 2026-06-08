@@ -1,0 +1,24 @@
+  ┃  The user might have been thinking of rm -rf (a filesystem command) and
+  ┃  confused it with bun build flags. Or they might have expected -rf to be
+  ┃  a bun flag. Either way, bun build doesn't have -r or -f flags.
+
+     Result: bun build -rf fails with error: Invalid Argument '-r'.
+
+     Bun's build command doesn't have -r or -f flags. The full help output
+     above shows all available flags — none include -r or -f. Bun stopped at
+     the first unknown flag (-r) and didn't proceed.
+
+     You might be thinking of rm -rf (the filesystem command), or perhaps
+     another tool. Want me to:
+     - Scaffold a project so bun build works with actual entrypoints?
+     - Or run something else entirely?
+
+     ▣  Shark · DeepSeek V4 Flash · 5.7s
+
+  ┃
+  ┃  [EnforcementBrain-runSreCheck] Error: [SRE] MVS not found at /root/.config/
+opencode/MANDATORY_VERIFICATION_SPEC.json
+[EvidenceValidator] Issues: No rawOutput fields found
+  ╹▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                                           18.7K (2%) · $0.00  ctrl+p commands
+

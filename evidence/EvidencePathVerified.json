@@ -1,0 +1,19 @@
+{
+  "evidencePath": "/home/leviathan/OPENCODE_WORKSPACE/Shared Workspace Context/Spider Agent/Active_Projects/SHARK_V4.9.9/evidence/",
+  "verifiedAt": "2026-06-07T07:08:00Z",
+  "filesVerified": {
+    "ContainerSpawnResult.json": { "exists": true, "size": 935 },
+    "ContainerTestResult.json": { "exists": true, "size": 3155 },
+    "TuiInteraction-task1-26b.txt": { "exists": true, "size": 1503, "source": "tmux capture-pane TASK 1 initial" },
+    "TuiInteraction-task1-26b-final.txt": { "exists": true, "size": 1473, "source": "tmux capture-pane TASK 1 final" },
+    "TuiInteraction-task2-clean.txt": { "exists": true, "size": 1004, "source": "tmux capture-pane TASK 2 config audit" },
+    "TuiInteraction-task3-tab.txt": { "exists": true, "size": 1092, "source": "tmux capture-pane TASK 3 tab toggle" },
+    "TuiInteraction-task4-negative.txt": { "exists": true, "size": 1099, "source": "tmux capture-pane TASK 4 negative test" },
+    "TuiInteraction-full-session.txt": { "exists": true, "size": 528, "source": "tmux capture-pane continuous" }
+  },
+  "totalFilesOnDisk": 8,
+  "allRequiredPresent": true,
+  "captureMethod": "tmux capture-pane -t test-shark-v499 -p (Tier 4 gold standard)",
+  "container": "test-shark-v499",
+  "tmuxSession": "test-shark-v499"
+}
