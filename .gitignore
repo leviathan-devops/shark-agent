@@ -1,0 +1,5 @@
+node_modules/
+.shark/
+*.log
+bun.lock
+opencode.json

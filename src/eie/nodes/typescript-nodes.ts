@@ -1,0 +1,836 @@
+/**
+ * src/eie/nodes/typescript-nodes.ts — 30 TypeScript Deep Knowledge Nodes
+ *
+ * From KB-01:
+ * - Compiler API setup patterns
+ * - TypeChecker operations (getTypeAtLocation, isTypeAssignableTo, etc.)
+ * - AST walking patterns (forEachChild, type guards)
+ * - Symbol navigation
+ * - Virtual compiler host
+ * - Each of the 7 Semantic Firewall rules as knowledge nodes
+ *
+ * Source: KB-01_TYPESCRIPT_DEEP_KNOWLEDGE.md
+ */
+
+import type { KnowledgeNode } from '../types';
+
+// ══ COMPILER API SETUP (5 nodes) ═══════════════════════════════
+
+export const TS_COMPILER_PROGRAM: KnowledgeNode = {
+  id: 'TS-COMPILER-PROGRAM',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'COMPILER API — PROGRAM CREATION: Use ts.createProgram with file list and compiler options to create a type-aware analysis context.',
+  detectionMethod: 'Find code that creates SourceFiles manually without Program. Flag — missing type context.',
+  fixTemplate: 'const program = ts.createProgram(fileNames, compilerOptions); const checker = program.getTypeChecker();',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-COMPILER-PROGRAM: Use ts.createProgram for type-aware analysis, not manual SourceFile.',
+  warheadTemplate: 'Program creation enables full type system access including TypeChecker.',
+  evidenceSpec: { id: 'ts-program', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-COMPILER-CHECKER', 'TS-COMPILER-HOST', 'AO3-TYPECHECKER'],
+  selfVerified: true,
+};
+
+export const TS_COMPILER_CHECKER: KnowledgeNode = {
+  id: 'TS-COMPILER-CHECKER',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'COMPILER API — TYPECHECKER: Use program.getTypeChecker() to access type information at AST nodes.',
+  detectionMethod: 'Find code that analyzes AST without TypeChecker. Flag — no type resolution.',
+  fixTemplate: 'const checker = program.getTypeChecker(); const type = checker.getTypeAtLocation(node);',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-COMPILER-CHECKER: Use getTypeChecker() for type resolution at nodes.',
+  warheadTemplate: 'TypeChecker provides full type information including generics, unions, and assignability.',
+  evidenceSpec: { id: 'ts-checker', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-COMPILER-PROGRAM', 'TS-CHECKER-TYPE-AT-LOC', 'AO3-TYPECHECKER'],
+  selfVerified: true,
+};
+
+export const TS_COMPILER_HOST: KnowledgeNode = {
+  id: 'TS-COMPILER-HOST',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'COMPILER API — VIRTUAL HOST: Use a custom CompilerHost for in-memory compilation without touching filesystem.',
+  detectionMethod: 'Find code that creates temporary files for compilation. Flag — use virtual host instead.',
+  fixTemplate: 'const host = ts.createCompilerHost(opts); // Override getSourceFile for in-memory files',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-COMPILER-HOST: Use virtual CompilerHost for in-memory compilation.',
+  warheadTemplate: 'Virtual CompilerHost enables compilation without filesystem side effects.',
+  evidenceSpec: { id: 'ts-host', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-COMPILER-PROGRAM'],
+  selfVerified: true,
+};
+
+export const TS_COMPILER_OPTIONS: KnowledgeNode = {
+  id: 'TS-COMPILER-OPTIONS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'COMPILER API — OPTIONS: Set strict: true, target: ESNext, moduleResolution: bundler. Match tsconfig.json settings.',
+  detectionMethod: 'Compare program compiler options against tsconfig.json. Flag mismatches.',
+  fixTemplate: 'const opts: ts.CompilerOptions = { strict: true, target: ts.ScriptTarget.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler };',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY'] }],
+  bulletTemplate: 'TS-COMPILER-OPTIONS: Options mismatch between tsconfig and runtime. Synchronize.',
+  warheadTemplate: 'Compiler options must match tsconfig.json to produce consistent results.',
+  evidenceSpec: { id: 'ts-options', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'warn',
+  layer: 2,
+  links: ['TS-COMPILER-PROGRAM', 'TEST-CONFIG-DIFF'],
+  selfVerified: true,
+};
+
+export const TS_SOURCE_FILE_PARSE: KnowledgeNode = {
+  id: 'TS-SOURCE-FILE-PARSE',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SOURCE FILE PARSING: Use ts.createSourceFile for fast AST-only analysis. Use Program for type-aware analysis.',
+  detectionMethod: 'Find manual string parsing instead of ts.createSourceFile. Flag.',
+  fixTemplate: 'const sf = ts.createSourceFile(path, content, ts.ScriptTarget.Latest, true /* setParentNodes */);',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-SOURCE-FILE-PARSE: Use ts.createSourceFile for AST parsing.',
+  warheadTemplate: 'ts.createSourceFile is the fast path for AST-only analysis.',
+  evidenceSpec: { id: 'ts-parse', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 2,
+  links: ['TS-COMPILER-PROGRAM', 'AO2-AST-WALKER'],
+  selfVerified: true,
+};
+
+// ══ TYPECHECKER OPERATIONS (5 nodes) ══════════════════════════
+
+export const TS_CHECKER_TYPE_AT_LOC: KnowledgeNode = {
+  id: 'TS-CHECKER-TYPE-AT-LOC',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'TYPECHECKER — getTypeAtLocation: Get the resolved type at an AST node. Core operation for type-aware rules.',
+  detectionMethod: 'Find type assertions without TypeChecker verification. Flag.',
+  fixTemplate: 'const type = checker.getTypeAtLocation(node); const typeStr = checker.typeToString(type);',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-CHECKER-TYPE-AT-LOC: Use getTypeAtLocation to resolve types at nodes.',
+  warheadTemplate: 'getTypeAtLocation provides the fully resolved type including generics and unions.',
+  evidenceSpec: { id: 'ts-typeatloc', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-COMPILER-CHECKER', 'TS-CHECKER-ASSIGNABLE'],
+  selfVerified: true,
+};
+
+export const TS_CHECKER_ASSIGNABLE: KnowledgeNode = {
+  id: 'TS-CHECKER-ASSIGNABLE',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'TYPECHECKER — isTypeAssignableTo: Check if source type is assignable to target type. Core for cast validation.',
+  detectionMethod: 'Find `as` casts without isTypeAssignableTo verification. Flag.',
+  fixTemplate: 'const isSafe = checker.isTypeAssignableTo(sourceType, targetType); if (!isSafe) report("unsafe cast");',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-CHECKER-ASSIGNABLE: Use isTypeAssignableTo to validate casts.',
+  warheadTemplate: 'isTypeAssignableTo is the definitive check for type safety of assertions.',
+  evidenceSpec: { id: 'ts-assignable', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-TYPE-AT-LOC', 'P2-TYPE-CERTAINTY', 'AO3-TYPECHECKER'],
+  selfVerified: true,
+};
+
+export const TS_CHECKER_SYMBOL: KnowledgeNode = {
+  id: 'TS-CHECKER-SYMBOL',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'TYPECHECKER — getSymbolAtLocation: Get the symbol (declaration) at a node. Core for cross-reference analysis.',
+  detectionMethod: 'Find code that manually tracks declarations. Flag — use symbols.',
+  fixTemplate: 'const symbol = checker.getSymbolAtLocation(node); const decls = symbol?.getDeclarations();',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-CHECKER-SYMBOL: Use getSymbolAtLocation for declaration tracking.',
+  warheadTemplate: 'Symbols provide the link between usage sites and declaration sites.',
+  evidenceSpec: { id: 'ts-symbol', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-TYPE-AT-LOC', 'TS-SYMBOL-EXPORTS'],
+  selfVerified: true,
+};
+
+export const TS_CHECKER_SIGNATURE: KnowledgeNode = {
+  id: 'TS-CHECKER-SIGNATURE',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'TYPECHECKER — getResolvedSignature: Get the resolved call signature for a function call. Core for overload validation.',
+  detectionMethod: 'Find function call analysis without signature resolution. Flag.',
+  fixTemplate: 'const sig = checker.getResolvedSignature(callNode); const returnType = sig.getReturnType();',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-CHECKER-SIGNATURE: Use getResolvedSignature for call analysis.',
+  warheadTemplate: 'Signature resolution provides parameter types, return types, and overload selection.',
+  evidenceSpec: { id: 'ts-signature', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-TYPE-AT-LOC'],
+  selfVerified: true,
+};
+
+export const TS_CHECKER_PROPS: KnowledgeNode = {
+  id: 'TS-CHECKER-PROPS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'TYPECHECKER — getPropertiesOfType: Get all properties of a type. Core for interface validation.',
+  detectionMethod: 'Find manual property enumeration. Flag — use getPropertiesOfType.',
+  fixTemplate: 'const props = checker.getPropertiesOfType(type); const hasMethod = props.some(p => p.flags & ts.SymbolFlags.Method);',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-CHECKER-PROPS: Use getPropertiesOfType for property analysis.',
+  warheadTemplate: 'Property enumeration via TypeChecker includes inherited and mapped properties.',
+  evidenceSpec: { id: 'ts-props', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-TYPE-AT-LOC'],
+  selfVerified: true,
+};
+
+// ══ AST WALKING PATTERNS (4 nodes) ════════════════════════════
+
+export const TS_AST_FOREACH_CHILD: KnowledgeNode = {
+  id: 'TS-AST-FOREACH-CHILD',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'AST WALKING — forEachChild: Visit each child of a node using the visitor pattern. Correct traversal method.',
+  detectionMethod: 'Find manual child iteration (node.getChildren().forEach). Flag — use forEachChild.',
+  fixTemplate: 'function visit(node: ts.Node) { /* process */ ts.forEachChild(node, visit); }',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-AST-FOREACH-CHILD: Use ts.forEachChild for traversal, not getChildren().forEach.',
+  warheadTemplate: 'forEachChild uses the correct visitor pattern and handles all node types.',
+  evidenceSpec: { id: 'ts-walk', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 2,
+  links: ['TS-AST-GUARDS', 'TS-SOURCE-FILE-PARSE', 'AO2-AST-WALKER'],
+  selfVerified: true,
+};
+
+export const TS_AST_GUARDS: KnowledgeNode = {
+  id: 'TS-AST-GUARDS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'AST WALKING — TYPE GUARDS: Use ts.isFunctionDeclaration, ts.isCallExpression, etc. for type-safe node checks.',
+  detectionMethod: 'Find manual kind checks (node.kind === ts.SyntaxKind.X). Flag — use type guards.',
+  fixTemplate: 'if (ts.isCallExpression(node)) { const fn = node.expression; /* typed as Expression */ }',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-AST-GUARDS: Use ts.isXxx() type guards, not node.kind === checks.',
+  warheadTemplate: 'Type guards provide compile-time type narrowing, eliminating runtime cast errors.',
+  evidenceSpec: { id: 'ts-guards', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 2,
+  links: ['TS-AST-FOREACH-CHILD'],
+  selfVerified: true,
+};
+
+export const TS_AST_PARENT: KnowledgeNode = {
+  id: 'TS-AST-PARENT',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'AST WALKING — PARENT POINTERS: Create SourceFile with setParentNodes = true to enable node.parent traversal.',
+  detectionMethod: 'Find SourceFile creation without setParentNodes. Flag if parent traversal is needed.',
+  fixTemplate: 'const sf = ts.createSourceFile(path, content, target, true /* setParentNodes */);',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-AST-PARENT: Set setParentNodes=true for parent traversal.',
+  warheadTemplate: 'Parent pointers enable upward traversal from any node to its containing scope.',
+  evidenceSpec: { id: 'ts-parent', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 2,
+  links: ['TS-SOURCE-FILE-PARSE'],
+  selfVerified: true,
+};
+
+export const TS_AST_FACTORY: KnowledgeNode = {
+  id: 'TS-AST-FACTORY',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'AST WALKING — FACTORY: Use ts.factory for creating/modifying AST nodes programmatically.',
+  detectionMethod: 'Find string-based code generation instead of factory. Flag.',
+  fixTemplate: 'const node = ts.factory.createCallExpression(ts.factory.createIdentifier("fn"), undefined, []);',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-AST-FACTORY: Use ts.factory for AST creation, not string templates.',
+  warheadTemplate: 'Factory creates syntactically valid AST nodes without string parsing errors.',
+  evidenceSpec: { id: 'ts-factory', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 2,
+  links: ['TS-AST-FOREACH-CHILD'],
+  selfVerified: true,
+};
+
+// ══ SYMBOL NAVIGATION (4 nodes) ═══════════════════════════════
+
+export const TS_SYMBOL_EXPORTS: KnowledgeNode = {
+  id: 'TS-SYMBOL-EXPORTS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SYMBOL NAVIGATION — EXPORTS: Use checker.getExportsOfModule(symbol) to get all exported symbols of a module.',
+  detectionMethod: 'Find manual export scanning. Flag — use getExportsOfModule.',
+  fixTemplate: 'const moduleSymbol = checker.getSymbolAtLocation(sf); const exports = checker.getExportsOfModule(moduleSymbol);',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-SYMBOL-EXPORTS: Use getExportsOfModule for export analysis.',
+  warheadTemplate: 'Module exports analysis enables dead export detection and wire-don\'t-declare enforcement.',
+  evidenceSpec: { id: 'ts-exports', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-SYMBOL', 'IL09-WIRE-DONT-DECLARE', 'FM-12-DEAD-CODE'],
+  selfVerified: true,
+};
+
+export const TS_SYMBOL_ALIASES: KnowledgeNode = {
+  id: 'TS-SYMBOL-ALIASES',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SYMBOL NAVIGATION — ALIASES: Use checker.getAliasedSymbol(symbol) to resolve re-exported and aliased symbols.',
+  detectionMethod: 'Find import resolution that doesn\'t follow aliases. Flag.',
+  fixTemplate: 'if (symbol.flags & ts.SymbolFlags.Alias) { const resolved = checker.getAliasedSymbol(symbol); }',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-SYMBOL-ALIASES: Follow aliases with getAliasedSymbol for resolution.',
+  warheadTemplate: 'Alias resolution is needed for re-exports and import { X as Y } patterns.',
+  evidenceSpec: { id: 'ts-aliases', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-SYMBOL'],
+  selfVerified: true,
+};
+
+export const TS_SYMBOL_DECLARATIONS: KnowledgeNode = {
+  id: 'TS-SYMBOL-DECLARATIONS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SYMBOL NAVIGATION — DECLARATIONS: Use symbol.getDeclarations() to find where a symbol is declared.',
+  detectionMethod: 'Find manual declaration tracking. Flag — use symbol.getDeclarations().',
+  fixTemplate: 'const symbol = checker.getSymbolAtLocation(nameNode); const decls = symbol?.getDeclarations() ?? [];',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-SYMBOL-DECLARATIONS: Use getDeclarations() for declaration lookup.',
+  warheadTemplate: 'Declaration lookup finds where symbols are defined, enabling cross-file analysis.',
+  evidenceSpec: { id: 'ts-declarations', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-SYMBOL'],
+  selfVerified: true,
+};
+
+export const TS_SYMBOL_TYPE_FLAGS: KnowledgeNode = {
+  id: 'TS-SYMBOL-TYPE-FLAGS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SYMBOL NAVIGATION — FLAGS: Use symbol.flags and ts.SymbolFlags.* to classify symbols (Function, Class, Variable, etc.).',
+  detectionMethod: 'Find manual symbol classification by name. Flag — use flags.',
+  fixTemplate: 'if (symbol.flags & ts.SymbolFlags.Function) { /* it\'s a function */ }',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-SYMBOL-TYPE-FLAGS: Use symbol.flags & ts.SymbolFlags.X for classification.',
+  warheadTemplate: 'Symbol flags provide reliable classification regardless of naming conventions.',
+  evidenceSpec: { id: 'ts-flags', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-SYMBOL'],
+  selfVerified: true,
+};
+
+// ══ SEMANTIC FIREWALL RULES (7 nodes) ═════════════════════════
+
+export const TS_SF_NO_ANY: KnowledgeNode = {
+  id: 'TS-SF-NO-ANY',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SEMANTIC FIREWALL RULE 1 — NO ANY: `any` type is forbidden. Use `unknown` at boundaries and narrow.',
+  detectionMethod: 'AST: Find nodes where TypeChecker reports type as `any`. Also find explicit `: any` annotations.',
+  fixTemplate: 'Replace `any` with `unknown`. Add runtime narrowing: if (typeof val !== "string") throw.',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY', 'AUDIT'] }],
+  bulletTemplate: 'TS-SF-NO-ANY: `any` type at {line}. Replace with `unknown` and narrow.',
+  warheadTemplate: '`any` disables all type checking downstream. Use `unknown` and narrow at boundaries.',
+  evidenceSpec: { id: 'no-any', verify: 'rge-audit', minQuality: 0.95 },
+  severity: 'block',
+  layer: 3,
+  links: ['P2-TYPE-CERTAINTY', 'TS-CHECKER-TYPE-AT-LOC', 'SEC-CROSS-DETECTOR'],
+  selfVerified: true,
+};
+
+export const TS_SF_NO_ASYNCEXT: KnowledgeNode = {
+  id: 'TS-SF-NO-ASYNCEXT',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SEMANTIC FIREWALL RULE 2 — NO ASYNC IN CONSTRUCTOR/LIFECYCLE: Constructors cannot be async. Don\'t call async from sync lifecycle.',
+  detectionMethod: 'AST: Find constructor calls to async functions without guards.',
+  fixTemplate: 'Use async factory: static async create(): Promise<T> { ... } instead of async constructor.',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-SF-NO-ASYNCEXT: Async call in constructor at {line}. Use async factory pattern.',
+  warheadTemplate: 'Async in constructors creates floating promises and initialization race conditions.',
+  evidenceSpec: { id: 'no-async-ctor', verify: 'rge-audit', minQuality: 0.95 },
+  severity: 'warn',
+  layer: 4,
+  links: ['P9-ASYNC-DISCIPLINE', 'AP-FLOATING-PROMISE'],
+  selfVerified: true,
+};
+
+export const TS_SF_ERROR_RETURN: KnowledgeNode = {
+  id: 'TS-SF-ERROR-RETURN',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SEMANTIC FIREWALL RULE 3 — ERROR RETURN TYPE: Functions must return typed results, not throw+catch as control flow.',
+  detectionMethod: 'AST: Find functions that return `any` or `undefined` on error paths.',
+  fixTemplate: 'Return Result<T, E>: type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-SF-ERROR-RETURN: Untyped error return. Use Result<T, E> pattern.',
+  warheadTemplate: 'Explicit error returns make error handling visible in the type system.',
+  evidenceSpec: { id: 'typed-return', verify: 'rge-audit', minQuality: 0.95 },
+  severity: 'warn',
+  layer: 3,
+  links: ['P10-OUTPUT-CONTRACT', 'P3-ERROR-COMPLETENESS'],
+  selfVerified: true,
+};
+
+export const TS_SF_IMPORT_GUARD: KnowledgeNode = {
+  id: 'TS-SF-IMPORT-GUARD',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SEMANTIC FIREWALL RULE 4 — IMPORT GUARD: All imports must be verified at runtime before use.',
+  detectionMethod: 'AST: Find ImportDeclarations where the imported symbol is used without a typeof guard.',
+  fixTemplate: 'import * as mod from "./mod.js"; if (typeof mod.fn !== "function") throw new Error("missing");',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-SF-IMPORT-GUARD: Import used without runtime verification. Add typeof guard.',
+  warheadTemplate: 'Import guards prevent load-time crashes from missing exports.',
+  evidenceSpec: { id: 'import-guard', verify: 'rge-audit', minQuality: 0.95 },
+  severity: 'block',
+  layer: 1,
+  links: ['P1-DEFENSIVE-IMPORT', 'FM-01-LOAD-TIME-CRASH'],
+  selfVerified: true,
+};
+
+export const TS_SF_CLEANUP_PAIRED: KnowledgeNode = {
+  id: 'TS-SF-CLEANUP-PAIRED',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SEMANTIC FIREWALL RULE 5 — CLEANUP PAIRED: Every resource acquisition must have a paired cleanup in a finally block.',
+  detectionMethod: 'CFG: For each setInterval/setTimeout/open, trace for clearInterval/clearTimeout/close in finally.',
+  fixTemplate: 'const id = setInterval(fn, ms); try { work(); } finally { clearInterval(id); }',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-SF-CLEANUP-PAIRED: Resource without paired cleanup. Add try/finally.',
+  warheadTemplate: 'Paired cleanup prevents resource leaks and zombie timers.',
+  evidenceSpec: { id: 'cleanup-paired', verify: 'rge-audit', minQuality: 0.95 },
+  severity: 'block',
+  layer: 4,
+  links: ['P4-RESOURCE-LIFECYCLE', 'FM-18-ZOMBIE-TIMER'],
+  selfVerified: true,
+};
+
+export const TS_SF_NO_HARD_PATH: KnowledgeNode = {
+  id: 'TS-SF-NO-HARD-PATH',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SEMANTIC FIREWALL RULE 6 — NO HARDCODED PATHS: All paths must use dynamic resolution.',
+  detectionMethod: 'Regex: Scan for machine-specific path patterns outside path.join/path.resolve.',
+  fixTemplate: 'const dir = path.join(__dirname, "..", "data");',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-SF-NO-HARD-PATH: Hardcoded path at {line}. Use path.join(__dirname, ...).',
+  warheadTemplate: 'Hardcoded paths break across environments. Use dynamic resolution.',
+  evidenceSpec: { id: 'no-hard-path', verify: 'rge-audit', minQuality: 0.95 },
+  severity: 'block',
+  layer: 2,
+  links: ['P7-PATH-RESOLUTION', 'IL07-ENVIRONMENT-INDEPENDENCE'],
+  selfVerified: true,
+};
+
+export const TS_SF_HANDLE_ZERO: KnowledgeNode = {
+  id: 'TS-SF-HANDLE-ZERO',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SEMANTIC FIREWALL RULE 7 — HANDLE ZERO LENGTH: Empty collections must be handled explicitly before operations.',
+  detectionMethod: 'AST: Find .every(), .some(), Set.size comparisons without preceding length === 0 guard.',
+  fixTemplate: 'if (items.length === 0) return { valid: false, reason: "empty" };',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-SF-HANDLE-ZERO: Collection operation without empty guard. Add length === 0 check.',
+  warheadTemplate: 'Zero-length collections produce vacuous results. Guard explicitly.',
+  evidenceSpec: { id: 'handle-zero', verify: 'rge-audit', minQuality: 0.95 },
+  severity: 'warn',
+  layer: 2,
+  links: ['P12-EMPTY-STATE-GUARD', 'IL12-EMPTY-IS-NOT-SUCCESS'],
+  selfVerified: true,
+};
+
+// ══ ADDITIONAL TS KNOWLEDGE (5 nodes) ═════════════════════════
+
+export const TS_PRINTER: KnowledgeNode = {
+  id: 'TS-PRINTER',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'PRINTER API: Use ts.createPrinter() to convert AST back to source code text.',
+  detectionMethod: 'Find code that manually stringifies AST. Flag — use printer.',
+  fixTemplate: 'const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }); const code = printer.printNode(ts.EmitHint.Unspecified, node, sf);',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-PRINTER: Use ts.createPrinter for AST-to-code conversion.',
+  warheadTemplate: 'Printer produces correctly formatted code from AST nodes.',
+  evidenceSpec: { id: 'ts-printer', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 2,
+  links: ['TS-AST-FACTORY'],
+  selfVerified: true,
+};
+
+export const TS_TRANSFORM: KnowledgeNode = {
+  id: 'TS-TRANSFORM',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'TRANSFORM API: Use ts.transform(sourceFile, transformers) to apply AST transformations.',
+  detectionMethod: 'Find manual AST rewriting. Flag — use transform API.',
+  fixTemplate: 'const result = ts.transform(sf, [myTransformer]); const transformed = result.transformed[0];',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-TRANSFORM: Use ts.transform for AST modifications.',
+  warheadTemplate: 'Transform API applies visitor-based modifications to the AST.',
+  evidenceSpec: { id: 'ts-transform', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 2,
+  links: ['TS-AST-FACTORY', 'TS-AST-FOREACH-CHILD'],
+  selfVerified: true,
+};
+
+export const TS_DIAGNOSTICS: KnowledgeNode = {
+  id: 'TS-DIAGNOSTICS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'DIAGNOSTICS: Use program.getSemanticDiagnostics() and getSyntacticDiagnostics() for error analysis.',
+  detectionMethod: 'Find code that ignores diagnostics. Flag — always check.',
+  fixTemplate: 'const diags = ts.getPreEmitDiagnostics(program); if (diags.length > 0) { /* report */ }',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY'] }],
+  bulletTemplate: 'TS-DIAGNOSTICS: Check diagnostics with getPreEmitDiagnostics.',
+  warheadTemplate: 'Diagnostics provide compile-time errors including type mismatches and syntax errors.',
+  evidenceSpec: { id: 'ts-diagnostics', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-COMPILER-PROGRAM'],
+  selfVerified: true,
+};
+
+export const TS_GENERIC_CONSTRAINTS: KnowledgeNode = {
+  id: 'TS-GENERIC-CONSTRAINTS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'GENERIC CONSTRAINTS: Use `extends` constraints on generics. Verify constraints with TypeChecker.',
+  detectionMethod: 'AST: Find type parameters without constraints. Check TypeChecker for constraint satisfaction.',
+  fixTemplate: 'function fn<T extends { id: string }>(val: T): T { return val; }',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY'] }],
+  bulletTemplate: 'TS-GENERIC-CONSTRAINTS: Unconstrained generic. Add extends constraint.',
+  warheadTemplate: 'Generic constraints prevent invalid type arguments and improve type inference.',
+  evidenceSpec: { id: 'ts-generics', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-ASSIGNABLE'],
+  selfVerified: true,
+};
+
+export const TS_CONDITIONAL_TYPES: KnowledgeNode = {
+  id: 'TS-CONDITIONAL-TYPES',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'CONDITIONAL TYPES: Use conditional types (T extends U ? X : Y) for type-level logic. Verify resolution with TypeChecker.',
+  detectionMethod: 'Find complex conditional types. Verify they resolve correctly with TypeChecker.',
+  fixTemplate: 'type IsString<T> = T extends string ? true : false;',
+  conditions: [{ field: 'gate', op: 'in', value: ['VERIFY'] }],
+  bulletTemplate: 'TS-CONDITIONAL-TYPES: Verify conditional type resolution with TypeChecker.',
+  warheadTemplate: 'Conditional types enable sophisticated type-level programming.',
+  evidenceSpec: { id: 'ts-conditional', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CHECKER-TYPE-AT-LOC'],
+  selfVerified: true,
+};
+
+// ══ ADVANCED TYPESCRIPT TYPES (14 nodes) ═══════════════════════
+
+export const TS_ADVANCED_CONDITIONAL_TYPES: KnowledgeNode = {
+  id: 'TS-ADVANCED-CONDITIONAL-TYPES',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'ADVANCED CONDITIONAL TYPES: Use distributive conditional types (T extends U ? X : Y over unions) to filter and map unions at the type level.',
+  detectionMethod: 'Find manual union filtering (Exclude, Extract reimplemented). Flag overly complex conditional type chains.',
+  fixTemplate: 'type NonNullable<T> = T extends null | undefined ? never : T; // distributive conditional',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-CONDITIONAL-TYPES: Use distributive conditionals for union filtering.',
+  warheadTemplate: 'Distributive conditional types enable type-level union manipulation.',
+  evidenceSpec: { id: 'ts-adv-cond', verify: 'exec-tsc', minQuality: 0.90 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-CONDITIONAL-TYPES', 'TS-ADVANCED-MAPPED-TYPES'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_MAPPED_TYPES: KnowledgeNode = {
+  id: 'TS-ADVANCED-MAPPED-TYPES',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'ADVANCED MAPPED TYPES: Use mapped types ({ [K in keyof T]: ... }) to transform existing types — Readonly, Partial, Pick, Record are built-in mapped types.',
+  detectionMethod: 'Find manual type duplication that could be a mapped type transformation.',
+  fixTemplate: 'type Readonly<T> = { readonly [P in keyof T]: T[P]; }; type Optional<T> = { [P in keyof T]?: T[P]; };',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-MAPPED-TYPES: Use mapped types to transform existing types.',
+  warheadTemplate: 'Mapped types derive new types from existing ones without duplication.',
+  evidenceSpec: { id: 'ts-adv-mapped', verify: 'exec-tsc', minQuality: 0.90 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-CONDITIONAL-TYPES', 'TS-GENERIC-CONSTRAINTS'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_TEMPLATE_LITERAL: KnowledgeNode = {
+  id: 'TS-ADVANCED-TEMPLATE-LITERAL',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'TEMPLATE LITERAL TYPES: Use template literal types (`on${EventName}`) to create type-safe string unions from other types.',
+  detectionMethod: 'Find string-typed event names that could be derived from a union via template literal types.',
+  fixTemplate: 'type EventName = "click" | "hover"; type Handler = `on${Capitalize<EventName>}`; // "onClick" | "onHover"',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-TEMPLATE-LITERAL: Use template literal types for derived string unions.',
+  warheadTemplate: 'Template literal types create type-safe string patterns from existing unions.',
+  evidenceSpec: { id: 'ts-adv-tl', verify: 'exec-tsc', minQuality: 0.90 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-MAPPED-TYPES', 'TS-ADVANCED-KEYOF'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_KEYOF: KnowledgeNode = {
+  id: 'TS-ADVANCED-KEYOF',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'ADVANCED KEYOF: Use keyof with typeof to extract keys from runtime objects, and keyof with index types for flexible property access.',
+  detectionMethod: 'Find hardcoded string literal unions that could be derived via keyof typeof.',
+  fixTemplate: 'const config = { port: 3000, host: "localhost" } as const; type ConfigKey = keyof typeof config; // "port" | "host"',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-KEYOF: Derive key types from runtime objects via keyof typeof.',
+  warheadTemplate: 'keyof typeof keeps type-level keys in sync with runtime objects.',
+  evidenceSpec: { id: 'ts-adv-keyof', verify: 'exec-tsc', minQuality: 0.90 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-MAPPED-TYPES', 'TS-CHECKER-SYMBOL'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_INSTANCEOF: KnowledgeNode = {
+  id: 'TS-ADVANCED-INSTANCEOF',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'INSTANCEOF TYPE GUARD: instanceof narrows types at runtime — use for class-based type narrowing, not for plain objects.',
+  detectionMethod: 'Find typeof checks on class instances that should use instanceof. Flag instanceof across realm boundaries (iframes).',
+  fixTemplate: 'if (err instanceof TypeError) { /* narrowed to TypeError */ } // use for class narrowing',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-INSTANCEOF: Use instanceof for class-based runtime narrowing.',
+  warheadTemplate: 'instanceof narrows class instances at runtime, enabling safe type-specific handling.',
+  evidenceSpec: { id: 'ts-adv-instanceof', verify: 'exec-tsc', minQuality: 0.90 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-TYPE-GUARD', 'TS-AST-GUARDS'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_TYPE_GUARD: KnowledgeNode = {
+  id: 'TS-ADVANCED-TYPE-GUARD',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'CUSTOM TYPE GUARDS: Write user-defined type guard functions (x is Type) to narrow union types at runtime.',
+  detectionMethod: 'Find unsafe casts or as assertions that could be replaced with a custom type guard.',
+  fixTemplate: 'function isError(x: unknown): x is Error { return x instanceof Error; } if (isError(val)) { val.message; }',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-TYPE-GUARD: Write custom type guards instead of unsafe casts.',
+  warheadTemplate: 'Custom type guards narrow unknown types safely with runtime verification.',
+  evidenceSpec: { id: 'ts-adv-guard', verify: 'exec-tsc', minQuality: 0.95 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-INSTANCEOF', 'P2-TYPE-CERTAINTY', 'TS-SF-NO-ANY'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_TYPE_ASSERTION: KnowledgeNode = {
+  id: 'TS-ADVANCED-TYPE-ASSERTION',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'TYPE ASSERTION DISCIPLINE: Prefer type guards over assertions. Use const assertions (as const) for literal types. Use satisfies for type checking without widening.',
+  detectionMethod: 'Find excessive as assertions without preceding guards. Flag as any usage.',
+  fixTemplate: 'const config = { port: 3000 } as const; // const assertion. Use satisfies: const x = {...} satisfies Config;',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-TYPE-ASSERTION: Use as const and satisfies instead of as Type.',
+  warheadTemplate: 'Type assertions bypass the type system — use sparingly, prefer guards and satisfies.',
+  evidenceSpec: { id: 'ts-adv-assertion', verify: 'exec-tsc', minQuality: 0.90 },
+  severity: 'warn',
+  layer: 3,
+  links: ['TS-ADVANCED-TYPE-GUARD', 'TS-SF-NO-ANY', 'P2-TYPE-CERTAINTY'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_DECORATORS: KnowledgeNode = {
+  id: 'TS-ADVANCED-DECORATORS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'DECORATORS: Use decorators (@decorator) for metadata-driven cross-cutting concerns (logging, validation, authorization). Requires experimentalDecorators.',
+  detectionMethod: 'Find repeated cross-cutting patterns (logging, auth checks) that could be decorators.',
+  fixTemplate: 'function Log(target: any, key: string, desc: PropertyDescriptor) { const orig = desc.value; desc.value = function(...a) { console.log(key); return orig.apply(this, a); }; }',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-DECORATORS: Use decorators for cross-cutting concerns.',
+  warheadTemplate: 'Decorators reduce boilerplate for logging, validation, and authorization.',
+  evidenceSpec: { id: 'ts-adv-decorators', verify: 'exec-tsc', minQuality: 0.85 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-MIXINS', 'ARCH-DECORATOR'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_MIXINS: KnowledgeNode = {
+  id: 'TS-ADVANCED-MIXINS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'MIXINS: Use mixin functions to compose behaviors into classes without deep inheritance hierarchies.',
+  detectionMethod: 'Find deep inheritance chains (>3 levels) that could be flattened with mixins.',
+  fixTemplate: 'type Constructor<T = {}> = new (...args: any[]) => T; function Timestamped<T extends Constructor>(Base: T) { return class extends Base { timestamp = Date.now(); }; }',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-MIXINS: Use mixins for composable behavior instead of deep inheritance.',
+  warheadTemplate: 'Mixins compose reusable behaviors into classes without inheritance chains.',
+  evidenceSpec: { id: 'ts-adv-mixins', verify: 'exec-tsc', minQuality: 0.85 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-DECORATORS', 'AP-REFUSED-BEQUEST'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_GENERATORS: KnowledgeNode = {
+  id: 'TS-ADVANCED-GENERATORS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'GENERATORS: Use generator functions (function*) for lazy sequences and streaming data. Generators yield values on demand.',
+  detectionMethod: 'Find eager array creation that could be a lazy generator. Flag generators without proper return() cleanup.',
+  fixTemplate: 'function* naturals(): Generator<number> { let n = 1; while (true) yield n++; } const gen = naturals(); gen.next(); gen.return();',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-GENERATORS: Use generators for lazy sequences. Always clean up with return().',
+  warheadTemplate: 'Generators enable lazy evaluation and streaming without buffering entire sequences.',
+  evidenceSpec: { id: 'ts-adv-generators', verify: 'exec-tsc', minQuality: 0.85 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-ITERATORS', 'CONC-ASYNC-ITERATOR'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_ITERATORS: KnowledgeNode = {
+  id: 'TS-ADVANCED-ITERATORS',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'ITERATOR PROTOCOL: Implement Symbol.iterator for custom iterables. Use for...of on any iterable, not just arrays.',
+  detectionMethod: 'Find manual index-based loops that could use for...of on iterables. Flag classes without Symbol.iterator.',
+  fixTemplate: 'class Range { *[Symbol.iterator]() { for (let i = this.start; i < this.end; i++) yield i; } } for (const n of range) { ... }',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-ITERATORS: Implement Symbol.iterator for custom iterables.',
+  warheadTemplate: 'Iterator protocol enables for...of on custom data structures.',
+  evidenceSpec: { id: 'ts-adv-iterators', verify: 'exec-tsc', minQuality: 0.85 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-GENERATORS', 'TS-ADVANCED-SYMBOL'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_PROXY: KnowledgeNode = {
+  id: 'TS-ADVANCED-PROXY',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'PROXY: Use Proxy objects for meta-programming — intercept property access, assignment, and function calls for validation, logging, or lazy loading.',
+  detectionMethod: 'Find manual getter/setter boilerplate that could be a Proxy. Flag Proxies without proper trap validation.',
+  fixTemplate: 'const validated = new Proxy(target, { set(obj, prop, val) { if (typeof val !== "number") throw new TypeError(); obj[prop] = val; return true; } });',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-PROXY: Use Proxy for meta-programming interception.',
+  warheadTemplate: 'Proxy objects intercept fundamental operations for validation, logging, and virtualization.',
+  evidenceSpec: { id: 'ts-adv-proxy', verify: 'exec-tsc', minQuality: 0.80 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-REFLECT', 'TS-ADVANCED-SYMBOL'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_REFLECT: KnowledgeNode = {
+  id: 'TS-ADVANCED-REFLECT',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'REFLECT API: Use Reflect.* methods for metaprogramming — Reflect.get, Reflect.set, Reflect.has provide a programmatic alternative to operators.',
+  detectionMethod: 'Find dynamic property access using bracket notation that could use Reflect API for consistency with Proxy traps.',
+  fixTemplate: 'const val = Reflect.get(obj, key); Reflect.set(obj, key, value); // pairs naturally with Proxy traps',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-REFLECT: Use Reflect API for consistent metaprogramming.',
+  warheadTemplate: 'Reflect API provides a programmatic interface to JavaScript operations, pairing with Proxy.',
+  evidenceSpec: { id: 'ts-adv-reflect', verify: 'exec-tsc', minQuality: 0.80 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-PROXY', 'TS-SYMBOL-TYPE-FLAGS'],
+  selfVerified: true,
+};
+
+export const TS_ADVANCED_SYMBOL: KnowledgeNode = {
+  id: 'TS-ADVANCED-SYMBOL',
+  source: 'ts-deep',
+  sourceFile: 'KB-01_TYPESCRIPT_DEEP.md',
+  category: 'typescript',
+  rule: 'SYMBOL: Use Symbol for unique property keys that avoid collision — Symbol.iterator, Symbol.dispose, and custom Symbols for internal protocols.',
+  detectionMethod: 'Find string-keyed internal properties that could collide. Flag missing Symbol.iterator on custom collections.',
+  fixTemplate: 'const INTERNAL = Symbol("internal"); class Container { [INTERNAL]: Data; [Symbol.iterator]() { ... } }',
+  conditions: [{ field: 'gate', op: 'in', value: ['BUILD', 'VERIFY'] }],
+  bulletTemplate: 'TS-ADVANCED-SYMBOL: Use Symbol for collision-free property keys and protocols.',
+  warheadTemplate: 'Symbols provide unique keys and enable well-known protocols (iterator, dispose).',
+  evidenceSpec: { id: 'ts-adv-symbol', verify: 'exec-tsc', minQuality: 0.80 },
+  severity: 'guide',
+  layer: 3,
+  links: ['TS-ADVANCED-ITERATORS', 'TS-ADVANCED-REFLECT'],
+  selfVerified: true,
+};
+
+// EXPORTS
+export const typescriptNodes: KnowledgeNode[] = [
+  TS_COMPILER_PROGRAM, TS_COMPILER_CHECKER, TS_COMPILER_HOST, TS_COMPILER_OPTIONS, TS_SOURCE_FILE_PARSE,
+  TS_CHECKER_TYPE_AT_LOC, TS_CHECKER_ASSIGNABLE, TS_CHECKER_SYMBOL, TS_CHECKER_SIGNATURE, TS_CHECKER_PROPS,
+  TS_AST_FOREACH_CHILD, TS_AST_GUARDS, TS_AST_PARENT, TS_AST_FACTORY,
+  TS_SYMBOL_EXPORTS, TS_SYMBOL_ALIASES, TS_SYMBOL_DECLARATIONS, TS_SYMBOL_TYPE_FLAGS,
+  TS_SF_NO_ANY, TS_SF_NO_ASYNCEXT, TS_SF_ERROR_RETURN, TS_SF_IMPORT_GUARD, TS_SF_CLEANUP_PAIRED, TS_SF_NO_HARD_PATH, TS_SF_HANDLE_ZERO,
+  TS_PRINTER, TS_TRANSFORM, TS_DIAGNOSTICS, TS_GENERIC_CONSTRAINTS, TS_CONDITIONAL_TYPES,
+  // Advanced TypeScript Types
+  TS_ADVANCED_CONDITIONAL_TYPES, TS_ADVANCED_MAPPED_TYPES, TS_ADVANCED_TEMPLATE_LITERAL,
+  TS_ADVANCED_KEYOF, TS_ADVANCED_INSTANCEOF, TS_ADVANCED_TYPE_GUARD, TS_ADVANCED_TYPE_ASSERTION,
+  TS_ADVANCED_DECORATORS, TS_ADVANCED_MIXINS, TS_ADVANCED_GENERATORS, TS_ADVANCED_ITERATORS,
+  TS_ADVANCED_PROXY, TS_ADVANCED_REFLECT, TS_ADVANCED_SYMBOL,
+];

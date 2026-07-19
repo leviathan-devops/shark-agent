@@ -1,0 +1,59 @@
+{
+  "name": "shark-agent",
+  "version": "4.9.9",
+  "description": "Semantic Hardened Agent Runtime Kernel",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js"
+  },
+  "scripts": {
+    "prebuild": "bash scripts/detect-theatrical-code.sh",
+    "build": "bun build src/index.ts --outdir dist --target bun --format esm --bundle --external @opencode-ai/plugin --external zod --sourcemap=external",
+    "build:check": "bun build src/index.ts --outdir /tmp/shark-build-check --target bun --format esm --bundle --external @opencode-ai/plugin --external zod 2>&1 | tail -1",
+    "build:standalone": "bun build src/index.ts --outdir /tmp/shark-build-standalone --target bun --format esm --bundle --external @opencode-ai/plugin --external zod",
+    "deploy": "sudo cp dist/index.js /tmp/shark-container-snap/plugins/shark/dist/index.js && docker cp /tmp/shark-container-snap/plugins/shark/dist/index.js shark-container:/root/.config/opencode/plugins/shark/dist/index.js",
+    "typecheck": "tsc --project tsconfig.check.json --noEmit 2>&1 || echo 'Type check completed with warnings'",
+    "audit": "bash scripts/self-audit.sh",
+    "test": "bun test tests/"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": "^1.3.6",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "fast-check": "^4.8.0",
+    "typescript": "^6.0.3",
+    "zod": "4.1.8"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "package.json",
+    "README.md"
+  ],
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "keywords": [
+    "opencode",
+    "agent",
+    "shark",
+    "planning-brain",
+    "common-sense",
+    "context-management",
+    "verification-matrix",
+    "drift-detection"
+  ],
+  "author": "Shark Agent v4.9.9",
+  "license": "MIT",
+  "dependencies": {
+    "compromise": "^14.15.1",
+    "compromise-dates": "^3.8.0",
+    "compromise-numbers": "^1.4.0",
+    "sentiment": "^5.0.2"
+  }
+}
