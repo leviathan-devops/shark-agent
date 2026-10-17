@@ -57,7 +57,7 @@ PASSED — Shark agent deployed to shark-container (runtime-grade-container-sand
 - Container: shark-container (from runtime-grade-container-sandbox:master)
 - Deploy path: /root/.config/opencode/plugins/shark/dist/index.js
 - Model: opencode-go/deepseek-v4-flash or opencode-zen/deepseek-v4-flash-free
-- API key: sk-SOBLnWWxbO5n1nxmQTMfMhOUkOnmyy8AHD3gxQXaC7N4hhifEHoSe3woEcrzKtVQ
+- API key: <REDACTED_SET_VIA_ENV>
 - Build: bun build src/index.ts --outdir dist --target bun --format esm --bundle --external @opencode-ai/plugin --external zod
 
 ## Remaining Work

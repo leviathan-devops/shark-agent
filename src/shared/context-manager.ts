@@ -28,8 +28,8 @@
  *   6. EVERY tool call (THOUGHT_STREAM.md — append)
  *
  * Paths:
- *   Host: {workspace}/SHARK_v5.1.0_PLANNING_BRAIN/CONTEXT_MANAGEMENT/
- *   Container: /workspace/shark/SHARK_v5.1.0_PLANNING_BRAIN/CONTEXT_MANAGEMENT/
+ *   Host: {workspace}/$PROJECT_TOKEN/CONTEXT_MANAGEMENT/
+ *   Container: /workspace/shark/$PROJECT_TOKEN/CONTEXT_MANAGEMENT/
  *
  * All 10 docs seeded on initialization. Each has DISTINCT content (no copy-paste).
  */
@@ -37,7 +37,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-const PROJECT_TOKEN = 'SHARK_v5.1.0_PLANNING_BRAIN';
+const PROJECT_TOKEN = process.env.PROJECT_TOKEN ?? "<REDACTED_SET_VIA_ENV>";
 let CONTEXT_DIR: string;
 
 /**

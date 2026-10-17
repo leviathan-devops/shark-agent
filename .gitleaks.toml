@@ -1,0 +1,9 @@
+title = "shark-agent"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated bundle bindings named api_defaultN"
+regexTarget = "secret"
+regexes = ['''^api_default\d+$''']

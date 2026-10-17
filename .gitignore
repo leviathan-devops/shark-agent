@@ -3,3 +3,9 @@ node_modules/
 *.log
 bun.lock
 opencode.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.audit/

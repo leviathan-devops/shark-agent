@@ -288,7 +288,7 @@ export class ContextDocUpdater {
   constructor(workspacePath: string) {
     this.contextDir = path.join(
       workspacePath,
-      'SHARK_v5.1.0_PLANNING_BRAIN',
+      process.env.PROJECT_TOKEN ?? "<REDACTED_SET_VIA_ENV>",
       'CONTEXT_MANAGEMENT',
     );
   }
