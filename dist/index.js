@@ -215927,7 +215927,7 @@ class IntentEngine {
 // src/shared/context-manager.ts
 import * as fs15 from "fs";
 import * as path14 from "path";
-var PROJECT_TOKEN = "SHARK_v5.1.0_PLANNING_BRAIN";
+var PROJECT_TOKEN = process.env.PROJECT_TOKEN ?? "<REDACTED_SET_VIA_ENV>";
 var CONTEXT_DIR;
 function resolveContextDir(workspaceBase) {
   if (process.env.SHARK_CONTEXT_DIR) {
@@ -227064,7 +227064,7 @@ class ContextDocUpdater {
   lastBuildHash = null;
   lastGate = null;
   constructor(workspacePath) {
-    this.contextDir = path37.join(workspacePath, "SHARK_v5.1.0_PLANNING_BRAIN", "CONTEXT_MANAGEMENT");
+    this.contextDir = path37.join(workspacePath, process.env.PROJECT_TOKEN ?? "<REDACTED_SET_VIA_ENV>", "CONTEXT_MANAGEMENT");
   }
   update(toolName, _args, output, gate) {
     try {
